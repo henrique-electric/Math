@@ -426,6 +426,8 @@
 
     <p>The outer integral <span class="hl">&int; A(x) dx</span> simply accumulates these 2D areas continuously along the x-axis to output a 3D volume. You can slice the volume horizontally (integrating <i>dx</i> first) or vertically (integrating <i>dy</i> first); the total quantity remains unchanged.</p>
 
+    <p>Consider a physical loaf of bread. You can find its total volume by slicing it vertically, calculating the area of each cross-section, and summing them up from one end to the other. Alternatively, you could slice the loaf horizontally from bottom to top, finding the area of each flat layer, and summing those. Fubini's Theorem is the rigorous guarantee that the volume remains identical regardless of your slicing axis. In a strictly rectangular domain, a "change of order" simply means rotating your knife by 90 degrees.</p>
+
     <div class="viewport">
       <div class="viewport-header">
         <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
@@ -476,6 +478,55 @@
     <div class="callout">
       The most critical rule of setting up iterated integrals over general regions: <strong>The outer limits of integration must always be absolute constants.</strong> The inner limits may be variable functions. If you violate this, your final answer will contain variables instead of a numerical volume.
     </div>
+
+    
+    <h3>The Area of Integration: The 2D Shadow</h3>
+    <p>Before evaluating any double integral, you must establish a deep intuition for the Domain of Integration. Imagine shining a bright light straight down onto your 3D surface. The silhouette it casts on the xy-plane is your domain <b>D</b>. Setting the bounds of your integral is purely a 2D geometric puzzle; it relies entirely on this shadow, not the 3D surface hovering above it.</p>
+    
+    <p>When you construct your limits, you are essentially programming the path of a 2D scanner. If you choose an order of <i>dy dx</i>, the scanner head moves vertically to draw a thin strip from the curve <i>y = bottom(x)</i> to the curve <i>y = top(x)</i>, and then sweeps that vertical strip horizontally across the absolute constants <i>x = a</i> to <i>x = b</i>.</p>
+
+    <h3>Changing the Order of Integration</h3>
+    <p>Sometimes, an integral is mathematically impossible to solve in its original order. For instance, the inner integral of <i>&iint; e<sup>x²</sup> dx dy</i> has no elementary antiderivative. But if we change the order to <i>dy dx</i>, we integrate <i>y</i> first. This often produces an extra algebraic term that suddenly makes a standard <i>u</i>-substitution possible for the outer integral. This is where changing the order becomes a computational superpower.</p>
+
+    <p>To change the order of integration over curved boundaries, you <strong>cannot</strong> simply swap the limits as you would in Fubini's rectangular setup. You must reconstruct the bounds entirely from scratch using a visual process:</p>
+    <ol style="margin-left: 2rem; margin-bottom: 2.5rem; line-height: 1.6;">
+      <li style="margin-bottom: 0.75rem;"><strong>Deconstruct the bounds:</strong> Extract the explicit inequalities for <i>x</i> and <i>y</i> from the original integral symbols.</li>
+      <li style="margin-bottom: 0.75rem;"><strong>Sketch the shadow:</strong> Graph these bounding curves on the xy-plane and pinpoint their exact intersection points. <em style="color:var(--accent3);">This visual step is strictly non-negotiable.</em></li>
+      <li style="margin-bottom: 0.75rem;"><strong>Reslice the region:</strong> If you are switching from vertical (<i>dy dx</i>) to horizontal (<i>dx dy</i>) slicing, shoot horizontal arrows through your drawn region from left to right. The curve the arrow hits first is your new lower bound <i>x = h<sub>1</sub>(y)</i>, and the curve it exits through is your new upper bound <i>x = h<sub>2</sub>(y)</i>.</li>
+      <li style="margin-bottom: 0.75rem;"><strong>Find the absolute limits:</strong> Determine the lowest and highest absolute <i>y</i> values that encompass the entire region to form your new, constant outer bounds.</li>
+    </ol>
+
+    <h3>A Slow-Motion Application: Solving the Unsolvable</h3>
+    <p>Let's deduce the solution to the integral mentioned above from scratch. We are given the following iterated integral:</p>
+    
+    <div class="formula">
+      I = &int;<sub>0</sub><sup>1</sup> [ &int;<sub>y</sub><sup>1</sup> e<sup>x²</sup> dx ] dy
+    </div>
+
+    <p>Attempting to integrate <i>e<sup>x²</sup></i> directly is a mathematical dead end; it has no elementary antiderivative. We must change the order to <i>dy dx</i>. Instead of mechanically memorizing formulas, let's intuitively rebuild the domain. First, we read the boundaries: the inner limits tell us <i>x</i> goes from the diagonal line <i>x = y</i> to the vertical line <i>x = 1</i>. The outer limits tell us this happens between the horizontal lines <i>y = 0</i> and <i>y = 1</i>.</p>
+    
+    <p>If we sketch this shadow on the xy-plane, we see a right triangle sitting on the x-axis, with vertices at (0,0), (1,0), and (1,1). Now, we erase our horizontal slicing paradigm and reslice the exact same triangle <em>vertically</em>.</p>
+    
+    <p>Drawing a vertical arrow upwards through our triangle, it enters through the x-axis (<i>y = 0</i>) and exits through the diagonal line (<i>y = x</i>). These are our new inner bounds. Finally, we look at the absolute width of the triangle: it spans from <i>x = 0</i> to <i>x = 1</i>. These are our new outer bounds. The integral transforms completely:</p>
+
+    <div class="formula">
+      I = &int;<sub>0</sub><sup>1</sup> [ &int;<sub>0</sub><sup>x</sup> e<sup>x²</sup> dy ] dx<br><br>
+      <span class="comment">// The inner integral is now trivial. The variable is y, so e<sup>x²</sup> is treated as a constant:</span><br>
+      &int;<sub>0</sub><sup>x</sup> e<sup>x²</sup> dy = [ y &middot; e<sup>x²</sup> ]<sub>0</sub><sup>x</sup> = x e<sup>x²</sup><br><br>
+      <span class="comment">// Substitute this back into the outer integral:</span><br>
+      I = &int;<sub>0</sub><sup>1</sup> x e<sup>x²</sup> dx
+    </div>
+
+    <p>By simply looking at the region from a different axis, the impossible function <i>e<sup>x²</sup></i> gained an <i>x</i> term physically attached to it. This is exactly what we need to perform standard substitution (let <i>u = x²</i>, <i>du = 2x dx</i>). The integral elegantly collapses to <i>&frac12;(e - 1)</i>.</p>
+
+    <h3>Compound Regions: Knowing When to Split</h3>
+    <p>What happens if our 2D shadow isn't a neat, uniform shape? Imagine a region bounded by <i>y = x</i>, <i>y = 2x</i>, and <i>y = 2</i>. If we attempt to slice this vertically (Type I), the "top" curve is always the horizontal line <i>y = 2</i>. But the "bottom" curve changes! For the left half of the region, the bottom boundary is <i>y = 2x</i>. For the right half, the bottom boundary abruptly shifts to <i>y = x</i>.</p>
+
+    <div class="callout">
+      A single definite integral cannot adapt to a shifting boundary. If the mathematical definition of your upper or lower limit changes midway across the region, you must stop, slice the region entirely in two at that exact intersection point, and set up two distinct double integrals that add together.
+    </div>
+
+    <p>Alternatively, if you notice a region requires splitting in the <i>dy dx</i> direction, you can often avoid the extra algebraic labor by checking the <i>dx dy</i> direction. In the example above, slicing horizontally (Type II) means the left boundary is always <i>x = y/2</i> and the right boundary is always <i>x = y</i> for the entire shape. No split required.</p>
 
     <p>We generally classify these non-rectangular domains into two categories to simplify our algebraic setup:</p>
 
@@ -709,24 +760,167 @@
     <p>This is where calculus deeply interfaces with linear algebra. At a microscopic level, every differentiable coordinate transformation looks like a linear map (a matrix transformation). The matrix that describes this local stretching and shearing is the <strong>Jacobian Matrix</strong>.</p>
 
     <div class="formula">
-      J = &part;(x,y) / &part;(u,v) = <br><br>
-      &emsp;&emsp;&emsp;&emsp;&emsp;⎡ &part;x/&part;u &emsp; &part;x/&part;v ⎤<br>
+      J(u, v) = ⎡ &part;x/&part;u &emsp; &part;x/&part;v ⎤<br>
       &emsp;&emsp;&emsp;&emsp;&emsp;⎣ &part;y/&part;u &emsp; &part;y/&part;v ⎦
     </div>
 
     <p>In linear algebra, the determinant of a 2x2 matrix represents the factor by which area scales under the transformation. Therefore, the absolute value of the Jacobian determinant, <span class="hl">|det(J)|</span>, gives us the exact scaling factor required to transform our differential area element.</p>
 
+    <h3>A Slow-Motion Deduction of the Jacobian</h3>
+    <p>Let's not just accept this linear algebra fact; let's deduce it from scratch. Why does a matrix of partial derivatives perfectly define the area of our new transformed grid?</p>
+
+    <p>Imagine a tiny, perfect rectangle in our original <i>(u, v)</i> coordinate system. Its bottom edge is a vector <b>&Delta;u</b> <i>= (&Delta;u, 0)</i> and its left edge is <b>&Delta;v</b> <i>= (0, &Delta;v)</i>. The area of this original grid square is simply <i>&Delta;u &middot; &Delta;v</i>.</p>
+
+    <p>We now push this tiny square through our transformation <i>T: (x(u,v), y(u,v))</i>. Because the square is infinitesimally small, the curved transformation acts linearly upon it. The straight horizontal edge <b>&Delta;u</b> gets warped into a new vector in the <i>(x, y)</i> plane. How much does the <i>x</i> coordinate change when we nudge <i>u</i>? That is exactly the partial derivative <i>&part;x/&part;u</i>. Therefore, our original horizontal edge becomes the vector:</p>
+
     <div class="formula">
-      <span class="comment">// The Generalized Change of Variables Formula:</span><br>
-      &iint;<sub>R</sub> f(x, y) dx dy  =  &iint;<sub>S</sub> f(x(u,v), y(u,v)) &middot; <span class="hl">|det(J)|</span> du dv
+      <b>r<sub>u</sub></b> &approx; ⟨ &part;x/&part;u &middot; &Delta;u , &part;y/&part;u &middot; &Delta;u ⟩
     </div>
+
+    <p>Similarly, the vertical edge <b>&Delta;v</b> transforms into the vector:</p>
+
+    <div class="formula">
+      <b>r<sub>v</sub></b> &approx; ⟨ &part;x/&part;v &middot; &Delta;v , &part;y/&part;v &middot; &Delta;v ⟩
+    </div>
+
+    <p>Our original perfect square has been sheared and stretched into a parallelogram defined by these two new vectors. From linear algebra (and geometry), the area of a parallelogram defined by two vectors is the magnitude of their cross product. Let's compute it in 2D space by appending a virtual z-component of 0:</p>
+
+    <div class="formula">
+      Area &approx; || <b>r<sub>u</sub></b> &times; <b>r<sub>v</sub></b> ||<br>
+      Area &approx; | (&part;x/&part;u &middot; &Delta;u)(&part;y/&part;v &middot; &Delta;v) - (&part;y/&part;u &middot; &Delta;u)(&part;x/&part;v &middot; &Delta;v) |<br><br>
+      <span class="comment">// Factor out the common (&Delta;u &Delta;v) term:</span><br>
+      Area &approx; | (&part;x/&part;u)(&part;y/&part;v) - (&part;y/&part;u)(&part;x/&part;v) | &middot; &Delta;u &Delta;v
+    </div>
+
+    <p>Look closely at the expression inside the absolute value. <i>That is the exact algebraic definition of the determinant of our 2x2 Jacobian matrix!</i> As we drive the limit to zero, the approximation becomes exact: <span class="hl2">dA = |det(J)| du dv</span>. The area scaling factor is an inescapable geometric consequence of how partial derivatives bend local space.</p>
+
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · The Jacobian Shear</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:1rem;">
+          Adjust the partial derivatives below to alter the Jacobian matrix. Watch how the linear transformation shears the original unit square (u, v) into a parallelogram in the (x, y) space, altering its area by the exact value of the determinant.
+        </p>
+        <div class="two-col" style="align-items: center;">
+          <div>
+            <canvas id="cvJacobian" width="300" height="300" style="width:100%;max-width:300px;"></canvas>
+            <div class="tooltip">Blue: Original Grid | Gold: Transformed Area</div>
+          </div>
+          <div>
+            <div class="matrix-display" style="width:100%; margin-bottom: 1rem;">
+              <strong>Jacobian Matrix J</strong><br>
+              ⎡ <span id="j_xx" class="hl2">1.0</span> &emsp; <span id="j_xy" class="hl">0.0</span> ⎤<br>
+              ⎣ <span id="j_yx" class="hl">0.0</span> &emsp; <span id="j_yy" class="hl2">1.0</span> ⎦
+            </div>
+            
+            <div class="controls">
+              <div class="ctrl-group">
+                <span class="ctrl-label">&part;x/&part;u</span>
+                <input type="range" id="jacXX" min="-2" max="2" step="0.1" value="1">
+              </div>
+              <div class="ctrl-group">
+                <span class="ctrl-label">&part;x/&part;v</span>
+                <input type="range" id="jacXY" min="-2" max="2" step="0.1" value="0.5">
+              </div>
+              <div class="ctrl-group">
+                <span class="ctrl-label">&part;y/&part;u</span>
+                <input type="range" id="jacYX" min="-2" max="2" step="0.1" value="0">
+              </div>
+              <div class="ctrl-group">
+                <span class="ctrl-label">&part;y/&part;v</span>
+                <input type="range" id="jacYY" min="-2" max="2" step="0.1" value="1.5">
+              </div>
+            </div>
+            
+            <div class="det-display" style="width:100%; text-align:center; margin-top:1.5rem;">
+              Area Scaling Factor = |det(J)| = <span id="jacDetVal" style="font-weight:bold;">1.50</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s9">
+  <div class="container">
+    <div class="section-tag">§ 09 — Fluid Mechanics</div>
+    <h2>Volumetric Flow Rates &amp; Flux</h2>
+    <div class="divider"></div>
+
+    <p>Let us pivot from pure mathematics into the physical reality of fluid dynamics. Instead of interpreting a 3D surface as a static geometric volume, imagine it represents a <strong>velocity profile</strong>. A fluid is flowing through a circular pipe. Due to friction against the pipe walls (the no-slip condition), the fluid travels slowest at the edges and fastest at the center, creating a parabolic velocity profile known as Poiseuille flow.</p>
+
+    <p>If we define the cross-section of the pipe as our 2D region <b>D</b>, and let the function <span class="hl">v(x, y)</span> represent the fluid's velocity vector perpendicular to that cross-section, how do we calculate the total amount of fluid passing through the pipe per second?</p>
 
     <div class="callout">
-      Verify this with polar coordinates! Let <i>x = r cos &theta;</i> and <i>y = r sin &theta;</i>. Construct the 2x2 Jacobian matrix of partial derivatives. The determinant will evaluate exactly to <i>r cos²&theta; + r sin²&theta; = r</i>. The geometry and the algebra align perfectly.
+      When we model fluid dynamics, we assume the water is a perfectly continuous medium, allowing us to slice it into infinitesimally small <i>dA</i> patches. Is water actually a continuous mathematical surface? For this specific part, I don't know. The physical reality at the atomic scale is discrete, chaotic, and governed by quantum mechanics. Yet, classical calculus smooths over this quantum chaos to produce macroscopic predictions of astonishing accuracy.
     </div>
-    
-    <p>Understanding the double integral conceptually sets the foundation for Vector Calculus. Soon, we will see Green's Theorem link the double integral over an area to a line integral around its boundary, establishing a beautiful, higher-dimensional equivalent to the Fundamental Theorem of Calculus.</p>
 
+    <p>We slice the cross-section into infinitesimal areas <i>dA</i>. The velocity of the fluid passing through that specific tiny patch is <i>v(x, y)</i>. If we multiply the velocity by the area, we get the volumetric flow rate through that specific patch: <i>dQ = v(x, y) dA</i>. By integrating this across the entire pipe, we deduce the total volumetric flow rate, <b>Q</b>.</p>
+
+    <div class="formula">
+      Q = &iint;<sub>D</sub> v(x, y) dA
+    </div>
+
+    <p>Notice the units. If we measure velocity in centimeters per second (cm/s), and our area element <i>dA</i> is in square centimeters (cm²), the integral naturally outputs a result in cubic centimeters per second (cm³/s). From here, dimensional analysis allows us to easily convert our calculus-derived flow rate into practical engineering metrics, such as liters per second (1 L = 1000 cm³).</p>
+
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · 3D Parabolic Velocity Profile</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:1rem;">
+          Adjust the maximum central velocity of the fluid. The height of the blue surface represents the speed of the fluid at that point in the pipe. The double integral computes the total volume of fluid passing through the cross-section every second.
+        </p>
+        <div class="two-col" style="align-items: center;">
+          <div>
+            <canvas id="cvFluidFlow" width="300" height="300" style="width:100%;max-width:300px;background:var(--bg); border-radius:4px;"></canvas>
+          </div>
+          <div>
+            <div class="controls">
+              <div class="ctrl-group">
+                <span class="ctrl-label">Max Center Velocity (v_max)</span>
+                <input type="range" id="fluidVMax" min="1" max="10" step="0.5" value="5">
+              </div>
+            </div>
+            <div class="formula" style="font-size: 0.85rem; margin-top: 1.5rem;">
+              Pipe Radius (R) = 2.0 cm<br>
+              Velocity Field: v(r) = v<sub>max</sub> &middot; (1 - r²/R²) cm/s<br><br>
+              <span class="comment">// Integrating via polar coordinates:</span><br>
+              Q = &int;<sub>0</sub><sup>2&pi;</sup> &int;<sub>0</sub><sup>R</sup> v(r) &middot; <span class="hl2">r dr d&theta;</span><br><br>
+              Total Flow Rate (Q) = <span id="fluidQVal" class="hl3">--</span> cm³/s
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s10">
+  <div class="container">
+    <div class="section-tag">§ 10 — Vector Calculus Prelude</div>
+    <h2>Green's Theorem: The Boundary Connection</h2>
+    <div class="divider"></div>
+
+    <p>Understanding the double integral conceptually sets the foundation for Vector Calculus. Up to this point, we have integrated scalar functions <i>f(x, y)</i>. But what happens if we integrate a vector field <b>F</b>(x,y) = ⟨ P(x,y), Q(x,y) ⟩ across an area?</p>
+
+    <p>Consider a fluid swirling on a flat surface. At every point, we can calculate its <strong>microscopic circulation</strong> (or 2D curl), which measures how much the fluid tends to rotate at that specific infinitesimal spot. The formula for this microscopic curl is <i>(&part;Q/&part;x - &part;P/&part;y)</i>.</p>
+
+    <p>If we take the double integral of this microscopic circulation over an entire region <b>D</b>, an extraordinary mathematical cancellation occurs. The internal rotations of adjacent fluid particles cancel each other out perfectly. The only rotation that does not cancel is the rotation happening right at the edge of the region.</p>
+
+    <p>This physical intuition forms the basis of <strong>Green's Theorem</strong>, which establishes a beautiful equality between a 2D double integral and a 1D line integral. It proves that the sum of all microscopic circulation inside a region is exactly equal to the macroscopic circulation of the fluid around its outer boundary curve <b>C</b>.</p>
+
+    <div class="formula">
+      <span class="comment">// Macroscopic Boundary Circulation = Microscopic Internal Circulation</span><br>
+      &oint;<sub>C</sub> (P dx + Q dy)  =  &iint;<sub>D</sub> ( &part;Q/&part;x - &part;P/&part;y ) dA
+    </div>
+
+    <p>This is a higher-dimensional equivalent to the Fundamental Theorem of Calculus. Just as <i>&int; F'(x) dx = F(b) - F(a)</i> evaluates an area by simply looking at the boundary points, Green's Theorem evaluates an entire 2D area by simply integrating along its 1D boundary.</p>
+    
     <div class="sep"></div>
 
     <h3>Summary: Double Integrals at a Glance</h3>
@@ -1368,6 +1562,119 @@ function drawGrid(cv, cx, cy, scale, col = 'rgba(255,255,255,0.07)', steps = 10)
 // ─────────────────────────────────────────────
 // SCROLL REVEAL + NAV DOTS
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// VIEWPORT 6 — Jacobian Shear Interaction
+// ─────────────────────────────────────────────
+(function(){
+  const cv = $('cvJacobian');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height; const CX = W/2, CY = H/2;
+
+  function renderJac() {
+    clearCanvas(cv, '#16161c');
+    drawGrid(cv, CX, CY, 20, 'rgba(255,255,255,0.06)', 6);
+
+    const a = parseFloat($('jacXX').value);
+    const b = parseFloat($('jacXY').value);
+    const c = parseFloat($('jacYX').value);
+    const d = parseFloat($('jacYY').value);
+
+    $('j_xx').textContent = a.toFixed(2);
+    $('j_xy').textContent = b.toFixed(2);
+    $('j_yx').textContent = c.toFixed(2);
+    $('j_yy').textContent = d.toFixed(2);
+
+    // Draw original unit square and transformed parallelogram
+    const scale = 40;
+    const pts = [ [0,0],[1,0],[1,1],[0,1] ];
+
+    // Original (blue)
+    ctx.strokeStyle = 'rgba(126,184,247,0.9)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    pts.forEach((p,i)=>{ const x = CX + (p[0]-0.5)*scale*2, y = CY + (p[1]-0.5)*scale*2; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.closePath(); ctx.stroke();
+
+    // Transformed (gold)
+    const trans = pts.map(p=>{
+      const x = a*p[0] + b*p[1];
+      const y = c*p[0] + d*p[1];
+      return [CX + (x-0.5)*scale*2, CY + (y-0.5)*scale*2];
+    });
+
+    ctx.fillStyle = 'rgba(232,201,109,0.18)'; ctx.strokeStyle = 'rgba(232,201,109,0.95)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); trans.forEach((p,i)=>{ if(i===0) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]); }); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    // Draw basis vectors
+    drawArrow(ctx, CX, CY, trans[1][0], trans[1][1], '#e8c96d', 3);
+    drawArrow(ctx, CX, CY, trans[3][0], trans[3][1], '#d4a21a', 3);
+
+    const det = a*d - b*c;
+    $('jacDetVal').textContent = Math.abs(det).toFixed(3);
+  }
+
+  ['jacXX','jacXY','jacYX','jacYY'].forEach(id=>{ const el = $(id); if(el) el.addEventListener('input', renderJac); });
+  renderJac();
+})();
+
+// ─────────────────────────────────────────────
+// VIEWPORT 7 — 3D Parabolic Velocity Profile
+// ─────────────────────────────────────────────
+(function(){
+  const cv = $('cvFluidFlow');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height; const CX = W/2, CY = H/2;
+
+  function computeQ(vMax) {
+    const R = 2.0;
+    // polar integration discretized
+    const N = 120;
+    let sum = 0;
+    for(let i=0;i<N;i++){
+      const r = (i + 0.5) * R / N;
+      const v = vMax * (1 - (r*r)/(R*R));
+      const dA = (2*Math.PI/N) * r * (R/N) * 1; // approximate ring area
+      sum += v * (r * (2*Math.PI/N)) * (R/N) * 1; // simplified; we'll use simpler numeric
+      // Simpler: use radius ring area = 2*pi*r*(R/N)
+      sum = 0; // switch to cleaner quadrature below
+    }
+    // cleaner numeric integration: integrate theta analytically, integrate r numerically
+    let integral = 0;
+    const M = 400;
+    for(let j=0;j<M;j++){
+      const r = (j + 0.5) * R / M;
+      const v = vMax * (1 - (r*r)/(R*R));
+      integral += v * (2*Math.PI * r) * (R / M);
+    }
+    return integral; // cm^3 / s
+  }
+
+  function renderFluid() {
+    clearCanvas(cv, '#0f1720');
+
+    const vMax = parseFloat($('fluidVMax').value);
+    const Q = computeQ(vMax);
+    $('fluidQVal').textContent = Q.toFixed(2);
+
+    // Draw simple radial gradient to show velocity magnitude
+    const Rvis = Math.min(W, H) * 0.4;
+    const g = ctx.createRadialGradient(CX, CY, 4, CX, CY, Rvis);
+    g.addColorStop(0, 'rgba(126,184,247,0.95)');
+    g.addColorStop(1, 'rgba(10,20,40,0.2)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(CX, CY, Rvis, 0, TAU); ctx.fill();
+
+    // Draw rings to indicate velocity contours
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+    for(let i=1;i<=6;i++){
+      ctx.beginPath(); ctx.arc(CX, CY, (i/6)*Rvis, 0, TAU); ctx.stroke();
+    }
+  }
+
+  const el = $('fluidVMax'); if(el) el.addEventListener('input', renderFluid);
+  renderFluid();
+})();
+
 const sections = Array.from(document.querySelectorAll('section'));
 const navDots = Array.from(document.querySelectorAll('.nav-dot'));
 
