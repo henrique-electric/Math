@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Formal Limit — ε-δ Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f7f4ee;
+  --bg2:      #efebe2;
+  --bg-card:  #ffffff;
+  --ink:      #1a1810;
+  --ink2:     #3d3a30;
+  --ink3:     #7a7060;
+  --rule:     #d4cec0;
+  --gold:     #b5822a;
+  --gold-lt:  #e8c87a;
+  --teal:     #2a7a6a;
+  --teal-lt:  #7ac8b4;
+  --rose:     #8a2a3a;
+  --rose-lt:  #e87a8a;
+  --blue:     #2a4a7a;
+  --blue-lt:  #7aaae8;
+  --canvas-bg:  #ffffff;
+  --grid-line:  #f0ede6;
+  --ax-line:    #b0aa98;
+  --ax-text:    #9a9280;
+  --tick-line:  #d0ccc0;
+  --epsilon-fill: rgba(42,122,106,0.12);
+  --delta-fill:   rgba(181,130,42,0.12);
+  --epsilon-str:  rgba(42,122,106,0.7);
+  --delta-str:    rgba(181,130,42,0.7);
+  --fn-line:    #2a4a7a;
+  --limit-pt:   rgba(138,42,58,0.85);
+}
+
+[data-theme="dark"] {
+  --bg:       #161616;
+  --bg2:      #222222;
+  --bg-card:  #1e1e1e;
+  --ink:      #e4e0d8;
+  --ink2:     #b0a898;
+  --ink3:     #888070;
+  --rule:     #3d3a30;
+  --gold:     #d4a350;
+  --gold-lt:  #e8c87a;
+  --teal:     #4db6a1;
+  --teal-lt:  #7ac8b4;
+  --rose:     #cc6677;
+  --rose-lt:  #e87a8a;
+  --blue:     #6b9bed;
+  --blue-lt:  #7aaae8;
+  --canvas-bg:  #1a1a1a;
+  --grid-line:  #2a2a2a;
+  --ax-line:    #555555;
+  --ax-text:    #888888;
+  --tick-line:  #444444;
+  --epsilon-fill: rgba(77,182,161,0.15);
+  --delta-fill:   rgba(212,163,80,0.15);
+  --epsilon-str:  rgba(77,182,161,0.75);
+  --delta-str:    rgba(212,163,80,0.75);
+  --fn-line:    #6b9bed;
+  --limit-pt:   rgba(204,102,119,0.9);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.7;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ── HEADER ── */
+.site-header {
+  border-bottom: 2px solid var(--ink);
+  padding: 2.5rem 2rem 2rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.site-header .title-block h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+.site-header .title-block h1 em { font-style: italic; color: var(--teal); }
+.site-header .title-block .subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink3);
+  margin-top: 0.5rem;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.header-formula {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--ink2);
+  white-space: nowrap;
+  border-left: 3px solid var(--teal);
+  padding-left: 1rem;
+}
+
+/* ── NAV TABS ── */
+.tab-nav {
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.9rem 1.4rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* ── PANELS ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── INTERACTIVE ── */
+.interactive-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  min-height: 600px;
+}
+@media (max-width: 820px) { .interactive-layout { grid-template-columns: 1fr; } }
+
+.viz-pane {
+  border-right: 1px solid var(--rule);
+  padding: 1.5rem;
+  position: relative;
+}
+.canvas-container {
+  position: relative;
+  background: var(--canvas-bg);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+canvas { display: block; width: 100%; height: auto; }
+
+.viz-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.stat-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  padding: 0.7rem 0.8rem;
+  border-radius: 2px;
+}
+.stat-chip .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+}
+.stat-chip .val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--teal);
+  line-height: 1.2;
+  margin-top: 0.1rem;
+}
+.stat-chip.gold .val { color: var(--gold); }
+.stat-chip.rose .val { color: var(--rose); font-size: 1.15rem; }
+
+.ctrl-pane {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  overflow-y: auto;
+}
+.ctrl-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink3);
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* Btn groups */
+.btn-group { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.grp-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  padding: 0.4rem 0.7rem;
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.grp-btn:hover { border-color: var(--ink2); color: var(--ink2); }
+.grp-btn.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.grp-btn.fn-btn {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+.grp-btn.fn-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
+
+/* Sliders */
+.slider-block { margin-bottom: 0.9rem; }
+.slider-block:last-child { margin-bottom: 0; }
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--ink2);
+  margin-bottom: 0.4rem;
+}
+.slider-label .sval {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--teal);
+}
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--rule);
+  border-radius: 1px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--teal);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--teal);
+}
+
+/* inline formula */
+.inline-formula {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--teal);
+  padding: 0.8rem 1rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--ink2);
+  border-radius: 0 2px 2px 0;
+}
+.inline-formula sub, .inline-formula sup {
+  font-size: 0.65em;
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* anno-toggle */
+.anno-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.anno-toggle input[type=checkbox] {
+  width: 14px; height: 14px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.anno-toggle span { font-size: 0.78rem; color: var(--ink2); }
+
+/* ── THEORY PANEL ── */
+.theory-body {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+}
+.theory-body h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 2.5rem 0 1rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.5rem;
+}
+.theory-body h2:first-child { margin-top: 0; }
+.theory-body h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gold);
+  margin: 1.8rem 0 0.6rem;
+}
+.theory-body p { color: var(--ink2); margin-bottom: 1rem; }
+.theory-body .definition {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--teal);
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 3px 3px 0;
+}
+.theory-body .definition .def-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  margin-bottom: 0.6rem;
+}
+.theory-body .definition p { margin: 0; color: var(--ink2); }
+.theory-body .math-display {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  padding: 1.4rem 1rem;
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  margin: 1.5rem 0;
+  color: var(--ink);
+  line-height: 2;
+}
+.theory-body .math-display sub, .theory-body .math-display sup {
+  font-size: 0.6em;
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+}
+.theory-body .note-box {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  padding: 1rem 1.2rem;
+  border-radius: 3px;
+  margin: 1.2rem 0;
+  font-size: 0.88rem;
+  color: var(--ink3);
+}
+.theory-body .note-box strong { color: var(--ink2); }
+.theory-body .insight-box {
+  background: rgba(42,122,106,0.05);
+  border: 1px solid rgba(42,122,106,0.3);
+  border-left: 4px solid var(--teal);
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 3px 3px 0;
+}
+.theory-body .insight-box .ins-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  margin-bottom: 0.5rem;
+}
+.theory-body .insight-box p { margin: 0; color: var(--ink2); }
+.theory-body .warning-box {
+  background: rgba(138,42,58,0.05);
+  border: 1px solid rgba(138,42,58,0.2);
+  border-left: 4px solid var(--rose);
+  padding: 1.1rem 1.4rem;
+  margin: 1.4rem 0;
+  border-radius: 0 3px 3px 0;
+}
+.theory-body .warning-box .warn-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--rose);
+  margin-bottom: 0.5rem;
+}
+.theory-body .warning-box p { margin: 0; color: var(--ink2); font-size: 0.9rem; }
+.theory-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.88rem;
+}
+.theory-body th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  padding: 0.6rem 1rem;
+  border-bottom: 2px solid var(--rule);
+  text-align: left;
+}
+.theory-body td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink2);
+  vertical-align: top;
+}
+.theory-body td:first-child { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; }
+.theory-body tr:last-child td { border-bottom: none; }
+
+/* ── INTUITION ── */
+.intuition-body {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 2rem 5rem;
+}
+.intuition-body h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 3rem 0 1rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.5rem;
+}
+.intuition-body h2:first-child { margin-top: 0; }
+.intuition-body h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gold);
+  margin: 2rem 0 0.7rem;
+}
+.intuition-body p { color: var(--ink2); margin-bottom: 1rem; line-height: 1.85; }
+.intuition-body .insight-box {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--teal);
+  padding: 1.2rem 1.5rem;
+  margin: 1.8rem 0;
+  border-radius: 0 3px 3px 0;
+}
+.intuition-body .insight-box .ins-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  margin-bottom: 0.6rem;
+}
+.intuition-body .insight-box p { margin: 0; color: var(--ink2); }
+.intuition-body .warning-box {
+  background: rgba(138,42,58,0.05);
+  border: 1px solid rgba(138,42,58,0.25);
+  border-left: 4px solid var(--rose);
+  padding: 1.2rem 1.5rem;
+  margin: 1.8rem 0;
+  border-radius: 0 3px 3px 0;
+}
+.intuition-body .warning-box .warn-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--rose);
+  margin-bottom: 0.6rem;
+}
+.intuition-body .warning-box p { margin: 0; color: var(--ink2); }
+.intuition-body .math-display {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.45rem;
+  padding: 1.4rem 1rem;
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  margin: 1.5rem 0;
+  color: var(--ink);
+  line-height: 2;
+}
+.intuition-body .math-display sub, .intuition-body .math-display sup {
+  font-size: 0.6em;
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+}
+.intuition-body .note-box {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  padding: 1rem 1.2rem;
+  border-radius: 3px;
+  margin: 1.2rem 0;
+  font-size: 0.88rem;
+  color: var(--ink3);
+}
+.intuition-body .note-box strong { color: var(--ink2); }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+.two-col-card {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  padding: 1.2rem;
+  border-radius: 3px;
+}
+.two-col-card .tc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink3);
+  margin-bottom: 0.5rem;
+}
+.two-col-card .tc-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--teal);
+  margin-bottom: 0.5rem;
+}
+.two-col-card p {
+  font-size: 0.86rem;
+  color: var(--ink2);
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ── STEP-BY-STEP ── */
+.steps-body {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+.step-card {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 1.2rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+.step-card::before {
+  content: '';
+  position: absolute;
+  left: 27px;
+  top: 56px;
+  bottom: -2.5rem;
+  width: 1px;
+  background: var(--rule);
+}
+.step-card:last-child::before { display: none; }
+.step-num {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-style: italic;
+  flex-shrink: 0;
+}
+.step-content h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+  margin-top: 0.9rem;
+}
+.step-content p { color: var(--ink2); margin-bottom: 0.8rem; font-size: 0.93rem; }
+.step-content .math-inline {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--teal);
+  padding: 0.7rem 1rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  border-radius: 0 2px 2px 0;
+  margin: 0.8rem 0;
+  color: var(--ink2);
+}
+.step-content .math-inline sub, .step-content .math-inline sup {
+  font-size: 0.65em;
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+}
+.step-content .highlight {
+  background: rgba(42,122,106,0.07);
+  border: 1px solid rgba(42,122,106,0.25);
+  padding: 0.7rem 1rem;
+  border-radius: 3px;
+  margin: 0.8rem 0;
+  font-size: 0.88rem;
+  color: var(--ink2);
+}
+.step-content .highlight strong { color: var(--teal); }
+.step-content .deep-note {
+  background: rgba(42,74,122,0.06);
+  border: 1px solid rgba(42,74,122,0.2);
+  border-left: 3px solid var(--blue);
+  padding: 0.8rem 1rem;
+  border-radius: 0 2px 2px 0;
+  margin: 0.8rem 0;
+  font-size: 0.85rem;
+  color: var(--ink2);
+}
+.step-content .deep-note strong { color: var(--blue); }
+.step-content .warning-note {
+  background: rgba(138,42,58,0.05);
+  border: 1px solid rgba(138,42,58,0.2);
+  border-left: 3px solid var(--rose);
+  padding: 0.7rem 1rem;
+  border-radius: 0 2px 2px 0;
+  margin: 0.8rem 0;
+  font-size: 0.85rem;
+  color: var(--ink2);
+}
+.step-content .warning-note strong { color: var(--rose); }
+
+/* ── GALLERY (worked examples) ── */
+.gallery-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+}
+.gallery-body h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 2rem 0 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.4rem;
+}
+.gallery-body h2:first-child { margin-top: 0; }
+.gallery-body p { color: var(--ink2); margin-bottom: 0.8rem; font-size: 0.92rem; }
+.ex-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+@media (max-width: 680px) { .ex-grid { grid-template-columns: 1fr; } }
+.ex-card {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ex-card-head {
+  padding: 0.7rem 1rem;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ex-card-head .badge {
+  background: var(--teal);
+  color: #fff;
+  font-size: 0.55rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+}
+.ex-card-head .badge.hard { background: var(--rose); }
+.ex-card-body { padding: 1.2rem; }
+.ex-card-body .ex-fn {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+}
+.ex-card-body .ex-step {
+  font-size: 0.85rem;
+  color: var(--ink2);
+  margin-bottom: 0.5rem;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--rule);
+}
+.ex-card-body .ex-step strong { color: var(--ink); }
+.ex-card-body .ex-result {
+  margin-top: 0.8rem;
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--teal);
+  padding: 0.6rem 0.8rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--ink2);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── GLOSSARY ── */
+.gloss-body {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+.gloss-item {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: start;
+}
+.gloss-item:last-child { border-bottom: none; }
+.gloss-term {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--teal);
+  padding-top: 0.15rem;
+}
+.gloss-def { color: var(--ink2); font-size: 0.9rem; }
+.gloss-def .symbol {
+  display: inline-block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--bg2);
+  padding: 0 0.3rem;
+  border-radius: 2px;
+  margin: 0 1px;
+}
+.gloss-def .deep-expand {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.83rem;
+  color: var(--ink3);
+  font-style: italic;
+}
+@media (max-width: 520px) { .gloss-item { grid-template-columns: 1fr; gap: 0.3rem; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="title-block">
+    <h1>The <em>Formal</em> Limit</h1>
+    <div class="subtitle">The ε-δ definition — from Spivak's foundations to geometric intuition</div>
+  </div>
+  <div class="header-right">
+    <div class="header-formula">
+      lim<sub>x→a</sub> f(x) = L &nbsp;⟺&nbsp; ∀ε&gt;0, ∃δ&gt;0 …
+    </div>
+    <button id="themeToggle" class="grp-btn">🌓 Theme</button>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="interactive">① Interactive</button>
+  <button class="tab-btn" data-tab="theory">② Theory</button>
+  <button class="tab-btn" data-tab="intuition">③ Deep Intuition</button>
+  <button class="tab-btn" data-tab="steps">④ Step-by-Step</button>
+  <button class="tab-btn" data-tab="examples">⑤ Worked Examples</button>
+  <button class="tab-btn" data-tab="glossary">⑥ Glossary</button>
+</nav>
+
+<div class="tab-panel active" id="tab-interactive">
+  <div class="interactive-layout">
+    <div class="viz-pane">
+      <div class="canvas-container" id="canvasContainer">
+        <canvas id="mainCanvas"></canvas>
+      </div>
+      <div class="viz-stats">
+        <div class="stat-chip gold">
+          <div class="lbl">δ (delta)</div>
+          <div class="val" id="deltaVal">—</div>
+        </div>
+        <div class="stat-chip">
+          <div class="lbl">ε (epsilon)</div>
+          <div class="val" id="epsilonVal">—</div>
+        </div>
+        <div class="stat-chip rose">
+          <div class="lbl">Challenge met?</div>
+          <div class="val" id="challengeVal">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl-pane">
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">Function f(x)</div>
+        <div class="btn-group">
+          <button class="grp-btn fn-btn active" data-fn="0">x²</button>
+          <button class="grp-btn fn-btn" data-fn="1">sin x</button>
+          <button class="grp-btn fn-btn" data-fn="2">x³</button>
+          <button class="grp-btn fn-btn" data-fn="3">√|x|</button>
+          <button class="grp-btn fn-btn" data-fn="4">|x|/x</button>
+          <button class="grp-btn fn-btn" data-fn="5">(x²−1)/(x−1)</button>
+        </div>
+        <div style="margin-top:0.7rem; font-size:0.78rem; color:var(--ink3); font-style:italic;" id="fnDesc">
+          f(x) = x² near a = 1, limit L = 1
+        </div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">Point of Approach (a)</div>
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>a — approach from here</span>
+            <span class="sval" id="aVal">1.00</span>
+          </div>
+          <input type="range" id="aSlider" min="-2.5" max="2.5" step="0.05" value="1">
+        </div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">ε — Epsilon Challenge</div>
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>ε (output tolerance)</span>
+            <span class="sval" id="epsVal">0.50</span>
+          </div>
+          <input type="range" id="epsSlider" min="0.05" max="2" step="0.05" value="0.5">
+        </div>
+        <div style="font-size:0.78rem; color:var(--ink3); margin-top:0.3rem;">
+          The adversary demands: keep f(x) within ±ε of L.
+        </div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">δ — Your Response</div>
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>δ (input restriction)</span>
+            <span class="sval" id="dltVal">0.40</span>
+          </div>
+          <input type="range" id="dltSlider" min="0.02" max="2" step="0.02" value="0.4">
+        </div>
+        <div style="font-size:0.78rem; color:var(--ink3); margin-top:0.3rem;">
+          You respond: restrict x to within δ of a.
+        </div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">Annotations</div>
+        <label class="anno-toggle" style="margin-bottom:0.5rem">
+          <input type="checkbox" id="showBands" checked>
+          <span>Show ε-band and δ-band</span>
+        </label>
+        <label class="anno-toggle" style="margin-bottom:0.5rem">
+          <input type="checkbox" id="showHole" checked>
+          <span>Show punctured point</span>
+        </label>
+        <label class="anno-toggle" style="margin-bottom:0.5rem">
+          <input type="checkbox" id="showArrows" checked>
+          <span>Show approach arrows</span>
+        </label>
+        <label class="anno-toggle">
+          <input type="checkbox" id="showLimit">
+          <span>Show limit value L</span>
+        </label>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">Live Condition</div>
+        <div class="inline-formula" id="liveCond">
+          0 &lt; |x − a| &lt; δ &nbsp;⟹&nbsp; |f(x) − L| &lt; ε
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-theory">
+  <div class="theory-body">
+
+    <h2>What Is a Limit?</h2>
+
+    <p>Before anything else, let us be clear about what we are doing. We want to give a precise, unambiguous meaning to the statement</p>
+
+    <div class="math-display">
+      lim<sub>x→a</sub> f(x) = L
+    </div>
+
+    <p>The naive reading is: "as x gets close to a, f(x) gets close to L." This is geometrically suggestive but logically useless. What does "close" mean? Close enough for what purpose? The genius of the ε-δ definition — due essentially to Cauchy and given its modern form by Weierstrass — is that it eliminates the word "close" entirely in favour of a precise logical game.</p>
+
+    <div class="insight-box">
+      <div class="ins-title">Spivak's Starting Point</div>
+      <p>Spivak opens his treatment of limits in <em>Calculus</em> with a confession: the definition will look formidable. His goal is not to make it feel easy but to make it feel <em>necessary</em> — to show that any attempt to say what a limit is leads inevitably to this definition and no other.</p>
+    </div>
+
+    <h2>The ε-δ Definition</h2>
+
+    <p>We say <em>lim<sub>x→a</sub> f(x) = L</em> if the following holds:</p>
+
+    <div class="definition">
+      <div class="def-title">Definition (Weierstrass, ~1861)</div>
+      <p>For every number ε &gt; 0, there exists a number δ &gt; 0 such that: for all x, if 0 &lt; |x − a| &lt; δ, then |f(x) − L| &lt; ε.</p>
+    </div>
+
+    <p>In symbols:</p>
+
+    <div class="math-display">
+      ∀ε &gt; 0, ∃δ &gt; 0 : 0 &lt; |x − a| &lt; δ &nbsp;⟹&nbsp; |f(x) − L| &lt; ε
+    </div>
+
+    <p>Let us parse this with care.</p>
+
+    <h3>The quantifier structure</h3>
+
+    <p>The definition begins with <em>∀ε &gt; 0</em> — "for every ε greater than zero." This means: no matter what positive ε an adversary hands you, you must be able to respond. The definition is an infinite challenge: it must work for ε = 1, for ε = 0.001, for ε = 10<sup>−100</sup>, and for every other positive number simultaneously.</p>
+
+    <p>Then comes <em>∃δ &gt; 0</em> — "there exists a δ greater than zero." Your response to the ε-challenge is to produce a δ. This δ is allowed to depend on ε (and on a and on f). Typically, the smaller ε is, the smaller δ must be.</p>
+
+    <h3>The condition 0 &lt; |x − a| &lt; δ</h3>
+
+    <p>The left inequality <em>0 &lt; |x − a|</em> is crucial and is easy to overlook. It says x ≠ a. The limit is a statement about what f(x) does as x <em>approaches</em> a — the value f(a) is completely irrelevant. Indeed, f need not even be defined at a. The puncture 0 &lt; is the formal expression of this.</p>
+
+    <p>The right inequality <em>|x − a| &lt; δ</em> says x is within δ of a. Together, the condition defines the <em>punctured δ-neighbourhood</em> of a:</p>
+
+    <div class="math-display">
+      (a − δ, a) ∪ (a, a + δ) &nbsp;=&nbsp; {x : 0 &lt; |x − a| &lt; δ}
+    </div>
+
+    <h3>The conclusion |f(x) − L| &lt; ε</h3>
+
+    <p>For any x in the punctured δ-neighbourhood, f(x) must lie within ε of L — that is, in the interval (L − ε, L + ε). The entire statement is: you can force f(x) into any output window (L − ε, L + ε) by choosing x from a sufficiently small punctured input window around a.</p>
+
+    <div class="note-box">
+      <strong>Why strict inequalities?</strong> The strict inequality |f(x) − L| &lt; ε (rather than ≤) is conventional but inessential — the two formulations are equivalent. Similarly for |x − a| &lt; δ. Spivak uses strict inequalities throughout.
+    </div>
+
+    <h2>What the Definition Does Not Say</h2>
+
+    <p>The definition does not say: "f(x) gets arbitrarily close to L." Getting close is not enough — the function must be able to be forced <em>as close as desired</em>. The word "every" in "for every ε" is doing all the work.</p>
+
+    <div class="warning-box">
+      <div class="warn-title">A Common Misconception</div>
+      <p>Students sometimes think lim<sub>x→a</sub> f(x) = L means f(x) = L for x near a, or that x "reaches" a. Neither is true. The limit is purely about the behaviour of f near a, not at a. The function may behave wildly at a itself.</p>
+    </div>
+
+    <h2>One-Sided Limits</h2>
+
+    <p>Sometimes f behaves differently as x approaches a from the left versus from the right. The one-sided limit from the left is:</p>
+
+    <div class="math-display">
+      lim<sub>x→a<sup>−</sup></sub> f(x) = L &nbsp;⟺&nbsp; ∀ε&gt;0, ∃δ&gt;0 : a−δ &lt; x &lt; a &nbsp;⟹&nbsp; |f(x)−L| &lt; ε
+    </div>
+
+    <p>And from the right (replace <em>a − δ &lt; x &lt; a</em> with <em>a &lt; x &lt; a + δ</em>). The two-sided limit exists and equals L if and only if both one-sided limits exist and equal L.</p>
+
+    <h2>Continuity as a Corollary</h2>
+
+    <p>Once we have limits, continuity is almost free. We say f is <em>continuous at a</em> if:</p>
+
+    <div class="math-display">
+      lim<sub>x→a</sub> f(x) = f(a)
+    </div>
+
+    <p>Three things must hold: f must be defined at a; the limit must exist; and they must agree. This is Spivak's Chapter 5 — continuity is the limit definition applied to the case x = a with no puncture needed, since we require the value to match.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concept</th>
+          <th>Formal meaning</th>
+          <th>Spivak location</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>lim<sub>x→a</sub> f(x) = L</td>
+          <td>∀ε&gt;0, ∃δ&gt;0 : 0 &lt; |x−a| &lt; δ ⟹ |f(x)−L| &lt; ε</td>
+          <td>Ch. 5, Def. 1</td>
+        </tr>
+        <tr>
+          <td>Continuity at a</td>
+          <td>lim<sub>x→a</sub> f(x) = f(a)</td>
+          <td>Ch. 5, Def. 2</td>
+        </tr>
+        <tr>
+          <td>One-sided limit (left)</td>
+          <td>Restricts δ-neighbourhood to (a−δ, a)</td>
+          <td>Ch. 5</td>
+        </tr>
+        <tr>
+          <td>Limit at infinity</td>
+          <td>∀ε&gt;0, ∃M : x &gt; M ⟹ |f(x)−L| &lt; ε</td>
+          <td>Ch. 5</td>
+        </tr>
+        <tr>
+          <td>Infinite limit</td>
+          <td>∀M&gt;0, ∃δ&gt;0 : 0 &lt; |x−a| &lt; δ ⟹ f(x) &gt; M</td>
+          <td>Ch. 5</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-intuition">
+  <div class="intuition-body">
+
+    <h2>The Challenge-Response Game</h2>
+
+    <p>The deepest way to understand the ε-δ definition is as a game between two players. Call them the <em>Challenger</em> and the <em>Defender</em>.</p>
+
+    <p>The Challenger's job is to demand precision: they name an output tolerance ε &gt; 0. Think of ε as the width of a horizontal band around L on the y-axis. The Challenger is saying: "I require that f(x) land within this band whenever x is close enough to a."</p>
+
+    <p>The Defender's job is to find a corresponding input restriction δ &gt; 0 — a horizontal band around a on the x-axis — such that any x inside that δ-band (but not equal to a) maps to an f(x) inside the ε-band.</p>
+
+    <div class="insight-box">
+      <div class="ins-title">The Definition as a Game</div>
+      <p>lim<sub>x→a</sub> f(x) = L means: the Defender always wins. No matter how small the Challenger makes ε, the Defender can always find a δ that works. If there exists even one ε for which no δ works, the limit is not L.</p>
+    </div>
+
+    <h3>Why the Challenger moves first</h3>
+
+    <p>The order of quantifiers is everything. <em>∀ε, ∃δ</em> means ε comes first — the Challenger names ε, then the Defender responds with δ. Reversing this to <em>∃δ, ∀ε</em> would mean δ is chosen first, independently of ε. That would be a much stronger (and wrong) statement: a single δ that works for all ε simultaneously.</p>
+
+    <p>The dependence of δ on ε is not a bug — it is the entire point. As the Challenger tightens the band (smaller ε), the Defender must tighten the restriction (smaller δ). The limit exists when this mutual tightening can continue indefinitely without failure.</p>
+
+    <h3>Geometric picture</h3>
+
+    <p>Draw the graph of f. Around the point (a, L) on the graph, draw a horizontal strip of width 2ε (from y = L − ε to y = L + ε). Now draw a vertical strip of width 2δ (from x = a − δ to x = a + δ). The ε-δ condition says: the part of the graph inside the vertical strip must lie entirely inside the horizontal strip — except possibly at x = a itself, which is punched out.</p>
+
+    <div class="two-col">
+      <div class="two-col-card">
+        <div class="tc-label">Challenger's move</div>
+        <div class="tc-title">ε — output tolerance</div>
+        <p>A horizontal band of half-width ε around L on the y-axis. Any point outside this band is unacceptable. The smaller ε is, the tighter the demand.</p>
+      </div>
+      <div class="two-col-card">
+        <div class="tc-label">Defender's response</div>
+        <div class="tc-title">δ — input restriction</div>
+        <p>A punctured interval of half-width δ around a on the x-axis. Any x in this punctured window must map into the ε-band. The Defender wins if the graph stays inside.</p>
+      </div>
+    </div>
+
+    <h2>Why "Punctured"?</h2>
+
+    <p>The hole at x = a is essential. Consider f defined as f(x) = x² for x ≠ 2 and f(2) = 17. The limit as x → 2 is still 4, not 17. The value f(2) = 17 is invisible to the limit. This is not a quirk — it is the entire point of the definition. Limits describe <em>tendencies</em>, not values. A function can tend toward a value it never actually reaches, or a value that contradicts its definition at that point.</p>
+
+    <div class="note-box">
+      <strong>Spivak's example (Ch. 5):</strong> The function f(x) = sin(1/x) oscillates infinitely rapidly near 0. The limit as x → 0 does not exist — there is no L for which a δ can be found for all small ε. This is invisible from the formula but revealed by the definition.
+    </div>
+
+    <h2>Limits That Do Not Exist</h2>
+
+    <p>The ε-δ framework also clarifies when a limit fails to exist. There are three ways:</p>
+
+    <p><strong>1. Oscillation.</strong> Like sin(1/x) near 0. The function visits every value in [−1, 1] in every punctured neighbourhood of 0. No single L can be within ε of all of them for small ε.</p>
+
+    <p><strong>2. Jump discontinuity.</strong> Like f(x) = 0 for x &lt; 0, f(x) = 1 for x ≥ 0 near a = 0. The left and right limits exist (0 and 1 respectively) but they disagree. The two-sided limit does not exist.</p>
+
+    <p><strong>3. Blow-up.</strong> Like 1/x near 0. f(x) becomes unbounded; no finite L can work.</p>
+
+    <div class="warning-box">
+      <div class="warn-title">Negating the Definition</div>
+      <p>To prove lim<sub>x→a</sub> f(x) ≠ L, you must exhibit a specific ε &gt; 0 for which no δ works. That is: find ε such that for every δ &gt; 0, there exists an x with 0 &lt; |x − a| &lt; δ but |f(x) − L| ≥ ε. One ε suffices — you don't need to handle all of them.</p>
+    </div>
+
+    <h2>The Algebraic Strategy: Finding δ from ε</h2>
+
+    <p>In practice, to prove lim<sub>x→a</sub> f(x) = L, you must show how to construct δ given ε. The strategy, as Spivak consistently demonstrates, is:</p>
+
+    <p>Start with the conclusion you need: |f(x) − L| &lt; ε. Manipulate this algebraically to find what |x − a| must be bounded by. This gives you a formula for δ in terms of ε. Then verify that this δ works — that is, trace the logic in reverse.</p>
+
+    <p>There is always freedom in choosing δ: any smaller δ also works, so you may impose additional restrictions (like δ ≤ 1) to simplify the algebra. Spivak calls this "the δ-trick" — choosing δ as the minimum of several bounds.</p>
+
+    <div class="insight-box">
+      <div class="ins-title">The Spivak Pattern</div>
+      <p>Every ε-δ proof in Spivak follows the same skeleton: (1) do scratch work to find a candidate δ; (2) write the formal proof starting with "Let ε &gt; 0 be given; choose δ = …"; (3) verify that the choice works by deriving |f(x) − L| &lt; ε. The scratch work is not part of the proof — only the verification is.</p>
+    </div>
+
+    <h2>Connection to Derivatives</h2>
+
+    <p>The derivative is itself a limit. The definition f′(a) = lim<sub>h→0</sub> [f(a+h) − f(a)] / h is an ε-δ statement with a = 0, the function g(h) = [f(a+h)−f(a)]/h, and L = f′(a). All the theorems about limits — linearity, products, quotients, composition — apply directly to derivatives, because derivatives are limits. The ε-δ machinery, built once, propagates through all of calculus.</p>
+
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-steps">
+  <div class="steps-body">
+
+    <div style="margin-bottom:2rem;">
+      <p style="color:var(--ink3); font-size:0.85rem; font-style:italic;">A complete ε-δ proof: show that lim<sub>x→2</sub> (3x − 1) = 5.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>State what we must prove</h3>
+        <p>We claim that lim<sub>x→2</sub> (3x − 1) = 5. According to the ε-δ definition, we must show:</p>
+        <div class="math-inline">
+          ∀ε &gt; 0, ∃δ &gt; 0 : 0 &lt; |x − 2| &lt; δ &nbsp;⟹&nbsp; |(3x−1) − 5| &lt; ε
+        </div>
+        <p>We do scratch work first to discover what δ should be, then write the formal proof.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Scratch work — simplify the conclusion</h3>
+        <p>We want to control |(3x − 1) − 5|. Simplify:</p>
+        <div class="math-inline">
+          |(3x − 1) − 5| = |3x − 6| = 3|x − 2|
+        </div>
+        <p>We need this to be less than ε. So we need:</p>
+        <div class="math-inline">
+          3|x − 2| &lt; ε &nbsp;⟺&nbsp; |x − 2| &lt; ε/3
+        </div>
+        <div class="highlight">
+          <strong>Candidate:</strong> choose δ = ε/3. If we restrict x so that |x − 2| &lt; δ = ε/3, then |(3x−1) − 5| = 3|x−2| &lt; 3 · (ε/3) = ε. ✓
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Write the formal proof</h3>
+        <p>Now we write the proof in the proper order — no scratch work visible, just the verified argument:</p>
+        <div class="math-inline">
+          Let ε &gt; 0 be given. Choose δ = ε/3.
+        </div>
+        <p>Then δ &gt; 0 (since ε &gt; 0). Suppose 0 &lt; |x − 2| &lt; δ. Then:</p>
+        <div class="math-inline">
+          |(3x − 1) − 5| = |3x − 6| = 3|x − 2| &lt; 3δ = 3 · (ε/3) = ε.
+        </div>
+        <div class="highlight">
+          <strong>Conclusion:</strong> |(3x − 1) − 5| &lt; ε. Since ε was arbitrary, the limit is proved. □
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Understanding what we just did</h3>
+        <p>The key move was algebraic: we simplified |f(x) − L| until it had the form C · |x − a| for some constant C. Then δ = ε/C works. This pattern applies whenever f is a linear function.</p>
+        <div class="deep-note">
+          <strong>Why ε/3 specifically?</strong> Because the "slope" of f(x) = 3x − 1 is 3. The derivative f′(2) = 3 tells us how much output change per unit of input change. To get output change &lt; ε, we need input change &lt; ε/3. The ε-δ machinery is secretly encoding linearisation — a preview of differentiation.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>A harder case: lim<sub>x→2</sub> x² = 4</h3>
+        <p>Now f is nonlinear. Scratch work: we need |x² − 4| &lt; ε. Factor:</p>
+        <div class="math-inline">
+          |x² − 4| = |x + 2| · |x − 2|
+        </div>
+        <p>The |x + 2| factor depends on x — we cannot directly set δ = ε / |x + 2|. We must bound |x + 2| first.</p>
+        <div class="highlight">
+          <strong>The δ-trick:</strong> We are free to impose δ ≤ 1 as an additional constraint. If |x − 2| &lt; 1, then 1 &lt; x &lt; 3, so 3 &lt; x + 2 &lt; 5, hence |x + 2| &lt; 5. Therefore: |x² − 4| = |x + 2| · |x − 2| &lt; 5 · |x − 2|.
+        </div>
+        <p>Now we need 5|x − 2| &lt; ε, so |x − 2| &lt; ε/5. Choose:</p>
+        <div class="math-inline">
+          δ = min(1, ε/5)
+        </div>
+        <div class="highlight">
+          <strong>Why the minimum?</strong> We need both constraints to hold simultaneously: |x − 2| &lt; 1 (to bound |x + 2|) AND |x − 2| &lt; ε/5 (to complete the inequality). The minimum satisfies both.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <h3>Formal proof for x²</h3>
+        <p>Let ε &gt; 0. Choose δ = min(1, ε/5). Suppose 0 &lt; |x − 2| &lt; δ. Then:</p>
+        <div class="math-inline">
+          Since δ ≤ 1, we have |x − 2| &lt; 1, so x ∈ (1, 3), hence |x + 2| &lt; 5.<br><br>
+          Therefore: |x² − 4| = |x+2| · |x−2| &lt; 5 · δ ≤ 5 · (ε/5) = ε. □
+        </div>
+        <div class="warning-note">
+          <strong>Note on tightness:</strong> The δ we chose (min(1, ε/5)) is not the largest possible δ that works — it is merely sufficient. A tighter bound exists (the exact largest δ can be computed geometrically), but for the proof, any valid δ is enough.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <h3>The general method</h3>
+        <p>The pattern from these examples is:</p>
+        <div class="math-inline">
+          |f(x) − L| = (bound on other factors) · |x − a| &lt; C · δ
+        </div>
+        <p>We choose δ = ε/C (possibly further restricted to ≤ 1 to establish the bound C). Whenever f is a polynomial, rational function near a non-zero denominator, or a composition of nice functions, this strategy works and gives an explicit δ in terms of ε.</p>
+        <div class="deep-note">
+          <strong>The key insight from Spivak:</strong> In every single ε-δ proof you will ever write, the structure is the same. The creativity lies only in how you bound |f(x) − L| in terms of |x − a|. Once you have that inequality, the rest is mechanical.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-examples">
+  <div class="gallery-body">
+
+    <h2>Basic Limits</h2>
+
+    <div class="ex-grid">
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Linear function</span>
+          <span class="badge">Easy</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→3</sub> (2x + 1) = 7</div>
+          <div class="ex-step"><strong>Simplify:</strong> |(2x+1) − 7| = |2x − 6| = 2|x − 3|</div>
+          <div class="ex-step"><strong>Need:</strong> 2|x − 3| &lt; ε &nbsp;⟹&nbsp; |x − 3| &lt; ε/2</div>
+          <div class="ex-step"><strong>Choose:</strong> δ = ε/2</div>
+          <div class="ex-result">|(2x+1) − 7| = 2|x−3| &lt; 2·(ε/2) = ε &nbsp;✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Constant function</span>
+          <span class="badge">Easy</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→a</sub> c = c</div>
+          <div class="ex-step"><strong>Simplify:</strong> |c − c| = 0 &lt; ε for <em>any</em> ε &gt; 0</div>
+          <div class="ex-step"><strong>Choose:</strong> δ = 1 (or anything; the condition is vacuously satisfied)</div>
+          <div class="ex-step"><strong>Note:</strong> The output never moves, so any δ works.</div>
+          <div class="ex-result">|f(x) − c| = 0 &lt; ε for all x &nbsp;✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Quadratic at origin</span>
+          <span class="badge">Medium</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→0</sub> x² = 0</div>
+          <div class="ex-step"><strong>Simplify:</strong> |x² − 0| = x² = |x|²</div>
+          <div class="ex-step"><strong>Need:</strong> |x|² &lt; ε &nbsp;⟹&nbsp; |x| &lt; √ε</div>
+          <div class="ex-step"><strong>Choose:</strong> δ = √ε &nbsp;(no δ-trick needed here)</div>
+          <div class="ex-result">|x² − 0| = |x|² &lt; δ² = ε &nbsp;✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Removable discontinuity</span>
+          <span class="badge">Medium</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→1</sub> (x²−1)/(x−1) = 2</div>
+          <div class="ex-step"><strong>Simplify (x ≠ 1):</strong> (x²−1)/(x−1) = (x+1)(x−1)/(x−1) = x+1</div>
+          <div class="ex-step"><strong>So:</strong> |(x+1)−2| = |x−1|</div>
+          <div class="ex-step"><strong>Choose:</strong> δ = ε</div>
+          <div class="ex-result">|(x²−1)/(x−1) − 2| = |x−1| &lt; δ = ε &nbsp;✓</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Limits Involving Bounds</h2>
+
+    <div class="ex-grid">
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Cubic at a = 1</span>
+          <span class="badge">Medium</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→1</sub> x³ = 1</div>
+          <div class="ex-step"><strong>Factor:</strong> |x³ − 1| = |x−1| · |x²+x+1|</div>
+          <div class="ex-step"><strong>Assume δ ≤ 1:</strong> then |x−1| &lt; 1 ⟹ 0 &lt; x &lt; 2 ⟹ |x²+x+1| &lt; 4+2+1 = 7</div>
+          <div class="ex-step"><strong>Choose:</strong> δ = min(1, ε/7)</div>
+          <div class="ex-result">|x³−1| = |x−1|·|x²+x+1| &lt; 7·(ε/7) = ε &nbsp;✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Square root</span>
+          <span class="badge">Medium</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→4</sub> √x = 2</div>
+          <div class="ex-step"><strong>Rationalise:</strong> |√x − 2| = |x − 4| / (√x + 2)</div>
+          <div class="ex-step"><strong>Assume δ ≤ 4:</strong> then x &gt; 0, so √x &gt; 0, hence √x + 2 &gt; 2</div>
+          <div class="ex-step"><strong>So:</strong> |√x − 2| &lt; |x−4| / 2 &nbsp;&nbsp;&nbsp;<strong>Choose:</strong> δ = min(4, 2ε)</div>
+          <div class="ex-result">|√x − 2| &lt; |x−4|/2 &lt; 2ε/2 = ε &nbsp;✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Limit at infinity</span>
+          <span class="badge">Medium</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→∞</sub> 1/x = 0</div>
+          <div class="ex-step"><strong>Definition:</strong> ∀ε&gt;0, ∃M : x&gt;M ⟹ |1/x − 0| &lt; ε</div>
+          <div class="ex-step"><strong>Need:</strong> 1/x &lt; ε &nbsp;⟹&nbsp; x &gt; 1/ε</div>
+          <div class="ex-step"><strong>Choose:</strong> M = 1/ε</div>
+          <div class="ex-result">x &gt; M = 1/ε &nbsp;⟹&nbsp; 1/x &lt; ε &nbsp;✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Sine squeeze</span>
+          <span class="badge">Hard</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→0</sub> x·sin(1/x) = 0</div>
+          <div class="ex-step"><strong>Key bound:</strong> |sin(1/x)| ≤ 1 for all x ≠ 0</div>
+          <div class="ex-step"><strong>So:</strong> |x·sin(1/x) − 0| = |x|·|sin(1/x)| ≤ |x|</div>
+          <div class="ex-step"><strong>Choose:</strong> δ = ε</div>
+          <div class="ex-result">|x·sin(1/x)| ≤ |x| &lt; δ = ε &nbsp;✓ &nbsp;(no δ-trick needed)</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Limit Does Not Exist</h2>
+
+    <div class="ex-grid">
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Jump discontinuity</span>
+          <span class="badge hard">Disproof</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→0</sub> sgn(x) does not exist</div>
+          <div class="ex-step"><strong>Left limit:</strong> lim<sub>x→0⁻</sub> sgn(x) = −1</div>
+          <div class="ex-step"><strong>Right limit:</strong> lim<sub>x→0⁺</sub> sgn(x) = +1</div>
+          <div class="ex-step"><strong>ε-δ disproof:</strong> Take ε = 1. For any δ &gt; 0, pick x₁ = −δ/2 and x₂ = δ/2. Both are in (−δ, δ)\{0} but sgn(x₁) = −1 and sgn(x₂) = 1. These differ by 2 &gt; 2ε = 2, so no single L can satisfy |sgn(xᵢ) − L| &lt; 1 for both.</div>
+          <div class="ex-result">No L exists — the two-sided limit fails &nbsp;✗</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head">
+          <span>Wild oscillation</span>
+          <span class="badge hard">Disproof</span>
+        </div>
+        <div class="ex-card-body">
+          <div class="ex-fn">lim<sub>x→0</sub> sin(1/x) does not exist</div>
+          <div class="ex-step"><strong>Key idea:</strong> In any interval (−δ, δ)\{0}, sin(1/x) takes all values in [−1, 1].</div>
+          <div class="ex-step"><strong>Proof:</strong> Take ε = 1/2. For any claimed L and any δ, pick xₙ = 1/(nπ/2) for large enough n so that xₙ ∈ (0,δ). Then sin(1/xₙ) alternates between −1, 0, 1. No matter what L is, at least one of these values satisfies |sin(1/xₙ) − L| ≥ 1/2 = ε.</div>
+          <div class="ex-result">No L exists — the oscillation prevents any δ from working &nbsp;✗</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-glossary">
+  <div class="gloss-body">
+
+    <div class="gloss-item">
+      <div class="gloss-term">ε (epsilon)</div>
+      <div class="gloss-def">
+        A positive real number representing the <em>output tolerance</em> — how close f(x) must be to the limit L. In the game interpretation, ε is the Challenger's move.
+        <div class="deep-expand">Always quantified universally: "for every ε &gt; 0." The definition must work for arbitrarily small ε.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">δ (delta)</div>
+      <div class="gloss-def">
+        A positive real number representing the <em>input restriction</em> — how close x must be to a. In the game interpretation, δ is the Defender's response to ε.
+        <div class="deep-expand">δ is allowed to depend on ε (and on a and f). Smaller ε typically requires smaller δ. Any valid δ suffices; the largest valid δ is not required.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Punctured neighbourhood</div>
+      <div class="gloss-def">
+        The set <span class="symbol">{x : 0 &lt; |x − a| &lt; δ}</span> = <span class="symbol">(a−δ, a) ∪ (a, a+δ)</span>. The point a itself is excluded (punctured). The limit is defined entirely in terms of behaviour in these punctured neighbourhoods.
+        <div class="deep-expand">Also called a "deleted neighbourhood." The condition 0 &lt; |x − a| is what does the puncturing — it excludes x = a from consideration.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Quantifier order</div>
+      <div class="gloss-def">
+        The structure <span class="symbol">∀ε, ∃δ</span> means: ε is chosen first (by the adversary), then δ responds. Reversing to <span class="symbol">∃δ, ∀ε</span> would mean a single δ works for all ε — a much stronger and wrong statement.
+        <div class="deep-expand">The distinction between ∀∃ and ∃∀ is one of the most important logical distinctions in mathematics. The order of quantifiers completely changes the meaning.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">One-sided limit</div>
+      <div class="gloss-def">
+        <span class="symbol">lim<sub>x→a⁻</sub> f(x) = L</span> (from the left): restricts the punctured neighbourhood to <span class="symbol">(a−δ, a)</span>. From the right: <span class="symbol">(a, a+δ)</span>. The two-sided limit exists iff both one-sided limits agree.
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Continuity at a</div>
+      <div class="gloss-def">
+        f is continuous at a if <span class="symbol">lim<sub>x→a</sub> f(x) = f(a)</span>. Three conditions: (1) f(a) is defined; (2) the limit exists; (3) they are equal. Equivalently: ∀ε&gt;0, ∃δ&gt;0 : |x−a|&lt;δ ⟹ |f(x)−f(a)|&lt;ε (no puncture needed, since x=a is trivially fine).
+        <div class="deep-expand">Note the unpunctured condition |x − a| &lt; δ (no 0 &lt; required). This is because we explicitly include x = a and require f(a) to match.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">The δ-trick</div>
+      <div class="gloss-def">
+        The technique of choosing <span class="symbol">δ = min(1, ε/C)</span> (or similar) to simultaneously impose a bound on the non-|x−a| factors and satisfy the final ε requirement. Ubiquitous in ε-δ proofs for nonlinear functions.
+        <div class="deep-expand">The choice δ ≤ 1 is conventional; any fixed bound works (δ ≤ 2, δ ≤ 1/2, etc.). The constant C changes accordingly. Choosing 1 is simply the cleanest.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Limit at infinity</div>
+      <div class="gloss-def">
+        <span class="symbol">lim<sub>x→∞</sub> f(x) = L</span> means: ∀ε&gt;0, ∃M : x&gt;M ⟹ |f(x)−L|&lt;ε. Here δ is replaced by M (a large x threshold). The ε-challenge is the same; the response is a large-x cutoff rather than a small interval.
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Infinite limit</div>
+      <div class="gloss-def">
+        <span class="symbol">lim<sub>x→a</sub> f(x) = ∞</span> means: ∀M&gt;0, ∃δ&gt;0 : 0&lt;|x−a|&lt;δ ⟹ f(x)&gt;M. The roles are reversed: M plays the role of the Challenger's "demand" (f(x) must be large), and δ is the Defender's response.
+        <div class="deep-expand">This is not a limit in the strict sense (∞ is not a real number), but Spivak treats it carefully as a definition in its own right.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Squeeze theorem</div>
+      <div class="gloss-def">
+        If <span class="symbol">g(x) ≤ f(x) ≤ h(x)</span> near a, and <span class="symbol">lim g = lim h = L</span>, then <span class="symbol">lim f = L</span>. The ε-δ proof: given ε, find δ₁ for g and δ₂ for h, then choose δ = min(δ₁, δ₂).
+        <div class="deep-expand">The canonical application: lim<sub>x→0</sub> x·sin(1/x) = 0, since −|x| ≤ x·sin(1/x) ≤ |x| and lim |x| = 0.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═════════════ THEME ═════════════ */
+const root = document.documentElement;
+document.getElementById('themeToggle').addEventListener('click', () => {
+  root.dataset.theme = root.dataset.theme === 'dark' ? '' : 'dark';
+  drawMain();
+});
+
+/* ═════════════ TABS ═════════════ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ═════════════ FUNCTION DEFINITIONS ═════════════ */
+const FNS = [
+  {
+    label: 'x²',
+    f: x => x * x,
+    a: 1,
+    L: 1,
+    desc: 'f(x) = x² near a = 1, limit L = 1',
+    deltaFormula: ε => Math.min(1, ε / 3) // conservative but valid
+  },
+  {
+    label: 'sin x',
+    f: x => Math.sin(x),
+    a: 0,
+    L: 0,
+    desc: 'f(x) = sin(x) near a = 0, limit L = 0',
+    deltaFormula: ε => ε
+  },
+  {
+    label: 'x³',
+    f: x => x * x * x,
+    a: 1,
+    L: 1,
+    desc: 'f(x) = x³ near a = 1, limit L = 1',
+    deltaFormula: ε => Math.min(1, ε / 7)
+  },
+  {
+    label: '√|x|',
+    f: x => Math.sqrt(Math.abs(x)),
+    a: 0,
+    L: 0,
+    desc: 'f(x) = √|x| near a = 0, limit L = 0',
+    deltaFormula: ε => ε * ε
+  },
+  {
+    label: '|x|/x',
+    f: x => x === 0 ? NaN : Math.abs(x) / x,
+    a: 0,
+    L: NaN,
+    desc: 'f(x) = |x|/x (sign function) — limit does NOT exist at 0',
+    deltaFormula: ε => ε
+  },
+  {
+    label: '(x²−1)/(x−1)',
+    f: x => Math.abs(x - 1) < 1e-10 ? NaN : (x * x - 1) / (x - 1),
+    a: 1,
+    L: 2,
+    desc: 'f(x) = (x²−1)/(x−1), undefined at 1, limit L = 2 (removable)',
+    deltaFormula: ε => ε
+  }
+];
+
+/* ═════════════ STATE ═════════════ */
+const S = {
+  fnIdx: 0,
+  a: 1,
+  eps: 0.5,
+  delta: 0.4,
+  showBands: true,
+  showHole: true,
+  showArrows: true,
+  showLimit: false
+};
+
+/* ═════════════ MAIN CANVAS ═════════════ */
+function getColors() {
+  const rs = getComputedStyle(document.documentElement);
+  const g = v => rs.getPropertyValue(v).trim();
+  return {
+    bg:       g('--canvas-bg') || '#ffffff',
+    grid:     g('--grid-line') || '#f0ede6',
+    ax:       g('--ax-line')   || '#b0aa98',
+    axText:   g('--ax-text')   || '#9a9280',
+    ink2:     g('--ink2')      || '#3d3a30',
+    gold:     g('--gold')      || '#b5822a',
+    teal:     g('--teal')      || '#2a7a6a',
+    rose:     g('--rose')      || '#8a2a3a',
+    blue:     g('--blue')      || '#2a4a7a',
+    fnLine:   g('--fn-line')   || '#2a4a7a',
+    epsF:     g('--epsilon-fill') || 'rgba(42,122,106,0.12)',
+    dltF:     g('--delta-fill')   || 'rgba(181,130,42,0.12)',
+    epsS:     g('--epsilon-str')  || 'rgba(42,122,106,0.7)',
+    dltS:     g('--delta-str')    || 'rgba(181,130,42,0.7)',
+    limitPt:  g('--limit-pt')     || 'rgba(138,42,58,0.85)'
+  };
+}
+
+function drawMain() {
+  const c = document.getElementById('mainCanvas');
+  const ctx = c.getContext('2d');
+  
+  // --- HIGH-RESOLUTION / RETINA FIX START ---
+  const dpr = window.devicePixelRatio || 1;
+  const container = document.getElementById('canvasContainer');
+  const rect = container.getBoundingClientRect();
+  
+  // Calculate intended CSS size (maintaining the 680x460 original aspect ratio)
+  const cssWidth = rect.width;
+  const cssHeight = (460 / 680) * cssWidth;
+  
+  // Set physical display size via CSS
+  c.style.width = cssWidth + 'px';
+  c.style.height = cssHeight + 'px';
+  
+  // Set memory buffer size scaled by device pixel ratio for crispness
+  c.width = cssWidth * dpr;
+  c.height = cssHeight * dpr;
+  
+  // Normalize drawing context to use standard CSS coordinates
+  ctx.scale(dpr, dpr);
+  const W = cssWidth, H = cssHeight;
+  // --- HIGH-RESOLUTION / RETINA FIX END ---
+
+  const PAD = { t: 30, r: 30, b: 50, l: 55 };
+  const col = getColors();
+
+  const fn = FNS[S.fnIdx];
+  const a = S.a;
+  const L = fn.L;
+  const eps = S.eps;
+  const delta = S.delta;
+  const f = fn.f;
+
+  // View window
+  const xMin = a - 3.2, xMax = a + 3.2;
+  const yMin = L - 3.2, yMax = L + 3.2;
+
+  function tc(x, y) {
+    const px = PAD.l + (x - xMin) / (xMax - xMin) * (W - PAD.l - PAD.r);
+    const py = PAD.t + (1 - (y - yMin) / (yMax - yMin)) * (H - PAD.t - PAD.b);
+    return [px, py];
+  }
+  function tx(x) { return PAD.l + (x - xMin) / (xMax - xMin) * (W - PAD.l - PAD.r); }
+  function ty(y) { return PAD.t + (1 - (y - yMin) / (yMax - yMin)) * (H - PAD.t - PAD.b); }
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = col.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = col.grid;
+  ctx.lineWidth = 1;
+  for (let xi = Math.ceil(xMin); xi <= Math.floor(xMax); xi++) {
+    ctx.beginPath(); ctx.moveTo(tx(xi), PAD.t); ctx.lineTo(tx(xi), H - PAD.b); ctx.stroke();
+  }
+  for (let yi = Math.ceil(yMin); yi <= Math.floor(yMax); yi++) {
+    ctx.beginPath(); ctx.moveTo(PAD.l, ty(yi)); ctx.lineTo(W - PAD.r, ty(yi)); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = col.ax; ctx.lineWidth = 1.5;
+  if (yMin < 0 && yMax > 0) {
+    const y0 = ty(0);
+    ctx.beginPath(); ctx.moveTo(PAD.l, y0); ctx.lineTo(W - PAD.r, y0); ctx.stroke();
+  }
+  if (xMin < 0 && xMax > 0) {
+    const x0 = tx(0);
+    ctx.beginPath(); ctx.moveTo(x0, PAD.t); ctx.lineTo(x0, H - PAD.b); ctx.stroke();
+  }
+
+  // Tick labels
+  ctx.fillStyle = col.axText;
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  for (let xi = Math.ceil(xMin); xi <= Math.floor(xMax); xi++) {
+    if (xi === 0) continue;
+    ctx.fillText(xi, tx(xi), H - PAD.b + 14);
+  }
+  ctx.textAlign = 'right';
+  for (let yi = Math.ceil(yMin); yi <= Math.floor(yMax); yi++) {
+    if (yi === 0) continue;
+    ctx.fillText(yi, PAD.l - 6, ty(yi) + 4);
+  }
+
+  const limExists = isFinite(L);
+
+  // ── ε-band (horizontal strip) ──
+  if (S.showBands && limExists) {
+    const yTop = ty(L + eps), yBot = ty(L - eps);
+    ctx.fillStyle = col.epsF;
+    ctx.fillRect(PAD.l, yTop, W - PAD.l - PAD.r, yBot - yTop);
+    ctx.strokeStyle = col.epsS; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(PAD.l, yTop); ctx.lineTo(W - PAD.r, yTop); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(PAD.l, yBot); ctx.lineTo(W - PAD.r, yBot); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = col.teal; ctx.font = 'italic 12px Cormorant Garamond, serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('L+ε', PAD.l + 4, yTop - 4);
+    ctx.fillText('L−ε', PAD.l + 4, yBot + 12);
+  }
+
+  // ── δ-band (vertical strip) ──
+  if (S.showBands) {
+    const xLeft = tx(a - delta), xRight = tx(a + delta);
+    ctx.fillStyle = col.dltF;
+    ctx.fillRect(xLeft, PAD.t, xRight - xLeft, H - PAD.t - PAD.b);
+    ctx.strokeStyle = col.dltS; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(xLeft, PAD.t); ctx.lineTo(xLeft, H - PAD.b); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xRight, PAD.t); ctx.lineTo(xRight, H - PAD.b); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = col.gold; ctx.font = 'italic 12px Cormorant Garamond, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('a−δ', xLeft, H - PAD.b + 28);
+    ctx.fillText('a', tx(a), H - PAD.b + 28);
+    ctx.fillText('a+δ', xRight, H - PAD.b + 28);
+  }
+
+  // ── Function curve ──
+  ctx.strokeStyle = col.fnLine; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+  ctx.beginPath();
+  let first = true;
+  const steps = 600;
+  for (let i = 0; i <= steps; i++) {
+    const x = xMin + (xMax - xMin) * i / steps;
+    if (Math.abs(x - a) < 1e-4 && isNaN(f(a))) { first = true; continue; }
+    const y = f(x);
+    if (!isFinite(y) || y < yMin - 5 || y > yMax + 5) { first = true; continue; }
+    const [px, py] = tc(x, y);
+    if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
+  }
+  ctx.stroke();
+
+  // ── Punctured point at (a, L) ──
+  if (S.showHole && limExists) {
+    const [hx, hy] = tc(a, L);
+    ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = col.bg; ctx.fill();
+    ctx.strokeStyle = col.fnLine; ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // ── Value at a (if defined and different from L) ──
+  if (isFinite(f(a)) && limExists && Math.abs(f(a) - L) > 0.02) {
+    const [fx, fy] = tc(a, f(a));
+    ctx.beginPath(); ctx.arc(fx, fy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = col.rose; ctx.fill();
+  }
+
+  // ── Limit value marker ──
+  if (S.showLimit && limExists) {
+    ctx.strokeStyle = col.rose; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(PAD.l, ty(L)); ctx.lineTo(W - PAD.r, ty(L)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = col.rose; ctx.font = 'italic 12px Cormorant Garamond, serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('L', PAD.l - 6, ty(L) + 4);
+  }
+
+  // ── Approach arrows ──
+  if (S.showArrows) {
+    const arrowY = H - PAD.b + 40;
+    ctx.fillStyle = col.gold; ctx.font = '11px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    // Left arrow
+    const ax1 = tx(a - 0.6 * delta);
+    ctx.beginPath();
+    ctx.moveTo(ax1, arrowY);
+    ctx.lineTo(ax1 + 12, arrowY - 5);
+    ctx.lineTo(ax1 + 12, arrowY + 5);
+    ctx.fillStyle = col.gold; ctx.fill();
+    // Right arrow
+    const ax2 = tx(a + 0.6 * delta);
+    ctx.beginPath();
+    ctx.moveTo(ax2, arrowY);
+    ctx.lineTo(ax2 - 12, arrowY - 5);
+    ctx.lineTo(ax2 - 12, arrowY + 5);
+    ctx.fill();
+    ctx.fillStyle = col.gold;
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText('→ a ←', tx(a), arrowY + 2);
+  }
+
+  // Check challenge
+  updateStats(f, a, L, eps, delta, limExists);
+}
+
+function updateStats(f, a, L, eps, delta, limExists) {
+  document.getElementById('deltaVal').textContent = delta.toFixed(3);
+  document.getElementById('epsilonVal').textContent = eps.toFixed(3);
+
+  if (!limExists) {
+    document.getElementById('challengeVal').textContent = '∄ limit';
+    return;
+  }
+
+  // Sample the punctured δ-neighbourhood
+  let allInside = true;
+  const N = 200;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    // Check both sides
+    for (const side of [-1, 1]) {
+      const x = a + side * delta * (0.01 + 0.98 * t);
+      const y = f(x);
+      if (!isFinite(y)) continue;
+      if (Math.abs(y - L) >= eps) { allInside = false; break; }
+    }
+    if (!allInside) break;
+  }
+  document.getElementById('challengeVal').textContent = allInside ? 'Yes ✓' : 'No ✗';
+  document.getElementById('challengeVal').parentElement.style.borderColor =
+    allInside ? 'var(--teal)' : 'var(--rose)';
+}
+
+/* ═════════════ WIRING ═════════════ */
+// Function buttons
+document.querySelectorAll('[data-fn]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-fn]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    S.fnIdx = +btn.dataset.fn;
+    const fn = FNS[S.fnIdx];
+    S.a = fn.a;
+    document.getElementById('aSlider').value = fn.a;
+    document.getElementById('aVal').textContent = fn.a.toFixed(2);
+    document.getElementById('fnDesc').textContent = fn.desc;
+    // Suggest a valid δ
+    S.delta = Math.min(S.eps * 0.8, fn.deltaFormula(S.eps));
+    document.getElementById('dltSlider').value = S.delta;
+    document.getElementById('dltVal').textContent = S.delta.toFixed(2);
+    updateLiveFormula();
+    drawMain();
+  });
+});
+
+document.getElementById('aSlider').addEventListener('input', e => {
+  S.a = +e.target.value;
+  document.getElementById('aVal').textContent = S.a.toFixed(2);
+  drawMain();
+});
+document.getElementById('epsSlider').addEventListener('input', e => {
+  S.eps = +e.target.value;
+  document.getElementById('epsVal').textContent = S.eps.toFixed(2);
+  updateLiveFormula();
+  drawMain();
+});
+document.getElementById('dltSlider').addEventListener('input', e => {
+  S.delta = +e.target.value;
+  document.getElementById('dltVal').textContent = S.delta.toFixed(2);
+  updateLiveFormula();
+  drawMain();
+});
+
+['showBands', 'showHole', 'showArrows', 'showLimit'].forEach(id => {
+  document.getElementById(id).addEventListener('change', e => {
+    S[id] = e.target.checked;
+    drawMain();
+  });
+});
+
+function updateLiveFormula() {
+  const fn = FNS[S.fnIdx];
+  const aStr = fn.a.toFixed(2);
+  const Lstr = isFinite(fn.L) ? fn.L.toFixed(2) : '∄';
+  document.getElementById('liveCond').innerHTML =
+    `0 &lt; |x − ${aStr}| &lt; ${S.delta.toFixed(3)} &nbsp;⟹&nbsp; |f(x) − ${Lstr}| &lt; ${S.eps.toFixed(3)}`;
+}
+
+// Keep canvas perfectly crisp when the window is resized
+window.addEventListener('resize', drawMain);
+
+// Init
+drawMain();
+</script>
+</body>
+</html>
