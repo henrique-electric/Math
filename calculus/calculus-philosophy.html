@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Infinite Made Rigorous — A Visual Essay on the Philosophy of Calculus</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0e;
+    --surface: #111115;
+    --card: #16161c;
+    --border: #2a2a35;
+    --accent:  #e8c96d;
+    --accent2: #7eb8f7;
+    --accent3: #f07a7a;
+    --accent4: #9de8b0;
+    --text:   #d8d4cc;
+    --muted:  #6e6b62;
+    --bright: #f0ece4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,201,109,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,201,109,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridDrift 35s linear infinite;
+  }
+
+  @keyframes gridDrift {
+    from { transform: translate(0,0); }
+    to   { transform: translate(60px,60px); }
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,201,109,0.05) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    animation: pulse 6s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: 1; }
+    50%       { transform: translate(-50%,-50%) scale(1.15); opacity: 0.6; }
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+    animation: fadeSlideUp 0.8s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 900;
+    color: var(--bright);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    position: relative;
+    animation: fadeSlideUp 0.9s 0.1s ease both;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--muted);
+    max-width: 560px;
+    margin-top: 1.2rem;
+    position: relative;
+    animation: fadeSlideUp 0.9s 0.2s ease both;
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    animation: fadeSlideUp 1s 0.5s ease both;
+  }
+
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollLine {
+    0%, 100% { transform: scaleY(1);   opacity: 1;   }
+    50%       { transform: scaleY(0.3); opacity: 0.3; }
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ── NAV DOTS ── */
+  .nav-dots {
+    position: fixed;
+    right: 2rem; top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 100;
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid var(--muted);
+  }
+
+  .nav-dot.active, .nav-dot:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.5);
+  }
+
+  /* ── SECTION ── */
+  section {
+    padding: 6rem 0;
+    position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--bright);
+    margin: 2rem 0 0.75rem;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  p { margin-bottom: 1.2rem; }
+
+  .divider {
+    width: 60px; height: 2px;
+    background: linear-gradient(to right, var(--accent), transparent);
+    margin: 1.5rem 0 2.5rem;
+  }
+
+  /* ── FORMULA ── */
+  .formula {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.92rem;
+    color: var(--bright);
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 2;
+  }
+
+  .formula .comment { color: var(--muted); font-size: 0.8rem; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    background: linear-gradient(135deg, rgba(126,184,247,0.07), rgba(126,184,247,0.02));
+    border: 1px solid rgba(126,184,247,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent2);
+    font-size: 1.05rem;
+  }
+
+  .callout-gold {
+    background: linear-gradient(135deg, rgba(232,201,109,0.07), rgba(232,201,109,0.02));
+    border: 1px solid rgba(232,201,109,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent);
+    font-size: 1.05rem;
+  }
+
+  .callout-green {
+    background: linear-gradient(135deg, rgba(157,232,176,0.07), rgba(157,232,176,0.02));
+    border: 1px solid rgba(157,232,176,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent4);
+    font-size: 1.05rem;
+  }
+
+  .callout-red {
+    background: linear-gradient(135deg, rgba(240,122,122,0.07), rgba(240,122,122,0.02));
+    border: 1px solid rgba(240,122,122,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent3);
+    font-size: 1.05rem;
+  }
+
+  /* ── VIEWPORT ── */
+  .viewport {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 2.5rem 0;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .viewport-header {
+    padding: 0.85rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .vp-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .vp-dot:nth-child(1) { background: #f07a7a; }
+  .vp-dot:nth-child(2) { background: #e8c96d; }
+  .vp-dot:nth-child(3) { background: #7eb8f7; }
+
+  .viewport-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-left: auto;
+  }
+
+  .viewport-body { padding: 1.5rem; }
+
+  canvas { display: block; border-radius: 4px; }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.2rem;
+    align-items: center;
+  }
+
+  .ctrl-group { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .ctrl-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 140px; height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+
+  .val-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    min-width: 3rem;
+  }
+
+  /* ── RADIO BUTTONS ── */
+  .radio-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .radio-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .radio-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(232,201,109,0.08);
+  }
+
+  /* ── INFO LINE ── */
+  .info-line {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.75rem;
+    padding: 0.6rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .info-line .blu  { color: var(--accent2); }
+  .info-line .gld  { color: var(--accent);  }
+  .info-line .grn  { color: var(--accent4); }
+  .info-line .red  { color: var(--accent3); }
+
+  /* ── STEP ROW ── */
+  .step-row {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(232,201,109,0.1);
+    border: 1px solid rgba(232,201,109,0.25);
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .step-num.blue {
+    color: var(--accent2);
+    background: rgba(126,184,247,0.1);
+    border-color: rgba(126,184,247,0.25);
+  }
+
+  .step-num.green {
+    color: var(--accent4);
+    background: rgba(157,232,176,0.1);
+    border-color: rgba(157,232,176,0.25);
+  }
+
+  .step-body { flex: 1; }
+  .step-body strong {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: var(--bright);
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ── HIGHLIGHTS ── */
+  .hl  { color: var(--accent);  }
+  .hl2 { color: var(--accent2); }
+  .hl3 { color: var(--accent3); }
+  .hl4 { color: var(--accent4); }
+
+  /* ── SEPARATOR ── */
+  .sep {
+    width: 100%; height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 4rem 0;
+  }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82em;
+    background: rgba(255,255,255,0.06);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  .tooltip {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    line-height: 2;
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .nav-dots { display: none; }
+    .step-row { flex-direction: column; gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV DOTS ── -->
+<nav class="nav-dots">
+  <div class="nav-dot active"  title="Hero"></div>
+  <div class="nav-dot" title="The Crisis of Motion"></div>
+  <div class="nav-dot" title="The Real Line"></div>
+  <div class="nav-dot" title="The Limit"></div>
+  <div class="nav-dot" title="The Derivative"></div>
+  <div class="nav-dot" title="The Integral"></div>
+  <div class="nav-dot" title="The Fundamental Theorem"></div>
+  <div class="nav-dot" title="Infinity and Its Flavors"></div>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════ -->
+<section class="hero" id="s0">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div style="position:relative;">
+    <div class="hero-eyebrow">Philosophy of Mathematics · Visual Essay</div>
+    <h1>The <em>Infinite</em><br>Made Rigorous</h1>
+    <p class="hero-sub">Not the rules of calculus — but the <em>reason</em> they exist. What it truly means to approach, to accumulate, to touch a point without arriving.</p>
+  </div>
+  <div class="scroll-cue">
+    <div class="scroll-line"></div>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- ══ §01 — THE CRISIS OF MOTION ═══════════════ -->
+<section id="s1">
+  <div class="container">
+    <div class="section-tag">§ 01 — The Crisis of Motion</div>
+    <h2>Zeno's arrow never moves</h2>
+    <div class="divider"></div>
+
+    <p>Around 450 BCE, a Greek philosopher named Zeno of Elea posed a set of paradoxes that nobody could properly refute for two thousand years. They were not cheap tricks or word games. They were genuine philosophical problems about the nature of motion, infinity, and time — and they reveal that our intuitions about these things are deeply, structurally confused.</p>
+
+    <p>The most famous is <span class="hl">Achilles and the Tortoise</span>. Give the tortoise a head start. To catch it, Achilles must first reach the place where the tortoise was. But by the time he gets there, the tortoise has moved a little further. Achilles must then reach <em>that</em> new position — and again the tortoise has moved. This sequence never ends: between any two moments, there is always a gap yet to be closed. Infinitely many steps. How can Achilles ever catch the tortoise?</p>
+
+    <p>The second paradox cuts even deeper: <span class="hl2">the Arrow</span>. At any single instant, a flying arrow occupies a fixed position in space. It is not moving — how could it be? Movement requires occupying different positions at different times, but an instant is a single time with no duration. If the arrow is at rest at every instant, and time is composed of instants, when does the arrow ever move?</p>
+
+    <div class="callout-red">
+      Zeno was not arguing that motion is impossible. He was arguing that our conceptual framework — time as a sequence of instants, space as a collection of points — makes motion <em>incoherent</em>. Something in our picture of the world is fundamentally broken.
+    </div>
+
+    <h3>Why the Greeks couldn't solve it</h3>
+
+    <p>The Greeks drew a sharp philosophical line between <span class="hl">potential infinity</span> — the sequence 1, 2, 3, … can always be extended, you can always count one more — and <span class="hl3">actual infinity</span>, the completed totality of all natural numbers existing at once. Aristotle declared the second category to be a category error: a fiction, a contradiction, something that could not coherently exist.</p>
+
+    <p>This was philosophically cautious but mathematically crippling. Zeno's paradox requires summing <em>actually</em> infinitely many numbers. The claim that 1/2 + 1/4 + 1/8 + … equals 1 is not just a sequence that keeps going — it is a statement about what a completed infinite sum equals. With no tools for such a statement, the Greeks avoided it entirely.</p>
+
+    <p>The result: nearly two thousand years of mathematical paralysis on this question. Archimedes came tantalizingly close to calculus in the 3rd century BCE, using his <em>method of exhaustion</em> to compute areas and volumes with breathtaking precision. But he wrapped every result in an elaborate double proof by contradiction, carefully avoiding any explicit reference to infinite processes. He knew the method worked. He could not say <em>why</em>.</p>
+
+    <div class="formula">
+      Zeno's geometric series — Achilles's steps:<br><br>
+      S = 1/2 + 1/4 + 1/8 + 1/16 + ··· = Σ (1/2)ⁿ,  n = 1 to ∞<br><br>
+      Partial sum after N terms:<br>
+      S_N = 1 − (1/2)^N<br><br>
+      As N → ∞ :   S = 1   <span class="comment">// Achilles catches the tortoise</span>
+      <br>
+      <span class="comment">// But why is a sum of infinitely many positive terms finite?</span>
+      <span class="comment">// The Greeks had no framework to answer this. We had to invent one.</span>
+    </div>
+
+    <!-- VIEWPORT 1: ZENO'S PARADOX -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · Zeno's Geometric Series</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          Each bar is the next term (½)ⁿ — Achilles's nth step. Watch the partial sum approach but never exceed 1. Every step halves the remaining distance. Infinitely many steps, finite total.
+        </p>
+        <canvas id="cvZeno" width="700" height="280" style="width:100%;max-width:700px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">Steps N = <span class="val-display" id="zenoNVal">8</span></span>
+            <input type="range" id="zenoN" min="1" max="20" value="8">
+          </div>
+        </div>
+        <div class="info-line">
+          Partial sum S_N = <span class="grn" id="zenoSum">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Remaining gap = <span class="red" id="zenoGap">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          S<sub>∞</sub> = <span class="gld">1</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>The resolution — in one idea</h3>
+
+    <p>An infinite process can have a finite outcome — not because the infinitely many steps somehow merge or disappear, but because the partial sums form a sequence that <em>converges</em>: as you take more and more terms, the sum approaches a fixed value and stays there. We define the infinite sum to <em>be</em> that limiting value. This is a <strong>definition</strong>, not a discovery — a conceptual choice that makes the mathematics internally consistent.</p>
+
+    <p>Zeno's paradox dissolves not because we found a flaw in his logic, but because we constructed a richer conceptual framework where the question "what does an infinite sum equal?" has a clean, rigorous answer. The price of admission was inventing the concept of the <span class="hl">limit</span> — and that took until the 19th century.</p>
+  </div>
+</section>
+
+<!-- ══ §02 — THE REAL LINE ═══════════════════════ -->
+<section id="s2">
+  <div class="container">
+    <div class="section-tag">§ 02 — The Real Line</div>
+    <h2>What is a number, <em>really?</em></h2>
+    <div class="divider"></div>
+
+    <p>Before we can talk about limits, we need to ask something more fundamental: what is the number line made of? What are the objects that calculus operates on? The answer is stranger and more beautiful than most mathematical education suggests.</p>
+
+    <p>You know the rationals ℚ — all fractions p/q where p, q are integers and q ≠ 0. The rationals are <span class="hl4">dense</span>: between any two rational numbers, you can always find another. No matter how close together two fractions are, there is always a third between them. This might suggest that the rationals fill the number line completely.</p>
+
+    <p>They do not. They have <span class="hl3">holes</span>.</p>
+
+    <h3>The scandal of √2</h3>
+
+    <p>Consider the equation x² = 2. Geometrically, its solution exists — it is the length of the diagonal of a unit square. But the Pythagoreans proved that this length cannot be expressed as p/q for any integers p and q. The proof is one of mathematics' most perfect arguments:</p>
+
+    <div class="formula">
+      Suppose √2 = p/q  in lowest terms  (gcd(p, q) = 1)<br><br>
+      Then:      2  =  p²/q²<br>
+      So:        p² =  2q²   →   p² is even   →   p is even<br>
+      Write p = 2k:   4k² = 2q²   →   q² = 2k²   →   q is even<br><br>
+      But then gcd(p, q) ≥ 2 — contradiction.  ∎
+      <br>
+      <span class="comment">// √2 ∉ ℚ. The "hole" at √2 is real and irreparable within ℚ.</span>
+    </div>
+
+    <p>So ℚ has a hole where √2 should be. And not just there: holes at √3, at π, at e, at every irrational number. In fact, there are <em>vastly</em> more irrational numbers than rational ones — a precise statement we'll return to. The rational numbers are not missing a few edge cases; they are missing almost everything.</p>
+
+    <h3>Completeness — the defining property of ℝ</h3>
+
+    <p>The real numbers ℝ are characterized by a single property that ℚ lacks: <span class="hl">completeness</span>. The cleanest formulation is the <span class="hl">Least Upper Bound Property</span>:</p>
+
+    <div class="callout-gold">
+      Every non-empty set of real numbers that is bounded above has a <em>least upper bound</em> (its supremum) that is also a real number.
+    </div>
+
+    <p>This fails in ℚ. The set S = {x ∈ ℚ : x² &lt; 2} is bounded above (by 2, for instance), but its supremum — the number √2 — is not in ℚ. ℚ has a hole there. In ℝ, there is no such gap. Every bounded set has a supremum <em>inside</em> ℝ. The line has no holes.</p>
+
+    <p>Here is the crucial philosophical point: this is not a <em>theorem</em> about ℝ. It is the <em>definition</em> of ℝ. We construct the real numbers to be exactly the system where completeness holds. The two classical constructions are <span class="hl">Dedekind cuts</span> — a real number is defined as a partition of ℚ into two parts, "below" and "above," without a rational number at the boundary — and <span class="hl2">equivalence classes of Cauchy sequences</span> of rationals. Both fill in the holes of ℚ; both yield the same mathematical object.</p>
+
+    <div class="callout">
+      We do not <em>discover</em> the real numbers. We <em>construct</em> them — deliberately, to have exactly the properties we need for analysis. Mathematics is not just the exploration of a pre-existing Platonic realm; it is the engineering of rigorous conceptual frameworks.
+    </div>
+
+    <h3>Why completeness is what makes calculus possible</h3>
+
+    <p>Every foundational theorem of calculus — the Intermediate Value Theorem, the Extreme Value Theorem, the Mean Value Theorem, the existence of limits — rests on completeness. Without it, functions can tend toward values that do not exist in the domain. Limits have nowhere to land. Sequences of approximations converge to nothing. Completeness is not just a nice property — it is the bedrock on which the entire edifice stands.</p>
+  </div>
+</section>
+
+<!-- ══ §03 — THE LIMIT ═══════════════════════════ -->
+<section id="s3">
+  <div class="container">
+    <div class="section-tag">§ 03 — The Limit</div>
+    <h2>The art of <em>approaching</em></h2>
+    <div class="divider"></div>
+
+    <p>Newton invented calculus in the 1660s. Leibniz invented it independently in the 1670s. Both produced results of extraordinary power and correctness. Both were working with concepts that were, by the standards of rigorous mathematics, logically unsound.</p>
+
+    <p>Newton spoke of <span class="hl">fluxions</span> — the "flowing" rates at which "fluents" change. His justifications involved quantities that were simultaneously zero and non-zero depending on what step of the computation was convenient. Leibniz spoke of <span class="hl">infinitesimals</span> — numbers dx that were "infinitely small" but not zero, smaller than any positive real number but strictly positive. In 1734, the philosopher George Berkeley published a devastating pamphlet called <em>The Analyst</em>:</p>
+
+    <div class="callout-red">
+      "And what are these Fluxions? The Velocities of evanescent Increments? And what are these same evanescent Increments? They are neither finite Quantities, nor Quantities infinitely small, nor yet nothing. May we not call them the <em>Ghosts of departed Quantities?</em>"
+      <br>— George Berkeley, <em>The Analyst</em>, 1734
+    </div>
+
+    <p>Berkeley was right. The foundations were circular and hand-wavy. But the results were true, and the methods worked. It took another century to supply rigorous foundations. The solution came from Cauchy (1820s) and was fully formalized by Weierstrass (1860s): the <span class="hl">ε-δ definition of the limit</span>.</p>
+
+    <h3>What the definition actually says</h3>
+
+    <div class="formula">
+      lim<sub>x→a</sub> f(x) = L<br><br>
+      means: for every ε &gt; 0, there exists δ &gt; 0 such that<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;0 &lt; |x − a| &lt; δ   ⟹   |f(x) − L| &lt; ε<br><br>
+      <span class="comment">// "For every precision challenge ε, I can find a proximity response δ."</span>
+      <span class="comment">// Note: we require 0 &lt; |x−a|. We never let x = a. We ask what f approaches,</span>
+      <span class="comment">// not what f(a) equals. The limit and the function value are independent.</span>
+    </div>
+
+    <p>This definition looks forbidding but encodes a profound philosophical move. Instead of speaking about "approaching" or "getting close" — vague spatial metaphors — it makes a claim about <em>finite tolerances</em> in a logical game. You, the challenger, name any positive error ε, however tiny. I, the defender, must produce a δ such that if x is within δ of a (but not equal to a), then f(x) is within ε of L. If I can always win this game — for every ε, a valid δ exists — the limit is L.</p>
+
+    <p>The definition contains no infinity, no infinitesimals, no motion, no "approach." It is a statement about the relationship between two finite tolerance windows. The infinite process of "x getting arbitrarily close to a" has been replaced by a finite logical quantifier: <em>for all ε, there exists δ</em>.</p>
+
+    <div class="callout-gold">
+      The limit does not describe what happens "at" infinity. It is what a finite witness game forces us to conclude. Weierstrass banished infinity from the foundations of calculus by replacing it with universal quantification over finite numbers.
+    </div>
+
+    <!-- VIEWPORT 2: EPSILON-DELTA -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · The ε-δ Game</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          Proving lim<sub>x→2</sub> x² = 4. The <span style="color:var(--accent3)">red band</span> is your ε-challenge: all y with |y − 4| &lt; ε. The <span style="color:var(--accent)">gold band</span> is the δ-response: all x with |x − 2| &lt; δ. Drag ε — the defender always finds a valid δ.
+        </p>
+        <canvas id="cvEpsDelta" width="640" height="330" style="width:100%;max-width:640px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">ε (challenger's tolerance): <span class="val-display" id="epsVal">1.0</span></span>
+            <input type="range" id="epsSlider" min="0.1" max="3.0" step="0.05" value="1.0">
+          </div>
+        </div>
+        <div class="info-line">
+          ε = <span class="red" id="epsInfo">—</span>
+          &nbsp;→&nbsp;
+          δ response = <span class="gld" id="deltaInfo">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Every x in the gold band maps inside the red band:
+          <span class="grn">✓ always</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>What was lost — and why it matters</h3>
+
+    <p>Weierstrass's framework gives complete logical rigour. But it discards the <em>intuitive feel</em> of infinitesimals. In Leibniz's notation, dy/dx is a literal ratio — divide an infinitely small change in y by an infinitely small change in x. The chain rule is just algebra: (dy/dz) · (dz/dx) = dy/dx, cancel the dz's. Integration is literally a sum of infinitely thin rectangles.</p>
+
+    <p>These intuitions are extraordinarily powerful for doing mathematics and physics. The ε-δ framework hides them behind quantifiers. This tension between rigour and intuition is not a resolved historical episode — it is a live philosophical question about how mathematics should be done. We will return to it in the final section.</p>
+  </div>
+</section>
+
+<!-- ══ §04 — THE DERIVATIVE ═══════════════════════ -->
+<section id="s4">
+  <div class="container">
+    <div class="section-tag">§ 04 — The Derivative</div>
+    <h2>Speed at an instant — a contradiction?</h2>
+    <div class="divider"></div>
+
+    <p>Consider a car moving along a road. What does it mean to say the car is moving at 80 km/h <em>right now</em> — at this exact instant, which has zero duration? Speed is distance divided by time. But at a single instant, no distance is covered and no time elapses. We seem to be computing 0/0 — the most undefined of all undefined expressions.</p>
+
+    <p>And yet a speedometer gives a sensible reading. Your speedometer is not lying. What is it measuring?</p>
+
+    <h3>The difference quotient</h3>
+
+    <p>Let f(t) be the car's position at time t. The <em>average velocity</em> over the interval [t, t+h] is completely unambiguous:</p>
+
+    <div class="formula">
+      Average velocity over [t, t+h] = [f(t+h) − f(t)] / h<br><br>
+      <span class="comment">// Change in position divided by change in time. Clear, finite, non-controversial.</span>
+    </div>
+
+    <p>Now let h → 0. We shrink the interval. The average velocity over shorter and shorter time windows. If this ratio approaches a limit, we call that limit the <span class="hl">derivative</span> — or, in this context, the instantaneous velocity:</p>
+
+    <div class="formula">
+      f′(t)  =  lim<sub>h→0</sub>  [f(t+h) − f(t)] / h<br><br>
+      <span class="comment">// The derivative — when it exists — is the limit of average rates of change.</span>
+      <span class="comment">// We never divide by zero. We take a limit as h approaches (not reaches) 0.</span>
+      <span class="comment">// The "0/0" paradox never actually arises — it is bypassed by the limit.</span>
+    </div>
+
+    <p>This resolves Zeno's Arrow, too. We never ask what velocity "is" at a durationless instant. We ask what value the average velocities over intervals around that instant converge to. "Instantaneous velocity" is defined to be this limit, because it is the most coherent and useful definition. The arrow's motion is not a property of a single instant — it is a property of the arrow's history, distilled to a number by the limit operation.</p>
+
+    <!-- VIEWPORT 3: SECANT → TANGENT -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · Derivative as a Limiting Slope</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          f(x) = x³ − x at the point x = 1. The <span style="color:var(--accent2)">blue line</span> is the secant through (1, f(1)) and (1+h, f(1+h)). As h → 0, the secant collapses onto the <span style="color:var(--accent)">gold tangent</span>. The slope of that tangent is f′(1) = 2.
+        </p>
+        <canvas id="cvSecant" width="640" height="320" style="width:100%;max-width:640px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">h (interval): <span class="val-display" id="hVal">1.50</span></span>
+            <input type="range" id="hSlider" min="0.02" max="2.0" step="0.01" value="1.5">
+          </div>
+        </div>
+        <div class="info-line">
+          h = <span class="blu" id="hInfo">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Secant slope = <span class="blu" id="secantSlope">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          True derivative f′(1) = <span class="grn">2.0000</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Error = <span class="red" id="slopeError">—</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>The deeper meaning — local linearity</h3>
+
+    <p>There is a more geometrically illuminating way to understand what the derivative means. A function f is differentiable at a if and only if it is <span class="hl">locally linear</span> there: if you zoom in on the graph of f around (a, f(a)), it eventually looks like a straight line. The slope of that line is f′(a). No matter how wild or curved the function is globally, at any differentiable point it looks, under sufficient magnification, like a line.</p>
+
+    <div class="formula">
+      Local linearity:  f(a + h) = f(a) + f′(a)·h + o(h)<br><br>
+      <span class="comment">// o(h) denotes a term that vanishes faster than h (i.e., o(h)/h → 0 as h → 0)</span>
+      <span class="comment">// The linear part  f′(a)·h  is the best linear approximation to the change in f.</span>
+      <span class="comment">// The derivative is not the slope of the graph — it IS the linear approximation.</span>
+    </div>
+
+    <p>This reframing — the derivative as a <em>linear approximation</em> — is the most important conceptual move in calculus. Everything downstream rests on it: Taylor series approximate functions by polynomials of increasing degree; multivariable calculus replaces the derivative with a linear map (the Jacobian); differential equations model phenomena by assuming local linearity. The whole subject is, at its core, the art of approximating the curved by the linear and then passing to a limit.</p>
+
+    <div class="callout">
+      Differentiability is not about being "smooth" in some vague sense. It is about admitting a best linear approximation. A function can be continuous everywhere but differentiable <em>nowhere</em> — the Weierstrass function is an infinite sum of sinusoids that is jagged at every scale, approximable by no line at any point. Continuity and differentiability are genuinely different properties.
+    </div>
+  </div>
+</section>
+
+<!-- ══ §05 — THE INTEGRAL ════════════════════════ -->
+<section id="s5">
+  <div class="container">
+    <div class="section-tag">§ 05 — The Integral</div>
+    <h2>Area as a limit of <em>approximation</em></h2>
+    <div class="divider"></div>
+
+    <p>The integral begins with a question that seems far removed from derivatives: what is the area under a curve? But even asking this hides a philosophical trap. We know what area means for rectangles — base times height. We know it for triangles. But what does "area under a curve" mean, really? There is no prior definition to appeal to. We must <em>construct</em> one.</p>
+
+    <p>Archimedes (~250 BCE) pioneered what would become integration: the <span class="hl">method of exhaustion</span>. To find the area under a parabola, he inscribed triangles, filled the gaps with smaller triangles, and smaller still. The area was "exhausted" by approximations from below. His proofs were rigorous — but they avoided any explicit reference to infinity, requiring elaborate double arguments. He knew the answer. He did not have the language to say how he knew.</p>
+
+    <h3>Riemann's formalization</h3>
+
+    <p>In 1854, Bernhard Riemann gave the first fully rigorous definition of the integral. Approximate the area with rectangles, then take the limit as they become infinitely thin.</p>
+
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Partition the interval</strong>
+        Divide [a, b] into n subintervals: a = x₀ &lt; x₁ &lt; ··· &lt; xₙ = b. Each has width Δxᵢ = xᵢ − xᵢ₋₁.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Sample freely</strong>
+        In each subinterval, pick <em>any</em> sample point cᵢ ∈ [xᵢ₋₁, xᵢ]. This freedom is crucial — the definition must be independent of how you sample.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Form the Riemann sum</strong>
+        S = Σ f(cᵢ) · Δxᵢ. Each term is a rectangle of height f(cᵢ) and width Δxᵢ. The sum approximates the area.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Take the limit</strong>
+        Let the mesh (widest subinterval) shrink to zero. If the sums converge to the same value regardless of partition and sampling choices — that value <em>is</em> the integral.
+      </div>
+    </div>
+
+    <div class="formula">
+      ∫<sub>a</sub><sup>b</sup> f(x) dx  =  lim<sub>‖P‖→0</sub>  Σᵢ f(cᵢ) · Δxᵢ<br><br>
+      <span class="comment">// ‖P‖ = max(Δxᵢ) is the mesh of the partition</span>
+      <span class="comment">// The integral exists when this limit is well-defined and independent of all choices.</span>
+      <span class="comment">// The "dx" in the notation is Leibniz's ghost of the infinitely thin Δx.</span>
+    </div>
+
+    <!-- VIEWPORT 4: RIEMANN SUMS -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · Riemann Sums</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          f(x) = sin(x) + 1.5 on [0, π]. True integral ≈ 6.712. Left, right, and midpoint rules all converge to the same value — proving the integral is independent of sampling choice.
+        </p>
+        <canvas id="cvRiemann" width="640" height="280" style="width:100%;max-width:640px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">Partitions n = <span class="val-display" id="rNVal">6</span></span>
+            <input type="range" id="riemannN" min="1" max="80" value="6">
+          </div>
+          <div class="ctrl-group">
+            <span class="ctrl-label">Sampling rule</span>
+            <div class="radio-group">
+              <button class="radio-btn active" data-method="left"  onclick="setRMethod(this)">Left</button>
+              <button class="radio-btn"        data-method="right" onclick="setRMethod(this)">Right</button>
+              <button class="radio-btn"        data-method="mid"   onclick="setRMethod(this)">Midpoint</button>
+            </div>
+          </div>
+        </div>
+        <div class="info-line">
+          Riemann sum = <span class="gld" id="riemannSum">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          True ∫ ≈ <span class="grn">6.7124</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Error = <span class="red" id="riemannErr">—</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>What "area" actually is</h3>
+
+    <p>Here is the philosophical punchline: <em>area under a curve is not a pre-existing physical property that we measure.</em> It is a mathematical concept we extend from simple shapes (rectangles, triangles) to arbitrary regions via the Riemann construction. The integral <em>defines</em> what we mean by area in these cases. Without the definition, the question "what is the area under sin(x) from 0 to π?" is not a question with an objectively right answer — it is a question awaiting a definition.</p>
+
+    <p>This matters because different definitions are possible and lead to different mathematical theories. In 1902, Henri Lebesgue gave a more powerful definition by partitioning the <em>range</em> of the function rather than its domain. Lebesgue integration works for functions far too discontinuous for Riemann's definition. Neither theory is more "true" — they answer slightly different questions. Which one you use depends on what theorems you need.</p>
+  </div>
+</section>
+
+<!-- ══ §06 — THE FUNDAMENTAL THEOREM ════════════ -->
+<section id="s6">
+  <div class="container">
+    <div class="section-tag">§ 06 — The Fundamental Theorem</div>
+    <h2>The miracle of <em>inverse operations</em></h2>
+    <div class="divider"></div>
+
+    <p>We have built two completely separate structures. Differentiation answers: at what rate is this function changing right now? Integration answers: how much has accumulated under this function? These are different problems with different histories, different geometric meanings — tangent lines versus areas.</p>
+
+    <p>There is no <em>a priori</em> reason they should be related. And yet:</p>
+
+    <div class="callout-gold">
+      The Fundamental Theorem of Calculus — discovered independently by Newton and Leibniz — says that differentiation and integration are inverse operations of each other. This is one of the most surprising facts in all of mathematics.
+    </div>
+
+    <div class="formula">
+      Part I:    Define F(x) = ∫<sub>a</sub><sup>x</sup> f(t) dt<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Then F′(x) = f(x)<br><br>
+      Part II:   ∫<sub>a</sub><sup>b</sup> f(x) dx = F(b) − F(a)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where F is any antiderivative of f  (i.e., F′ = f)<br><br>
+      <span class="comment">// Part I: the rate at which area accumulates equals the height of f</span>
+      <span class="comment">// Part II: to compute an area, find an antiderivative — evaluate at endpoints</span>
+    </div>
+
+    <h3>Why should this be true?</h3>
+
+    <p>The proof of Part I is surprisingly clean once you see the right picture. Define F(x) as the area under f from a to x. What happens to this area when x increases by a small amount h?</p>
+
+    <p>The change F(x+h) − F(x) is the area of a thin vertical sliver from x to x+h. If f is continuous at x, this sliver is approximately a rectangle of width h and height f(x). So:</p>
+
+    <div class="formula">
+      F(x+h) − F(x) ≈ f(x) · h   (for small h)<br><br>
+      Dividing both sides by h:<br>
+      [F(x+h) − F(x)] / h ≈ f(x)<br><br>
+      Taking the limit as h → 0:  F′(x) = f(x)  ∎
+      <span class="comment">   // The rate of area accumulation exactly equals the current height of f.</span>
+    </div>
+
+    <p>The key insight: when you accumulate f, you add up thin strips whose heights come from f. The <em>rate</em> at which the accumulated area grows — how fast it changes — is exactly the current height f(x). Differentiation extracts that rate. Integration reverses it. They are inverse operations for the same reason that a bank balance's rate of change is the current deposit rate: accumulation and rate are definitionally dual.</p>
+
+    <!-- VIEWPORT 5: FUNDAMENTAL THEOREM -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · The Fundamental Theorem</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          Top: f(x) = sin(x) + 1. Bottom: F(x) = ∫₀ˣ f(t) dt — the accumulated area. The <span style="color:var(--accent)">gold tangent</span> on F always has slope = height of f at the same x. That is the theorem.
+        </p>
+        <canvas id="cvFTC" width="640" height="370" style="width:100%;max-width:640px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">x = <span class="val-display" id="ftcXVal">1.57</span></span>
+            <input type="range" id="ftcX" min="0.05" max="6.2" step="0.01" value="1.57">
+          </div>
+        </div>
+        <div class="info-line">
+          x = <span id="ftcXInfo">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          f(x) = <span class="gld" id="ftcFVal">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          F(x) = <span class="blu" id="ftcCapFVal">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          F′(x) = <span class="grn" id="ftcDerivVal">—</span>
+          &nbsp;<span style="font-size:0.8em;color:var(--muted)">(equals f(x) ✓)</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>The deep unity this reveals</h3>
+
+    <p>Before Newton and Leibniz, differentiation and integration were studied by entirely different people using entirely different methods. Tangent-line problems (proto-differentiation) were studied since Fermat. Quadrature problems (areas, proto-integration) were studied since Archimedes. They were as separate as astronomy and music theory. Newton and Leibniz were the first to see that these two streams were the same river flowing in opposite directions.</p>
+
+    <div class="callout-green">
+      The Fundamental Theorem is not just a computational shortcut. It reveals that <em>change</em> and <em>accumulation</em> are philosophically dual: knowing how something accumulates tells you its rate of change, and knowing the rate tells you how it accumulates. This duality is everywhere in physics — position and velocity, charge and current, entropy and heat flow — wherever one quantity is the integral of another.
+    </div>
+  </div>
+</section>
+
+<!-- ══ §07 — INFINITY AND ITS FLAVORS ═══════════ -->
+<section id="s7">
+  <div class="container">
+    <div class="section-tag">§ 07 — Infinity and Its Flavors</div>
+    <h2>More than one kind of <em>infinite</em></h2>
+    <div class="divider"></div>
+
+    <p>Calculus tamed one species of infinity — the infinite process, the limit of a sequence, the sum of a series. But in doing so, it exposed that infinity is not a single monolithic thing. It has structure. It comes in different sizes. And some of those sizes are genuinely, provably different.</p>
+
+    <h3>Countable versus uncountable</h3>
+
+    <p>Georg Cantor showed in 1874 that the infinity of real numbers is <em>strictly larger</em> than the infinity of natural numbers. The natural numbers are <span class="hl">countably infinite</span> — they can be listed: 1, 2, 3, 4, …. The rational numbers are also countable (Cantor found an elegant zigzag enumeration of all fractions). But the real numbers are <span class="hl2">uncountably infinite</span> — no list, however cleverly arranged, can contain all of them.</p>
+
+    <p>The proof is Cantor's <span class="hl">diagonal argument</span> — arguably the most elegant proof in all of mathematics. Suppose you claim to have a list of every real number between 0 and 1. Cantor constructs a number not on your list by making its nth decimal digit differ from the nth digit of the nth entry on your list. This number differs from every entry on the list, so your list was incomplete. Every list is incomplete. ℝ cannot be listed. It is a strictly larger infinity.</p>
+
+    <div class="formula">
+      Any alleged list of reals in (0,1):<br><br>
+      r₁ = 0.<span style="color:var(--accent)">3</span> 1 4 1 5 9 ...<br>
+      r₂ = 0. 7 <span style="color:var(--accent)">1</span> 8 2 8 1 ...<br>
+      r₃ = 0. 5 5 <span style="color:var(--accent)">5</span> 5 5 5 ...<br>
+      r₄ = 0. 2 6 4 <span style="color:var(--accent)">3</span> 3 8 ...<br>
+      ···<br><br>
+      Diagonal number d: change the <span style="color:var(--accent)">gold digit</span> in each rₙ<br>
+      d differs from rₙ at the nth place — for every n.<br>
+      d is real, but d ∉ {r₁, r₂, r₃, ...}.  <span class="comment">// The list is always incomplete.</span>
+    </div>
+
+    <p>This means that the numbers we can name, describe, or compute — integers, fractions, algebraic numbers, π, e, and so on — form only a countable set: a vanishingly small fraction of ℝ. Almost every real number is unnamed, undescribable, incomputable. Calculus operates in a space almost entirely composed of numbers we can never individually refer to. That is a strange and beautiful fact.</p>
+
+    <h3>The vindication of infinitesimals</h3>
+
+    <p>For two centuries after Weierstrass, mathematicians accepted that infinitesimals — Leibniz's "infinitely small but nonzero" quantities — were useful heuristics that had to be replaced by ε-δ arguments for rigour. Then in 1960, logician Abraham Robinson proved something that would have astonished Berkeley:</p>
+
+    <div class="callout-gold">
+      Infinitesimals are completely rigorous. Using model theory, Robinson constructed <em>Non-Standard Analysis</em> — a field extension of ℝ containing numbers smaller than any positive real but strictly greater than zero. In this system, all theorems of standard calculus hold. The derivative is literally a ratio. The chain rule is algebra. Leibniz was not wrong; he was three centuries ahead of the proof that he was right.
+    </div>
+
+    <p>Both frameworks — Weierstrass's ε-δ and Robinson's hyperreals — are equally rigorous. Both prove exactly the same theorems. The choice between them is philosophical, not mathematical: a preference for logical structure versus intuitive geometric transparency. Mathematics is large enough to accommodate both.</p>
+
+    <h3>What calculus really is</h3>
+
+    <p>We began with Zeno's paradoxes and end with uncountable infinities. The journey reveals what calculus fundamentally <em>is</em> — not a collection of computational techniques, but a coherent philosophical framework for reasoning about continuous change without contradiction:</p>
+
+    <div class="step-row">
+      <div class="step-num blue">ℝ</div>
+      <div class="step-body">
+        <strong>The real line — completeness as bedrock</strong>
+        Constructed, not discovered, to ensure that limits always land somewhere. Without completeness, the entire edifice collapses into holes.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">L</div>
+      <div class="step-body">
+        <strong>The limit — quantifiers replace infinities</strong>
+        The ε-δ definition replaces vague language about "approaching" with a precise logical game over finite tolerances. Every other concept is built on this foundation.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">D</div>
+      <div class="step-body">
+        <strong>The derivative — local linear approximation</strong>
+        Not just slopes or speeds — the best linear model of a function near a point. All of analysis is, at root, the art of linearizing and then refining.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num green">∫</div>
+      <div class="step-body">
+        <strong>The integral — defined, not discovered</strong>
+        Area under a curve is not a pre-existing property we measure; it is a concept we extend to curves by limiting Riemann sums. Different extensions (Lebesgue, Henstock–Kurzweil) give more powerful theories.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">∞</div>
+      <div class="step-body">
+        <strong>Infinity — a structured family, not a single thing</strong>
+        Countable and uncountable are provably different sizes. Infinitesimals are rigorous in non-standard analysis. Infinity is not one concept but a whole taxonomy of precisely distinguishable magnitudes.
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="callout-green">
+      Zeno posed his paradoxes to show that motion is conceptually broken. He was right — about our naive intuitions. Two thousand years of mathematical development built a framework where motion is not just possible but <em>exactly</em> describable. The arrow moves because its velocity at each instant is defined as the limit of average velocities over intervals containing that instant. The infinite is not a confusion to be avoided — it is a precision tool, wielded carefully, with full knowledge of its structure.
+      <br><br>
+      That is what calculus is <em>for</em>.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    A visual essay on the philosophy of calculus<br>
+    Built in the spirit of Spivak, Apostol, Cauchy, Weierstrass — and Zeno, who started it all
+    <br><br>
+    "The calculus is the gateway through which most of the great physical ideas have entered mathematics."<br>— Morris Kline
+  </div>
+</footer>
+
+<script>
+// ─── UTILITY ─────────────────────────────────────────
+function $(id){ return document.getElementById(id); }
+function clearCanvas(cv){ cv.getContext('2d').clearRect(0,0,cv.width,cv.height); }
+
+// ─── VP 1: ZENO'S GEOMETRIC SERIES ───────────────────
+(function(){
+  function draw(){
+    const cv=$('cvZeno');
+    const ctx=cv.getContext('2d');
+    const W=cv.width, H=cv.height;
+    clearCanvas(cv);
+
+    const N=parseInt($('zenoN').value);
+    $('zenoNVal').textContent=N;
+
+    const padL=60, padB=38, padT=18, padR=16;
+    const cW=W-padL-padR, cH=H-padB-padT;
+
+    // Background tint
+    ctx.fillStyle='rgba(255,255,255,0.015)';
+    ctx.fillRect(padL,padT,cW,cH);
+
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=0.5;
+    [0,0.25,0.5,0.75,1].forEach(v=>{
+      const y=padT+cH*(1-v);
+      ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+cW,y);ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,0.25)';
+      ctx.font='10px DM Mono,monospace';
+      ctx.textAlign='right';
+      ctx.fillText(v.toFixed(2),padL-4,y+4);
+    });
+
+    // Compute partial sum
+    let cumSum=0;
+    const terms=[];
+    for(let i=1;i<=N;i++) terms.push(Math.pow(0.5,i));
+
+    // Draw bars
+    const totalBarW=cW*0.88;
+    const barW=Math.max(3, totalBarW/N - 2);
+    const gap=(cW - barW*N) / (N+1);
+
+    terms.forEach((term,i)=>{
+      const x=padL+gap*(i+1)+barW*i;
+      const bH=term*cH;
+      const y=padT+cH-bH;
+      const alpha=Math.max(0.15, 0.7-i*0.03);
+      const grad=ctx.createLinearGradient(x,y,x,padT+cH);
+      grad.addColorStop(0,`rgba(232,201,109,${alpha+0.15})`);
+      grad.addColorStop(1,'rgba(232,201,109,0.05)');
+      ctx.fillStyle=grad;
+      ctx.fillRect(x,y,barW,bH);
+      ctx.strokeStyle=`rgba(232,201,109,${alpha})`;
+      ctx.lineWidth=0.5;
+      ctx.strokeRect(x,y,barW,bH);
+      cumSum+=term;
+    });
+
+    // Partial sum dashed line (green)
+    const lineY=padT+cH*(1-cumSum);
+    ctx.strokeStyle='rgba(157,232,176,0.85)'; ctx.lineWidth=1.5; ctx.setLineDash([6,3]);
+    ctx.beginPath();ctx.moveTo(padL,lineY);ctx.lineTo(padL+cW,lineY);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(157,232,176,0.8)';
+    ctx.font='10px DM Mono,monospace'; ctx.textAlign='left';
+    ctx.fillText('S_'+N+' = '+cumSum.toFixed(6),padL+8,lineY-5);
+
+    // Target line at 1 (blue)
+    ctx.strokeStyle='rgba(126,184,247,0.35)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(padL,padT);ctx.lineTo(padL+cW,padT);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(126,184,247,0.55)';
+    ctx.fillText('S_∞ = 1',padL+8,padT+12);
+
+    // Axes
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,padT);ctx.lineTo(padL,padT+cH);ctx.lineTo(padL+cW,padT+cH);ctx.stroke();
+
+    ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText('Step n →',padL+cW/2,H-4);
+
+    // Info
+    const gap2=1-cumSum;
+    $('zenoSum').textContent=cumSum.toFixed(8);
+    $('zenoGap').textContent=gap2.toFixed(8);
+  }
+  $('zenoN').addEventListener('input',draw);
+  draw();
+})();
+
+// ─── VP 2: EPSILON-DELTA ─────────────────────────────
+(function(){
+  function draw(){
+    const cv=$('cvEpsDelta');
+    const ctx=cv.getContext('2d');
+    const W=cv.width, H=cv.height;
+    clearCanvas(cv);
+
+    const eps=parseFloat($('epsSlider').value);
+    $('epsVal').textContent=eps.toFixed(2);
+
+    // f(x) = x², lim_{x→2} = 4
+    const a=2, L=4;
+    const xMin=0, xMax=4.2, yMin=-0.5, yMax=11;
+    const padL=58, padB=36, padT=18, padR=16;
+    const cW=W-padL-padR, cH=H-padB-padT;
+
+    function tx(x){ return padL+(x-xMin)/(xMax-xMin)*cW; }
+    function ty(y){ return padT+(1-(y-yMin)/(yMax-yMin))*cH; }
+
+    // δ from ε: for f(x)=x², |x²−4|<ε when |x-2||x+2|<ε
+    // if δ<1, x∈(1,3), |x+2|<5, so |x²−4|<5δ → take δ=ε/5
+    const delta=Math.min(1.0, eps/5);
+
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=0.5;
+    for(let x=0;x<=4;x++){ const cx=tx(x); ctx.beginPath();ctx.moveTo(cx,padT);ctx.lineTo(cx,padT+cH);ctx.stroke(); }
+    for(let y=0;y<=10;y+=2){ const cy=ty(y); ctx.beginPath();ctx.moveTo(padL,cy);ctx.lineTo(padL+cW,cy);ctx.stroke(); }
+
+    // Epsilon band (red, horizontal)
+    const yBotE=ty(L+eps), yTopE=ty(L-eps);
+    ctx.fillStyle='rgba(240,122,122,0.12)';
+    ctx.fillRect(padL, yBotE, cW, yTopE-yBotE);
+    ctx.strokeStyle='rgba(240,122,122,0.55)'; ctx.lineWidth=1.2; ctx.setLineDash([5,3]);
+    [L+eps, L-eps].forEach(yv=>{ if(yv>=yMin&&yv<=yMax){ ctx.beginPath();ctx.moveTo(padL,ty(yv));ctx.lineTo(padL+cW,ty(yv));ctx.stroke(); }});
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(240,122,122,0.65)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='left';
+    if(L+eps<=yMax) ctx.fillText('L+ε='+(L+eps).toFixed(2), padL+6, yBotE-4);
+    if(L-eps>=yMin) ctx.fillText('L−ε='+(L-eps).toFixed(2), padL+6, yTopE+12);
+
+    // Delta band (gold, vertical)
+    const xLeftD=tx(Math.max(xMin,a-delta)), xRightD=tx(Math.min(xMax,a+delta));
+    ctx.fillStyle='rgba(232,201,109,0.1)';
+    ctx.fillRect(xLeftD, padT, xRightD-xLeftD, cH);
+    ctx.strokeStyle='rgba(232,201,109,0.55)'; ctx.lineWidth=1.2; ctx.setLineDash([5,3]);
+    ctx.beginPath();ctx.moveTo(xLeftD,padT);ctx.lineTo(xLeftD,padT+cH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xRightD,padT);ctx.lineTo(xRightD,padT+cH);ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Curve f(x)=x²
+    ctx.strokeStyle='rgba(126,184,247,0.9)'; ctx.lineWidth=2.5;
+    ctx.beginPath(); let first=true;
+    for(let i=0;i<=400;i++){
+      const x=xMin+(xMax-xMin)*i/400, y=x*x;
+      if(y<yMin||y>yMax) continue;
+      first?ctx.moveTo(tx(x),ty(y)):ctx.lineTo(tx(x),ty(y));
+      first=false;
+    }
+    ctx.stroke();
+
+    // Open circle at (a,L) — the limit point we never reach
+    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg')||'#0c0c0e';
+    ctx.beginPath();ctx.arc(tx(a),ty(L),6,0,2*Math.PI);ctx.fill();
+    ctx.strokeStyle='rgba(126,184,247,0.9)'; ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(tx(a),ty(L),6,0,2*Math.PI);ctx.stroke();
+
+    // L and a labels
+    ctx.fillStyle='rgba(126,184,247,0.65)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='left';
+    ctx.fillText('f(x) = x²', padL+cW*0.55, ty(20)-4);
+    ctx.fillStyle='rgba(232,201,109,0.65)'; ctx.textAlign='center';
+    ctx.fillText('a=2', tx(a), padT+cH+14);
+    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.textAlign='right';
+    ctx.fillText('L=4', padL-4, ty(4)+4);
+
+    // L dashed reference line
+    ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=0.8; ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(padL,ty(L));ctx.lineTo(padL+cW,ty(L));ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Axes
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,padT);ctx.lineTo(padL,padT+cH);ctx.lineTo(padL+cW,padT+cH);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+    [0,1,2,3,4].forEach(v=>ctx.fillText(v,tx(v),padT+cH+14));
+    ctx.textAlign='right';
+    [0,2,4,6,8,10].forEach(v=>ctx.fillText(v,padL-4,ty(v)+4));
+
+    // Info update
+    $('epsInfo').textContent=eps.toFixed(2);
+    $('deltaInfo').textContent=delta.toFixed(4);
+  }
+  $('epsSlider').addEventListener('input',draw);
+  draw();
+})();
+
+// ─── VP 3: SECANT → TANGENT ──────────────────────────
+(function(){
+  function draw(){
+    const cv=$('cvSecant');
+    const ctx=cv.getContext('2d');
+    const W=cv.width, H=cv.height;
+    clearCanvas(cv);
+
+    const h=parseFloat($('hSlider').value);
+    $('hVal').textContent=h.toFixed(2);
+
+    const f=x=>x*x*x-x;
+    const fP=x=>3*x*x-1;
+    const a=1, trueSlope=fP(a); // = 2
+
+    const xMin=-1.2, xMax=3.2, yMin=-2.5, yMax=4.5;
+    const padL=58,padB=36,padT=18,padR=16;
+    const cW=W-padL-padR, cH=H-padB-padT;
+
+    function tx(x){ return padL+(x-xMin)/(xMax-xMin)*cW; }
+    function ty(y){ return padT+(1-(y-yMin)/(yMax-yMin))*cH; }
+
+    const drawLine=(slope,bx,by,color,lw,dash=[])=>{
+      ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.setLineDash(dash);
+      ctx.beginPath();
+      const ys=by+slope*(xMin-bx), ye=by+slope*(xMax-bx);
+      ctx.moveTo(tx(xMin),ty(Math.max(yMin,Math.min(yMax,ys))));
+      ctx.lineTo(tx(xMax),ty(Math.max(yMin,Math.min(yMax,ye))));
+      ctx.stroke(); ctx.setLineDash([]);
+    };
+
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=0.5;
+    for(let x=-1;x<=3;x++){ ctx.beginPath();ctx.moveTo(tx(x),padT);ctx.lineTo(tx(x),padT+cH);ctx.stroke(); }
+    for(let y=-2;y<=4;y++){ ctx.beginPath();ctx.moveTo(padL,ty(y));ctx.lineTo(padL+cW,ty(y));ctx.stroke(); }
+
+    // True tangent (gold, dashed)
+    drawLine(trueSlope,a,f(a),'rgba(232,201,109,0.55)',1.5,[6,3]);
+
+    // Curve
+    ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); let first=true;
+    for(let i=0;i<=500;i++){
+      const x=xMin+(xMax-xMin)*i/500, y=f(x);
+      if(y<yMin||y>yMax) continue;
+      first?ctx.moveTo(tx(x),ty(y)):ctx.lineTo(tx(x),ty(y));
+      first=false;
+    }
+    ctx.stroke();
+
+    // Secant (blue)
+    const y1=f(a), y2=f(a+h);
+    const secSlope=(y2-y1)/h;
+    drawLine(secSlope,a,y1,'rgba(126,184,247,0.9)',2.5);
+
+    // h annotation (dashed rectangle)
+    ctx.strokeStyle='rgba(126,184,247,0.3)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(tx(a),ty(y1));ctx.lineTo(tx(a+h),ty(y1));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(tx(a+h),ty(y1));ctx.lineTo(tx(a+h),ty(y2));ctx.stroke();
+    ctx.setLineDash([]);
+
+    // h label
+    ctx.fillStyle='rgba(126,184,247,0.6)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText('h', tx(a+h/2), ty(y1)+14);
+
+    // Points
+    [[a,y1,'rgba(232,201,109,0.9)'],[a+h,y2,'rgba(126,184,247,0.9)']].forEach(([px,py,col])=>{
+      ctx.fillStyle='#0c0c0e';
+      ctx.beginPath();ctx.arc(tx(px),ty(py),5,0,2*Math.PI);ctx.fill();
+      ctx.strokeStyle=col; ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(tx(px),ty(py),5,0,2*Math.PI);ctx.stroke();
+    });
+
+    // Axes
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(tx(0),padT);ctx.lineTo(tx(0),padT+cH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(padL,ty(0));ctx.lineTo(padL+cW,ty(0));ctx.stroke();
+
+    // Labels
+    ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+    [-1,0,1,2,3].forEach(v=>ctx.fillText(v,tx(v),ty(0)+14));
+    ctx.textAlign='right';
+    [-2,-1,0,1,2,3,4].forEach(v=>ctx.fillText(v,padL-4,ty(v)+4));
+
+    ctx.fillStyle='rgba(232,201,109,0.6)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='left';
+    ctx.fillText('tangent (f′(1) = 2)',padL+8,padT+14);
+    ctx.fillStyle='rgba(126,184,247,0.7)';
+    ctx.fillText('f(x) = x³ − x',padL+cW*0.55,padT+14);
+
+    // Update info
+    $('hInfo').textContent=h.toFixed(3);
+    $('secantSlope').textContent=secSlope.toFixed(4);
+    $('slopeError').textContent=Math.abs(secSlope-trueSlope).toFixed(4);
+  }
+  $('hSlider').addEventListener('input',draw);
+  draw();
+})();
+
+// ─── VP 4: RIEMANN SUMS ──────────────────────────────
+(function(){
+  let rMethod='left';
+  window.setRMethod=function(btn){
+    document.querySelectorAll('.radio-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    rMethod=btn.dataset.method;
+    draw();
+  };
+
+  // f(x) = sin(x)+1.5, [0,π], true = 2+1.5π ≈ 6.7124
+  const f=x=>Math.sin(x)+1.5;
+  const trueVal=2+1.5*Math.PI;
+
+  function draw(){
+    const cv=$('cvRiemann');
+    const ctx=cv.getContext('2d');
+    const W=cv.width, H=cv.height;
+    clearCanvas(cv);
+
+    const n=parseInt($('riemannN').value);
+    $('rNVal').textContent=n;
+
+    const a=0, b=Math.PI;
+    const xMin=-0.2, xMax=Math.PI+0.2, yMin=0, yMax=3;
+    const padL=55, padB=36, padT=18, padR=16;
+    const cW=W-padL-padR, cH=H-padB-padT;
+
+    function tx(x){ return padL+(x-xMin)/(xMax-xMin)*cW; }
+    function ty(y){ return padT+(1-(y-yMin)/(yMax-yMin))*cH; }
+
+    // Riemann rectangles
+    const dx=(b-a)/n;
+    let sum=0;
+    for(let i=0;i<n;i++){
+      const x0=a+i*dx, x1=a+(i+1)*dx;
+      const cx2=rMethod==='left'?x0:rMethod==='right'?x1:(x0+x1)/2;
+      const fv=f(cx2);
+      sum+=fv*dx;
+      ctx.fillStyle='rgba(232,201,109,0.18)';
+      ctx.fillRect(tx(x0),ty(fv),tx(x1)-tx(x0),ty(0)-ty(fv));
+      ctx.strokeStyle='rgba(232,201,109,0.45)'; ctx.lineWidth=0.5;
+      ctx.strokeRect(tx(x0),ty(fv),tx(x1)-tx(x0),ty(0)-ty(fv));
+    }
+
+    // x-axis
+    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,ty(0));ctx.lineTo(padL+cW,ty(0));ctx.stroke();
+
+    // Grid lines
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=0.5;
+    [0.5,1,1.5,2,2.5].forEach(y=>{ctx.beginPath();ctx.moveTo(padL,ty(y));ctx.lineTo(padL+cW,ty(y));ctx.stroke();});
+
+    // Curve
+    ctx.strokeStyle='rgba(126,184,247,0.9)'; ctx.lineWidth=2.5;
+    ctx.beginPath(); let first=true;
+    for(let i=0;i<=500;i++){
+      const x=a+(b-a)*i/500, y=f(x);
+      first?ctx.moveTo(tx(x),ty(y)):ctx.lineTo(tx(x),ty(y));
+      first=false;
+    }
+    ctx.stroke();
+
+    // Axes
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,padT);ctx.lineTo(padL,padT+cH);ctx.lineTo(padL+cW,padT+cH);ctx.stroke();
+
+    // Labels
+    ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+    ['0','π/4','π/2','3π/4','π'].forEach((lbl,i)=>ctx.fillText(lbl,tx([0,Math.PI/4,Math.PI/2,3*Math.PI/4,Math.PI][i]),padT+cH+14));
+    ctx.textAlign='right';
+    [0.5,1,1.5,2,2.5].forEach(v=>ctx.fillText(v,padL-4,ty(v)+4));
+    ctx.fillStyle='rgba(126,184,247,0.7)'; ctx.font='11px DM Mono,monospace'; ctx.textAlign='right';
+    ctx.fillText('f(x) = sin(x) + 1.5',padL+cW-4,padT+14);
+
+    // Info
+    $('riemannSum').textContent=sum.toFixed(4);
+    $('riemannErr').textContent=Math.abs(sum-trueVal).toFixed(4);
+  }
+
+  $('riemannN').addEventListener('input',draw);
+  draw();
+})();
+
+// ─── VP 5: FUNDAMENTAL THEOREM ───────────────────────
+(function(){
+  // f(x) = sin(x)+1,  F(x) = ∫₀ˣ f(t)dt = -cos(x)+x+1  (since -cos(0)+0+1 = 1−1+0=0... wait)
+  // F(0) = -cos(0)+0+1 = -1+0+1 = 0. ✓
+  // F'(x) = sin(x)+1 = f(x). ✓
+  const f = x => Math.sin(x)+1;
+  const Fb= x => -Math.cos(x)+x+1;
+
+  function draw(){
+    const cv=$('cvFTC');
+    const ctx=cv.getContext('2d');
+    const W=cv.width, H=cv.height;
+    clearCanvas(cv);
+
+    const xv=parseFloat($('ftcX').value);
+    $('ftcXVal').textContent=xv.toFixed(2);
+
+    const xMin=0, xMax=2*Math.PI+0.15;
+    const padL=55, padR=18, padT=16;
+    const cW=W-padL-padR;
+
+    // Two panels
+    const gap=28;
+    const pH=(H-padT-gap)/2 - 10;
+    const p1T=padT;
+    const p2T=padT+pH+gap+10;
+
+    function tx(x){ return padL+(x-xMin)/(xMax-xMin)*cW; }
+
+    // ── TOP: f(x) ──────────────────────────────────
+    const fy1=0, fy2=2.2;
+    function tfy(y){ return p1T+(1-(y-fy1)/(fy2-fy1))*pH; }
+
+    // Shaded area [0, xv]
+    ctx.fillStyle='rgba(232,201,109,0.13)';
+    ctx.beginPath();
+    ctx.moveTo(tx(0),tfy(0));
+    for(let i=0;i<=300;i++){
+      const t=(xv)*i/300;
+      ctx.lineTo(tx(t),tfy(f(t)));
+    }
+    ctx.lineTo(tx(xv),tfy(0));
+    ctx.closePath(); ctx.fill();
+
+    // x-axis for top
+    ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,tfy(0));ctx.lineTo(padL+cW,tfy(0));ctx.stroke();
+
+    // f curve (blue)
+    ctx.strokeStyle='rgba(126,184,247,0.9)'; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    for(let i=0;i<=500;i++){
+      const x=xMin+(xMax-xMin)*i/500;
+      i===0?ctx.moveTo(tx(x),tfy(f(x))):ctx.lineTo(tx(x),tfy(f(x)));
+    }
+    ctx.stroke();
+
+    // Vertical line at xv (gold)
+    ctx.strokeStyle='rgba(232,201,109,0.7)'; ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(tx(xv),tfy(0));ctx.lineTo(tx(xv),tfy(f(xv)));ctx.stroke();
+    ctx.fillStyle='rgba(232,201,109,0.9)';
+    ctx.beginPath();ctx.arc(tx(xv),tfy(f(xv)),4,0,2*Math.PI);ctx.fill();
+
+    // Top label
+    ctx.fillStyle='rgba(126,184,247,0.7)'; ctx.font='11px DM Mono,monospace'; ctx.textAlign='right';
+    ctx.fillText('f(x) = sin(x) + 1',padL+cW-4,p1T+14);
+    ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.textAlign='left';
+    ctx.fillText('f(x)',padL,p1T-4);
+
+    // Top axis
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,p1T);ctx.lineTo(padL,p1T+pH);ctx.lineTo(padL+cW,p1T+pH);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='right';
+    [0.5,1,1.5,2].forEach(v=>ctx.fillText(v,padL-4,tfy(v)+4));
+
+    // Separator
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,p1T+pH+gap/2+5);ctx.lineTo(padL+cW,p1T+pH+gap/2+5);ctx.stroke();
+
+    // ── BOTTOM: F(x) ───────────────────────────────
+    const Fy1=-0.2, Fy2=Fb(2*Math.PI)+0.5;
+    function tFy(y){ return p2T+(1-(y-Fy1)/(Fy2-Fy1))*pH; }
+
+    // F curve (green)
+    ctx.strokeStyle='rgba(157,232,176,0.9)'; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    for(let i=0;i<=500;i++){
+      const x=xMin+(xMax-xMin)*i/500;
+      i===0?ctx.moveTo(tx(x),tFy(Fb(x))):ctx.lineTo(tx(x),tFy(Fb(x)));
+    }
+    ctx.stroke();
+
+    // Point on F
+    const Fval=Fb(xv);
+    ctx.fillStyle='rgba(157,232,176,0.9)';
+    ctx.beginPath();ctx.arc(tx(xv),tFy(Fval),4,0,2*Math.PI);ctx.fill();
+
+    // Tangent line on F at xv — slope = f(xv)
+    const tSlope=f(xv);
+    const tLen=0.7;
+    ctx.strokeStyle='rgba(232,201,109,0.85)'; ctx.lineWidth=2; ctx.setLineDash([5,3]);
+    ctx.beginPath();
+    ctx.moveTo(tx(xv-tLen), tFy(Fval-tSlope*tLen));
+    ctx.lineTo(tx(xv+tLen), tFy(Fval+tSlope*tLen));
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Vertical line at xv on F
+    ctx.strokeStyle='rgba(232,201,109,0.3)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(tx(xv),p2T);ctx.lineTo(tx(xv),p2T+pH);ctx.stroke();
+    ctx.setLineDash([]);
+
+    // F label
+    ctx.fillStyle='rgba(157,232,176,0.7)'; ctx.font='11px DM Mono,monospace'; ctx.textAlign='right';
+    ctx.fillText('F(x) = ∫₀ˣ f(t) dt',padL+cW-4,p2T+14);
+    ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.textAlign='left';
+    ctx.fillText('F(x)',padL,p2T-4);
+
+    // Bottom axis
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,p2T);ctx.lineTo(padL,p2T+pH);ctx.lineTo(padL+cW,p2T+pH);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+    ['0','π/2','π','3π/2','2π'].forEach((lbl,i)=>{
+      const xs=[0,Math.PI/2,Math.PI,3*Math.PI/2,2*Math.PI][i];
+      ctx.fillText(lbl,tx(xs),p2T+pH+14);
+    });
+    ctx.textAlign='right';
+    [2,4,6].forEach(v=>{ if(v<=Fy2) ctx.fillText(v,padL-4,tFy(v)+4); });
+
+    // Slope annotation
+    ctx.fillStyle='rgba(232,201,109,0.6)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='left';
+    ctx.fillText('slope of F = f(x) — the FTC',padL+8,p2T+pH-8);
+
+    // Info
+    $('ftcXInfo').textContent=xv.toFixed(3);
+    $('ftcFVal').textContent=f(xv).toFixed(4);
+    $('ftcCapFVal').textContent=Fval.toFixed(4);
+    $('ftcDerivVal').textContent=f(xv).toFixed(4);
+  }
+
+  $('ftcX').addEventListener('input',draw);
+  draw();
+})();
+
+// ─── SCROLL REVEAL + NAV DOTS ────────────────────────
+const sections=Array.from(document.querySelectorAll('section'));
+const navDots=Array.from(document.querySelectorAll('.nav-dot'));
+
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      const idx=sections.indexOf(e.target);
+      navDots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    }
+  });
+},{threshold:0.12});
+
+sections.forEach(s=>observer.observe(s));
+navDots.forEach((dot,i)=>dot.addEventListener('click',()=>sections[i].scrollIntoView({behavior:'smooth'})));
+sections[0].classList.add('visible');
+</script>
+</body>
+</html>
