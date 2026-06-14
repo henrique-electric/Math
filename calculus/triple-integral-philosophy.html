@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Weight of Space — A Visual Essay on the Triple Integral</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0c0c0e;
+    --surface: #111115;
+    --card:    #16161c;
+    --border:  #2a2a35;
+    --accent:  #e8c96d;
+    --accent2: #7eb8f7;
+    --accent3: #f07a7a;
+    --accent4: #9de8b0;
+    --text:    #d8d4cc;
+    --muted:   #6e6b62;
+    --bright:  #f0ece4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(126,184,247,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(126,184,247,0.025) 1px, transparent 1px),
+      linear-gradient(rgba(232,201,109,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,201,109,0.015) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+    animation: gridDrift 45s linear infinite;
+  }
+
+  @keyframes gridDrift {
+    from { transform: translate(0,0) perspective(600px) rotateX(5deg); }
+    to   { transform: translate(80px,80px) perspective(600px) rotateX(5deg); }
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 800px; height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(126,184,247,0.04) 0%, rgba(232,201,109,0.02) 40%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: 1; }
+    50%       { transform: translate(-50%,-50%) scale(1.12); opacity: 0.65; }
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+    animation: fadeSlideUp 0.8s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 8vw, 6rem);
+    font-weight: 900;
+    color: var(--bright);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    position: relative;
+    animation: fadeSlideUp 0.9s 0.1s ease both;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--muted);
+    max-width: 580px;
+    margin-top: 1.4rem;
+    position: relative;
+    animation: fadeSlideUp 0.9s 0.2s ease both;
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    animation: fadeSlideUp 1s 0.5s ease both;
+  }
+
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollLine {
+    0%, 100% { transform: scaleY(1);   opacity: 1; }
+    50%       { transform: scaleY(0.3); opacity: 0.3; }
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ── NAV DOTS ── */
+  .nav-dots {
+    position: fixed;
+    right: 2rem; top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 100;
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid var(--muted);
+  }
+
+  .nav-dot.active, .nav-dot:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.5);
+  }
+
+  /* ── SECTION ── */
+  section {
+    padding: 6rem 0;
+    position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--bright);
+    margin: 2rem 0 0.75rem;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  p { margin-bottom: 1.2rem; }
+
+  .divider {
+    width: 60px; height: 2px;
+    background: linear-gradient(to right, var(--accent2), transparent);
+    margin: 1.5rem 0 2.5rem;
+  }
+
+  /* ── FORMULA ── */
+  .formula {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--bright);
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 2.1;
+  }
+
+  .formula .comment { color: var(--muted); font-size: 0.78rem; }
+  .formula .gold    { color: var(--accent); }
+  .formula .blue    { color: var(--accent2); }
+  .formula .green   { color: var(--accent4); }
+  .formula .red     { color: var(--accent3); }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    background: linear-gradient(135deg, rgba(126,184,247,0.07), rgba(126,184,247,0.02));
+    border: 1px solid rgba(126,184,247,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent2);
+    font-size: 1.05rem;
+  }
+
+  .callout-gold {
+    background: linear-gradient(135deg, rgba(232,201,109,0.07), rgba(232,201,109,0.02));
+    border: 1px solid rgba(232,201,109,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent);
+    font-size: 1.05rem;
+  }
+
+  .callout-green {
+    background: linear-gradient(135deg, rgba(157,232,176,0.07), rgba(157,232,176,0.02));
+    border: 1px solid rgba(157,232,176,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent4);
+    font-size: 1.05rem;
+  }
+
+  .callout-red {
+    background: linear-gradient(135deg, rgba(240,122,122,0.07), rgba(240,122,122,0.02));
+    border: 1px solid rgba(240,122,122,0.2);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--accent3);
+    font-size: 1.05rem;
+  }
+
+  /* ── VIEWPORT ── */
+  .viewport {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 2.5rem 0;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .viewport-header {
+    padding: 0.85rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .vp-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .vp-dot:nth-child(1) { background: #f07a7a; }
+  .vp-dot:nth-child(2) { background: #e8c96d; }
+  .vp-dot:nth-child(3) { background: #7eb8f7; }
+
+  .viewport-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-left: auto;
+  }
+
+  .viewport-body { padding: 1.5rem; }
+
+  canvas { display: block; border-radius: 4px; }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.2rem;
+    align-items: center;
+  }
+
+  .ctrl-group { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .ctrl-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 140px; height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+
+  .val-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    min-width: 3rem;
+  }
+
+  .radio-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .radio-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .radio-btn.active {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(126,184,247,0.08);
+  }
+
+  /* ── INFO LINE ── */
+  .info-line {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.75rem;
+    padding: 0.6rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .info-line .blu  { color: var(--accent2); }
+  .info-line .gld  { color: var(--accent);  }
+  .info-line .grn  { color: var(--accent4); }
+  .info-line .red  { color: var(--accent3); }
+
+  /* ── STEP ROW ── */
+  .step-row {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(232,201,109,0.1);
+    border: 1px solid rgba(232,201,109,0.25);
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .step-num.blue {
+    color: var(--accent2);
+    background: rgba(126,184,247,0.1);
+    border-color: rgba(126,184,247,0.25);
+  }
+
+  .step-num.green {
+    color: var(--accent4);
+    background: rgba(157,232,176,0.1);
+    border-color: rgba(157,232,176,0.25);
+  }
+
+  .step-body { flex: 1; }
+  .step-body strong {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: var(--bright);
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ── HIGHLIGHTS ── */
+  .hl  { color: var(--accent);  }
+  .hl2 { color: var(--accent2); }
+  .hl3 { color: var(--accent3); }
+  .hl4 { color: var(--accent4); }
+
+  /* ── SEPARATOR ── */
+  .sep {
+    width: 100%; height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 4rem 0;
+  }
+
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82em;
+    background: rgba(255,255,255,0.06);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    color: var(--accent2);
+  }
+
+  .tooltip {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    line-height: 2;
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .nav-dots { display: none; }
+    .step-row { flex-direction: column; gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV DOTS ── -->
+<nav class="nav-dots">
+  <div class="nav-dot active" title="Hero"></div>
+  <div class="nav-dot" title="The Question"></div>
+  <div class="nav-dot" title="The Partition"></div>
+  <div class="nav-dot" title="Fubini's Theorem"></div>
+  <div class="nav-dot" title="Change of Variables"></div>
+  <div class="nav-dot" title="What It Really Is"></div>
+</nav>
+
+<!-- ══ HERO ════════════════════════════════════════ -->
+<section class="hero" id="s0">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div style="position:relative;">
+    <div class="hero-eyebrow">Philosophy of Mathematics · Visual Essay</div>
+    <h1>The <em>Weight</em><br>of Space</h1>
+    <p class="hero-sub">Not how to compute triple integrals — but what it truly <em>means</em> to perform a continuous sum over every point of a three-dimensional region.</p>
+  </div>
+  <div class="scroll-cue">
+    <div class="scroll-line"></div>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- ══ §01 — THE QUESTION ══════════════════════════ -->
+<section id="s1">
+  <div class="container">
+    <div class="section-tag">§ 01 — The Question</div>
+    <h2>What does it mean to <em>add over a solid?</em></h2>
+    <div class="divider"></div>
+
+    <p>Suppose you hold a rock. It has a mass. You want to find it. You know the density — how much mass per unit volume — varies from point to point across the material. How do you recover the total from that field of local information?</p>
+
+    <p>If the density were constant, the answer would be trivial: mass equals density times volume. But nature is rarely so cooperative. Density may taper near the edges, spike at the center, twist and vary in all three directions simultaneously. The density is not a single number. It is a <span class="hl">function</span> — a rule that assigns a value <code>ρ(x, y, z)</code> to every point in the solid.</p>
+
+    <p>The question then becomes something deeper: how do you sum a function over a region? Ordinary addition works for a finite list of numbers. But a solid region in ℝ³ contains not a finite, or even a countable, but an <em>uncountably infinite</em> collection of points. You cannot sum them one by one. There is no "one by one" — the points have no natural order, no first term, no last. And yet the mass exists. It is a finite, definite number. Somewhere between the continuous world of geometry and the discrete world of addition, there must be a bridge.</p>
+
+    <div class="callout">
+      The triple integral is that bridge. It is the precise mathematical answer to the question: what is the right notion of "continuous summation" over a three-dimensional domain?
+    </div>
+
+    <h3>Why the question is hard</h3>
+
+    <p>The difficulty is not computational. It is conceptual. Consider a simpler version: you want to find the total length of the number line between 0 and 1. You cannot add up the lengths of individual points — each point has length zero. An infinite sum of zeros is still zero. Yet the interval [0,1] has length 1, not zero. Something about "summing zeros over uncountably many points" must mean something other than ordinary addition.</p>
+
+    <p>This is not a paradox to dismiss. It is a signal that the concept we need — "integral" — is genuinely new. It is not a large finite sum. It is not a limit of a sequence. It is something more carefully constructed: a limit of <em>particular kinds</em> of finite sums, where both the number of terms and the size of each term are changing simultaneously, in a controlled way.</p>
+
+    <div class="callout-red">
+      Adding infinitely many zeros and getting something nonzero is not a contradiction. It is a definition — one we must engineer with care. The triple integral is the three-dimensional version of this engineering.
+    </div>
+
+    <h3>The three-dimensional leap</h3>
+
+    <p>In one dimension, the integral <code>∫f(x) dx</code> sums a function along a curve. The "dx" is an infinitesimal length element. In two dimensions, <code>∬f(x,y) dA</code> sums over a flat region; <code>dA</code> is an infinitesimal area element. Each step feels natural — you are just sweeping across more space.</p>
+
+    <p>But in three dimensions, the nature of what you are doing changes slightly in character. You are now accumulating a value assigned to every point inside a solid — every interior location, every hidden point that you cannot even see on the surface. The integral becomes, in the most literal sense, a way of <em>reading the interior of matter</em>.</p>
+
+    <div class="formula">
+      The triple integral over a region Ω ⊂ ℝ³:<br><br>
+      <span class="blue">∭</span><sub>Ω</sub> f(x, y, z) <span class="gold">dV</span><br><br>
+      <span class="comment">// dV = dx dy dz  — an infinitesimal volume element</span><br>
+      <span class="comment">// f(x,y,z)       — a value assigned at each point of space</span><br>
+      <span class="comment">// Ω              — the domain: a solid region in 3D</span><br><br>
+      Possible interpretations depending on what f represents:<br><br>
+      <span class="green">  f = ρ(x,y,z)</span>   →   total mass of the solid<br>
+      <span class="green">  f = 1      </span>   →   total volume of Ω<br>
+      <span class="green">  f = T(x,y,z)</span>   →   total thermal energy (if T is temperature × specific heat)<br>
+      <span class="green">  f = |ψ|²  </span>   →   quantum mechanical probability of finding a particle in Ω<br><br>
+      <span class="comment">// The form is universal. The meaning depends on what you are accumulating.</span>
+    </div>
+
+    <p>This universality is philosophically significant. The triple integral is not a formula tailored to mass, or to volume, or to any particular physical quantity. It is a machine for <em>continuous accumulation</em> over space — a general-purpose tool whose meaning comes entirely from the function you feed it. The mathematics is neutral. The physics is in the choice of <code>f</code>.</p>
+  </div>
+</section>
+
+<!-- ══ §02 — THE RIEMANN PARTITION ════════════════ -->
+<section id="s2">
+  <div class="container">
+    <div class="section-tag">§ 02 — The Riemann Partition</div>
+    <h2>Chopping <em>space</em> into infinitesimal pieces</h2>
+    <div class="divider"></div>
+
+    <p>The rigorous construction of the triple integral begins with a deliberately crude approximation. We don't immediately ask what a "continuous sum" means. We ask something simpler: if we subdivide the region into small, finite boxes, and sample <code>f</code> once inside each box, what is the total?</p>
+
+    <p>This is the Riemann approach, now lifted into three dimensions. Choose a <span class="hl">partition</span> of the bounding box of Ω: divide the x-axis into <code>l</code> equal parts, the y-axis into <code>m</code> parts, the z-axis into <code>n</code> parts. This creates a 3D grid of rectangular boxes, each with volume <code>ΔV = Δx · Δy · Δz</code>. Pick any sample point <code>(x*ᵢ, y*ⱼ, z*ₖ)</code> inside each box that lies within Ω. Form the sum:</p>
+
+    <div class="formula">
+      Riemann sum in ℝ³:<br><br>
+      S<sub>l,m,n</sub> = <span class="blue">Σᵢ Σⱼ Σₖ</span>  f(x*ᵢ, y*ⱼ, z*ₖ) · <span class="gold">ΔV</span><br><br>
+      where  ΔV = Δx · Δy · Δz  =  (b₁−a₁)/l · (b₂−a₂)/m · (b₃−a₃)/n<br><br>
+      <span class="comment">// This is a finite sum — normal arithmetic. No infinity yet.</span><br>
+      <span class="comment">// Each term = (local value of f) × (tiny volume of the box).</span><br>
+      <span class="comment">// Read: "how much f-stuff fits in this small piece of space."</span>
+    </div>
+
+    <p>Each term in this sum has a clear physical meaning. If <code>f = ρ</code> is density, then <code>ρ(x*, y*, z*) · ΔV</code> is approximately the mass of that small box — the density there, multiplied by the volume of the box. We are treating each tiny box as if it had constant density, then adding up all the contributions. The approximation is coarse, but it is physically transparent.</p>
+
+    <h3>The limit that makes it exact</h3>
+
+    <p>The Riemann sum is an approximation. Its error is proportional to how much <code>f</code> varies within each box. The smaller the boxes, the less <code>f</code> can vary inside any one of them — and so the smaller the error. As we refine the partition indefinitely, letting <code>l, m, n → ∞</code> simultaneously, the Riemann sum approaches a definite limit. That limit is the triple integral.</p>
+
+    <div class="callout-gold">
+      The triple integral is defined as the limit of Riemann sums as the partition is refined to zero. Every single infinitesimal volume element <code>dV</code> in the integral is the ghost of a finite box <code>ΔV</code> in the Riemann sum, grown infinitely small.
+    </div>
+
+    <p>This is the key philosophical move. We replace the impossible direct task — summing over uncountably many points — with an achievable sequence: sum over finitely many boxes, then take a limit. The integral does not directly add the values at infinitely many points. It is the limit of sums that do add finitely many values. Infinity enters only through the limiting process, not through the summation itself.</p>
+
+    <p>Crucially, for a continuous function <code>f</code> on a compact domain Ω, this limit <em>exists</em> and is independent of the choice of sample points. It does not matter whether you sample at the center, a corner, or anywhere else inside each box: the limit is the same. This independence is not obvious — it is a theorem, and it requires completeness of ℝ for its proof.</p>
+
+    <!-- VIEWPORT 1: 3D RIEMANN SUM -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · 3D Riemann Partition (Isometric Projection)</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          An n×n×n grid of cubes approximating the integral of f(x,y,z) = x² + y² + z² over [0,1]³. Colour encodes the sampled value. Increase n to refine the partition and watch the sum converge.
+        </p>
+        <canvas id="cvRiemann3D" width="700" height="360" style="width:100%;max-width:700px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">Grid n = <span class="val-display" id="r3dNVal">4</span></span>
+            <input type="range" id="r3dN" min="1" max="10" value="4">
+          </div>
+          <div class="ctrl-group">
+            <span class="ctrl-label">Rotate = <span class="val-display" id="r3dRotVal">30°</span></span>
+            <input type="range" id="r3dRot" min="0" max="360" value="30">
+          </div>
+        </div>
+        <div class="info-line">
+          n³ boxes = <span class="blu" id="r3dCount">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Riemann sum = <span class="gld" id="r3dSum">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          True value = <span class="grn">1.000</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Error = <span class="red" id="r3dErr">—</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>The boundary problem</h3>
+
+    <p>An immediate complication arises: the grid boxes do not align perfectly with the boundary of Ω. Some boxes straddle the surface — partially inside, partially outside. What do we do with them?</p>
+
+    <p>For the Riemann sum, we can include them, exclude them, or partially count them. In the limit, it does not matter — the total volume of boundary-straddling boxes goes to zero as the partition is refined, so their contribution vanishes. This works because the boundary of a "nice" region (what mathematicians call a <span class="hl">Jordan measurable</span> set) has zero volume, even though the boundary itself may be a complicated surface. The surface of a ball has area, but it has zero three-dimensional volume. Boundaries, in this sense, do not weigh anything.</p>
+
+    <div class="callout">
+      The fact that surfaces have zero 3D volume is not trivial — it is a consequence of measure theory. It is what allows us to integrate over solid regions without worrying about exactly what happens on the skin.
+    </div>
+  </div>
+</section>
+
+<!-- ══ §03 — FUBINI'S THEOREM ═════════════════════ -->
+<section id="s3">
+  <div class="container">
+    <div class="section-tag">§ 03 — Fubini's Theorem</div>
+    <h2>The miracle of <em>iteration</em></h2>
+    <div class="divider"></div>
+
+    <p>The definition via Riemann sums is logically satisfying but computationally useless. A triple limit of triple sums over an irregular 3D domain is not something you can evaluate by hand — or even symbolically. A more practical approach is needed. The answer is one of the deepest theorems in analysis: <span class="hl">Fubini's theorem</span>.</p>
+
+    <p>The theorem says, roughly: a triple integral over a 3D region can be evaluated as three nested single integrals, done one at a time. You can reduce a three-dimensional problem into three successive one-dimensional problems. The order in which you integrate the three variables does not change the result.</p>
+
+    <div class="formula">
+      Fubini's Theorem (rectangular domain [a,b]×[c,d]×[e,g]):<br><br>
+      <span class="blue">∭</span><sub>Ω</sub> f(x,y,z) dV  =  <span class="gold">∫</span><sub>a</sub><sup>b</sup> <span class="gold">∫</span><sub>c</sub><sup>d</sup> <span class="gold">∫</span><sub>e</sub><sup>g</sup>  f(x,y,z)  dz dy dx<br><br>
+      <span class="comment">// All 6 orderings (dz dy dx, dx dy dz, dy dz dx, etc.) give the same answer.</span><br>
+      <span class="comment">// Each inner integral is a standard 1D integral — integrate f over z, treating x,y as constants.</span><br>
+      <span class="comment">// The result is a function of (x,y). Then integrate over y. Then over x.</span><br><br>
+      For non-rectangular Ω — limits of inner integrals become functions:<br><br>
+      = <span class="gold">∫</span><sub>a</sub><sup>b</sup> <span class="gold">∫</span><sub>c(x)</sub><sup>d(x)</sup> <span class="gold">∫</span><sub>e(x,y)</sub><sup>g(x,y)</sup>  f(x,y,z)  dz dy dx<br><br>
+      <span class="comment">// The inner limits depend on outer variables — this encodes the shape of Ω.</span>
+    </div>
+
+    <h3>Why this is not obvious</h3>
+
+    <p>Fubini's theorem looks like it should be obvious. Surely summing over all three coordinates at once is the same as summing over them one at a time? But this apparent obviousness conceals something subtle. The triple integral is a single object defined as a limit of Riemann sums. The iterated integral is three nested limiting processes. These are logically distinct operations. The theorem asserts they agree — and the proof requires real analytical work.</p>
+
+    <p>The condition for Fubini to apply is that <code>f</code> must be integrable over the domain. For continuous functions on compact sets, this is always satisfied. But in greater generality — for functions that are discontinuous on sets of measure zero — the theorem can fail. There exist functions where the iterated integrals exist but disagree with each other, or where the triple integral exists but the iterated integral doesn't. Fubini is a theorem, not a tautology.</p>
+
+    <div class="callout-red">
+      A function can be integrable in three dimensions while its two-dimensional cross-sectional integrals are individually undefined. The three-dimensional whole can be more well-behaved than any of its two-dimensional slices. This is one of the genuinely strange gifts of higher-dimensional integration.
+    </div>
+
+    <h3>The geometric picture — slicing</h3>
+
+    <p>The best way to understand Fubini is geometrically. Imagine sweeping a flat horizontal plane through the solid Ω from bottom to top, at every height <code>z = z₀</code>. The plane cuts through Ω and reveals a two-dimensional cross-section — a flat slice. On each slice, <code>f(x, y, z₀)</code> is just a function of two variables (since <code>z₀</code> is fixed). We can integrate <code>f</code> over that slice to get a single number: the total contribution of that horizontal layer.</p>
+
+    <p>Now as <code>z₀</code> varies, this cross-sectional integral becomes a function of <code>z</code>. The final integral over <code>z</code> sums all these layer-contributions from bottom to top. This is Fubini: accumulate within each slice, then accumulate the slices. The triple integral decomposes into a hierarchy — slice, then stack.</p>
+
+    <!-- VIEWPORT 2: FUBINI CROSS-SECTION SWEEPER -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · Fubini's Slicing Principle</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          Sweeping a horizontal plane at height z through the unit sphere. Left: the spherical cross-section at that z (a disk of radius √(1−z²)). Right: the accumulated area of all slices from −1 to z, which converges to 4π/3 as z → 1 — demonstrating Fubini's principle.
+        </p>
+        <canvas id="cvFubini" width="700" height="300" style="width:100%;max-width:700px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">Height z = <span class="val-display" id="fubZVal">0.00</span></span>
+            <input type="range" id="fubZ" min="-100" max="100" value="0">
+          </div>
+        </div>
+        <div class="info-line">
+          Slice radius r(z) = <span class="blu" id="fubR">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Slice area A(z) = <span class="gold" id="fubA">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Accumulated volume ∫A(z)dz = <span class="grn" id="fubVol">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          True volume 4π/3 = <span class="red">4.189</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Order independence — and what it means</h3>
+
+    <p>Fubini tells us not just that we can iterate, but that the order of iteration is irrelevant. We can integrate in <code>x</code> first, or in <code>z</code> first, or in <code>y</code> first — six possible orderings, all giving the same number. This is philosophically remarkable. It says that the structure of the continuous sum is symmetric across dimensions in a way that the outer form of the iterated integral does not immediately suggest.</p>
+
+    <p>Choosing an order to integrate is not a mathematical choice — it is a notational convenience, or a strategic one (some orders make the computation easier than others). The integral itself is prior to any choice of order. It exists at the level of the three-dimensional object, not at the level of how we happen to slice it.</p>
+
+    <div class="callout-green">
+      The triple integral does not prefer any axis. It is an intrinsic property of the function and the domain — a number that belongs to ℝ³ as a whole, not to any coordinate system imposed on it. The six orderings are six different routes to the same destination.
+    </div>
+  </div>
+</section>
+
+<!-- ══ §04 — CHANGE OF VARIABLES ══════════════════ -->
+<section id="s4">
+  <div class="container">
+    <div class="section-tag">§ 04 — Change of Variables</div>
+    <h2>When coordinates <em>warp</em> space</h2>
+    <div class="divider"></div>
+
+    <p>The Cartesian grid — boxes aligned with x, y, z axes — is not always the natural language for a given problem. A ball is better described in spherical coordinates. A cylinder belongs in cylindrical coordinates. A spinning fluid may live most naturally in helical coordinates. When we change coordinates, we rewrite the integral in a new language. But this rewriting has a price: we must account for how the change of variables distorts space.</p>
+
+    <p>Consider spherical coordinates: every point in ℝ³ is assigned a radius <code>r</code>, a polar angle <code>φ</code> (from the positive z-axis), and an azimuthal angle <code>θ</code> (around the z-axis). The conversion is:</p>
+
+    <div class="formula">
+      Spherical coordinates:<br><br>
+      x = r sin(φ) cos(θ)<br>
+      y = r sin(φ) sin(θ)<br>
+      z = r cos(φ)<br><br>
+      <span class="comment">// r ∈ [0,∞),  φ ∈ [0,π],  θ ∈ [0,2π)</span><br><br>
+      Volume element under this change of variables:<br><br>
+      <span class="gold">dV</span>  =  <span class="blue">r² sin(φ)</span>  dr dφ dθ<br><br>
+      <span class="comment">// The factor r² sin(φ) is the Jacobian determinant of the transformation.</span><br>
+      <span class="comment">// It accounts for the fact that spherical boxes are not uniform in size.</span>
+    </div>
+
+    <p>The factor <code>r² sin(φ)</code> is not arbitrary or mysterious. It is the <span class="hl">Jacobian determinant</span> — the determinant of the matrix of partial derivatives of the coordinate transformation. Geometrically, it measures by how much a small box in <code>(r, φ, θ)</code>-space gets <em>stretched or compressed</em> when mapped into Cartesian space.</p>
+
+    <h3>The Jacobian as a local scale factor</h3>
+
+    <p>Think of the coordinate transformation as a function <code>T : ℝ³ → ℝ³</code> that maps <code>(r, φ, θ)</code> to <code>(x, y, z)</code>. Near any given point, <code>T</code> is approximately linear — it stretches and shears space by a factor given by its derivative, the <span class="hl2">Jacobian matrix</span>. The determinant of this matrix is the factor by which local volumes are scaled. A positive Jacobian means the transformation preserves orientation. A negative Jacobian means it reverses it. A zero Jacobian means the transformation collapses some directions — it is singular there.</p>
+
+    <div class="callout">
+      The Jacobian determinant answers the question: if I place an infinitesimally small box in the new coordinate system and map it to the original space, how big does it become? Integration requires knowing this, because we are summing with respect to physical volume — not with respect to our choice of coordinates.
+    </div>
+
+    <p>In spherical coordinates, a thin shell near <code>r = 0</code> (a tiny sphere around the origin) has nearly zero physical volume — this is captured by the <code>r²</code> factor going to zero. A shell near the equator <code>(φ = π/2)</code> has maximum circumferential extent — captured by <code>sin(φ) = 1</code>. A shell near the poles <code>(φ = 0 or π)</code> is pinched — captured by <code>sin(φ) → 0</code>. The Jacobian encodes all of this warping faithfully.</p>
+
+    <div class="formula">
+      The change of variables theorem:<br><br>
+      <span class="blue">∭</span><sub>Ω</sub> f(x,y,z) dx dy dz  =  <span class="blue">∭</span><sub>Ω'</sub> f(T(u,v,w)) · <span class="gold">|J<sub>T</sub>(u,v,w)|</span>  du dv dw<br><br>
+      where  J<sub>T</sub>  =  det( ∂(x,y,z) / ∂(u,v,w) )<br><br>
+      <span class="comment">// T maps (u,v,w) → (x,y,z), and Ω' is the pre-image of Ω under T.</span><br>
+      <span class="comment">// The absolute value ensures we always count volume positively.</span><br><br>
+      For a unit ball with f = 1 (computing volume):<br><br>
+      <span class="blue">∭</span><sub>ball</sub> 1 dx dy dz  =  <span class="gold">∫₀²π ∫₀π ∫₀¹</span>  r² sin(φ)  dr dφ dθ<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  =  2π · 2 · (1/3)  =  <span class="green">4π/3</span>  ✓
+    </div>
+
+    <!-- VIEWPORT 3: SPHERICAL VOLUME ELEMENT -->
+    <div class="viewport">
+      <div class="viewport-header">
+        <div class="vp-dot"></div><div class="vp-dot"></div><div class="vp-dot"></div>
+        <span class="viewport-title">INTERACTIVE · The Spherical Volume Element dV = r² sin(φ) dr dφ dθ</span>
+      </div>
+      <div class="viewport-body">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+          A single spherical "wedge" (small box in (r,φ,θ)-space) projected as a 2D cross-section. As r increases, the same angular increment Δφ covers a longer arc — so the physical volume grows as r². As φ moves toward the poles, the circle of constant latitude shrinks — captured by sin(φ).
+        </p>
+        <canvas id="cvJacobian" width="700" height="320" style="width:100%;max-width:700px;"></canvas>
+        <div class="controls">
+          <div class="ctrl-group">
+            <span class="ctrl-label">Radius r = <span class="val-display" id="jrVal">0.60</span></span>
+            <input type="range" id="jrSlider" min="10" max="95" value="60">
+          </div>
+          <div class="ctrl-group">
+            <span class="ctrl-label">Polar angle φ = <span class="val-display" id="jphiVal">90°</span></span>
+            <input type="range" id="jphiSlider" min="5" max="175" value="90">
+          </div>
+        </div>
+        <div class="info-line">
+          r = <span class="blu" id="jrDisp">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          φ = <span class="gld" id="jphiDisp">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          sin(φ) = <span class="grn" id="jsinPhi">—</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Jacobian factor r²sin(φ) = <span class="red" id="jJac">—</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>The intrinsic message</h3>
+
+    <p>The change-of-variables theorem makes precise a fundamental insight: the value of the integral is independent of the coordinate system. You can compute it in Cartesian, spherical, cylindrical, or any other coordinates — the number you get is the same. Coordinates are just a language we use to talk about space. The integral is about space itself.</p>
+
+    <p>This is not a trivial statement. The Jacobian correction factor is exactly what is needed to compensate for the distortion introduced by the coordinate change. Without it, changing coordinates would change the answer. With it, the answer is invariant. The Jacobian is the price of coordinate freedom — and it is precisely the right price.</p>
+  </div>
+</section>
+
+<!-- ══ §05 — WHAT IT REALLY IS ════════════════════ -->
+<section id="s5">
+  <div class="container">
+    <div class="section-tag">§ 05 — What It Really Is</div>
+    <h2>A continuous sum, <em>philosophically</em></h2>
+    <div class="divider"></div>
+
+    <p>We have seen how the triple integral is constructed — via Riemann sums, refined to a limit. We have seen how it is computed — via Fubini's iteration, and via coordinate changes. But what <em>is</em> it, at the deepest level?</p>
+
+    <p>The triple integral is an element of a continuum-indexed linear functional. That is a mouthful, but the idea is simple. Addition over a finite set is a linear operation: it respects scaling and superposition. The triple integral inherits this linearity and extends it to infinite collections. If you scale <code>f</code> by a constant, the integral scales by the same constant. If you split <code>f = g + h</code>, the integral splits accordingly. These properties hold not because of any computation, but because the limit of Riemann sums preserves the linearity of finite sums.</p>
+
+    <div class="callout-gold">
+      The triple integral is the unique continuous extension of finite summation to functions defined on solid regions. "Continuous" here does not refer to the function being integrated — it means that the integral varies continuously as the function varies, and reduces to ordinary finite summation when the domain is discrete.
+    </div>
+
+    <h3>The measure-theoretic foundation</h3>
+
+    <p>The Riemann approach works beautifully for continuous functions on compact domains. But it has limits. There exist integrable functions that are too wildly discontinuous for Riemann sums to converge — yet whose integral is perfectly well-defined by a more powerful construction.</p>
+
+    <p>The modern foundation is <span class="hl">Lebesgue integration</span>, which replaces the geometric approach (partition space into boxes) with an algebraic one (partition the range of <code>f</code> into level sets). Instead of asking "what does <code>f</code> do on this small box?", we ask "how much volume does Ω contain where <code>f</code> takes values between <code>c</code> and <code>c + dc</code>?" We integrate the <em>values</em>, weighted by the <em>volume of the preimage</em>.</p>
+
+    <div class="formula">
+      Lebesgue integral — schematic:<br><br>
+      ∭<sub>Ω</sub> f dV  ≈  Σ<sub>c</sub>  c · <span class="gold">μ</span>({ (x,y,z) ∈ Ω : f(x,y,z) ≈ c })<br><br>
+      <span class="comment">// μ(S) is the "measure" (volume) of the set S.</span><br>
+      <span class="comment">// We weight the value c by how large a piece of Ω achieves that value.</span><br>
+      <span class="comment">// In the limit, this gives the Lebesgue integral.</span><br><br>
+      For "nice" f on compact Ω: Riemann = Lebesgue.<br>
+      For badly discontinuous f: only Lebesgue works.
+    </div>
+
+    <p>The Lebesgue perspective reveals the true nature of integration. The "continuous sum" over Ω is not summing values at points — points have zero measure, so individual values contribute nothing. It is summing level sets weighted by their size. Integration is an operation on the distribution of values across the domain, not on the values at individual locations.</p>
+
+    <h3>The philosophical upshot</h3>
+
+    <p>Return to the rock we began with. Its mass is a real, physical number. It does not depend on how we choose to slice it, or what coordinate system we use, or whether the density function is smooth or rough. The triple integral captures this physical reality by being a number that belongs to the pair <code>(f, Ω)</code> — not to any particular method of computation.</p>
+
+    <p>This is the deepest sense in which the triple integral is a "continuous sum over a domain": it is the unique way to assign a number to a function-domain pair that respects linearity, positivity, and the geometry of three-dimensional space, while reducing to ordinary finite summation when the domain is finite and discrete.</p>
+
+    <div class="callout">
+      We did not discover the triple integral hiding inside mathematics, waiting to be found. We constructed it — as the unique object satisfying a list of reasonable demands. The integral is a theorem in disguise: it exists because the demands are consistent. And they are consistent because ℝ³ is complete, compact domains are measurable, and continuous functions are bounded.
+    </div>
+
+    <h3>Three integrals — one idea</h3>
+
+    <p>The single, double, and triple integral are not three different objects. They are one object — the integral — instantiated in dimensions 1, 2, and 3. The idea of "summing a function over a geometric domain" is intrinsically dimension-independent. It generalizes, without modification of the core logic, to any dimension — and even to infinite-dimensional spaces, where it becomes functional integration, the mathematical foundation of quantum field theory.</p>
+
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>∫<sub>a</sub><sup>b</sup> f(x) dx — summing along a curve</strong>
+        Accumulates a density along a one-dimensional path. The domain is an interval; the volume element is a length dx.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num blue">2</div>
+      <div class="step-body">
+        <strong>∬<sub>D</sub> f(x,y) dA — summing over a surface</strong>
+        Accumulates a surface density over a two-dimensional region. The volume element is an area dA.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num green">3</div>
+      <div class="step-body">
+        <strong>∭<sub>Ω</sub> f(x,y,z) dV — summing over a solid</strong>
+        Accumulates a spatial density over a three-dimensional region. The volume element is a volume dV. This is the triple integral — the full, interior reading of a body in space.
+      </div>
+    </div>
+
+    <p>Each step adds a dimension, and with it, a new geometric richness. But the logic is the same at every level: partition, sample, sum, refine, limit. Zeno's paradox — can you sum infinitely many things and get something finite? — is answered the same way in three dimensions as in one. Yes, if the things are getting smaller fast enough, and if the space they live in is complete enough to guarantee the limit exists.</p>
+
+    <div class="callout-green">
+      The triple integral is, in the end, the answer to Zeno's paradox in three dimensions: an infinity of infinitely small volumes, each holding an infinitely small amount of something, adding up to a perfectly finite, perfectly real number. The interior of a solid, made legible through the discipline of limits.
+    </div>
+
+    <div class="sep"></div>
+
+    <p style="font-style:italic; color: var(--muted); font-size: 1rem; text-align: center; max-width: 500px; margin: 0 auto;">
+      The deepest result is not a formula. It is that the question has a well-defined answer at all.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div>The Weight of Space · A Visual Essay on the Triple Integral</div>
+  <div style="margin-top:0.5rem;opacity:0.5;">Constructed with Canvas · Playfair Display · Crimson Pro</div>
+</footer>
+
+<script>
+// ── UTILITY ──────────────────────────────────────────────────────────
+function $(id){ return document.getElementById(id); }
+
+function clearCanvas(cv){
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle = 'rgba(22,22,28,0.0)';
+  ctx.fillRect(0,0,cv.width,cv.height);
+}
+
+// ─── VP 1: 3D RIEMANN SUM (Isometric) ────────────────────────────────
+(function(){
+  // f(x,y,z) = x^2+y^2+z^2 on [0,1]^3  true value = 3*(1/3) = 1
+  const f = (x,y,z) => x*x + y*y + z*z;
+  const trueVal = 1.0;
+
+  // Isometric projection
+  function iso(x, y, z, cx, cy, scale){
+    const ix = (x - z) * Math.cos(Math.PI/6);
+    const iy = (x + z) * Math.sin(Math.PI/6) - y;
+    return { px: cx + ix * scale, py: cy + iy * scale };
+  }
+
+  function draw(){
+    const cv = $('cvRiemann3D');
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0,0,W,H);
+
+    const n    = parseInt($('r3dN').value);
+    const rotD = parseInt($('r3dRot').value);
+    $('r3dNVal').textContent = n;
+    $('r3dRotVal').textContent = rotD + '°';
+
+    const rot = rotD * Math.PI / 180;
+    const cx = W * 0.5, cy = H * 0.55, scale = Math.min(W, H) * 0.28;
+
+    // Rotated isometric
+    function riso(x, y, z){
+      const rx =  x * Math.cos(rot) + z * Math.sin(rot);
+      const rz = -x * Math.sin(rot) + z * Math.cos(rot);
+      const ix = (rx - rz) * Math.cos(Math.PI/6);
+      const iy = (rx + rz) * Math.sin(Math.PI/6) - y;
+      return { px: cx + ix * scale, py: cy + iy * scale };
+    }
+
+    const dx = 1.0 / n;
+    let sum = 0;
+
+    // Collect faces sorted by depth for painter's algorithm
+    const faces = [];
+
+    for(let i = 0; i < n; i++){
+      for(let j = 0; j < n; j++){
+        for(let k = 0; k < n; k++){
+          const x0 = i*dx, y0 = j*dx, z0 = k*dx;
+          const xc = x0+dx/2, yc = y0+dx/2, zc = z0+dx/2;
+          const fv = f(xc, yc, zc);
+          sum += fv * dx * dx * dx;
+
+          // Depth: for painter's, use center of cube projected
+          const cIso = riso(xc, yc, zc);
+          const depth = cIso.py;
+
+          // Normalize fv to color [0..1], fv in [0..3]
+          const t = Math.min(fv / 2.0, 1.0);
+
+          // Push top, front, right faces
+          const c = [
+            riso(x0,    y0+dx, z0   ),
+            riso(x0+dx, y0+dx, z0   ),
+            riso(x0+dx, y0+dx, z0+dx),
+            riso(x0,    y0+dx, z0+dx),
+          ];
+          const fr = [
+            riso(x0,    y0,    z0+dx),
+            riso(x0+dx, y0,    z0+dx),
+            riso(x0+dx, y0+dx, z0+dx),
+            riso(x0,    y0+dx, z0+dx),
+          ];
+          const ri = [
+            riso(x0+dx, y0,    z0   ),
+            riso(x0+dx, y0,    z0+dx),
+            riso(x0+dx, y0+dx, z0+dx),
+            riso(x0+dx, y0+dx, z0   ),
+          ];
+
+          faces.push({ depth, t, top: c, front: fr, right: ri });
+        }
+      }
+    }
+
+    // Sort back-to-front
+    faces.sort((a,b) => a.depth - b.depth);
+
+    function lerp(a, b, t){ return a + (b-a)*t; }
+    function color(t, bright){
+      // cool blue → warm gold
+      const r = Math.round(lerp(60,  232, t));
+      const g = Math.round(lerp(140, 201, t));
+      const b_ = Math.round(lerp(200, 80,  t));
+      const f = bright;
+      return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b_*f)})`;
+    }
+
+    for(const face of faces){
+      const t = face.t;
+
+      function drawFace(pts, bright, alpha){
+        ctx.beginPath();
+        ctx.moveTo(pts[0].px, pts[0].py);
+        for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].px, pts[i].py);
+        ctx.closePath();
+        ctx.fillStyle = color(t, bright);
+        ctx.globalAlpha = alpha;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = 'rgba(10,10,15,0.6)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      drawFace(face.top,   1.0, 0.88);
+      drawFace(face.front, 0.6, 0.88);
+      drawFace(face.right, 0.75,0.88);
+    }
+
+    // Draw outer frame
+    const corners = [
+      [0,0,0],[1,0,0],[1,0,1],[0,0,1],
+      [0,1,0],[1,1,0],[1,1,1],[0,1,1]
+    ];
+    const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    ctx.strokeStyle = 'rgba(232,201,109,0.25)';
+    ctx.lineWidth = 1;
+    for(const [a,b] of edges){
+      const pa = riso(...corners[a]);
+      const pb = riso(...corners[b]);
+      ctx.beginPath(); ctx.moveTo(pa.px, pa.py); ctx.lineTo(pb.px, pb.py); ctx.stroke();
+    }
+
+    // Axis labels
+    ctx.fillStyle = 'rgba(126,184,247,0.7)';
+    ctx.font = '11px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    const ax = riso(0.5, -0.12, 0); ctx.fillText('x', ax.px, ax.py);
+    const ay = riso(-0.12, 0.5, 0); ctx.fillText('y', ay.px, ay.py);
+    const az = riso(0, -0.12, 0.5); ctx.fillText('z', az.px, az.py);
+
+    $('r3dCount').textContent = n*n*n;
+    $('r3dSum').textContent   = sum.toFixed(4);
+    $('r3dErr').textContent   = Math.abs(sum - trueVal).toFixed(5);
+  }
+
+  $('r3dN').addEventListener('input', draw);
+  $('r3dRot').addEventListener('input', draw);
+  draw();
+})();
+
+// ─── VP 2: FUBINI CROSS-SECTION ──────────────────────────────────────
+(function(){
+  function draw(){
+    const cv = $('cvFubini');
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0,0,W,H);
+
+    const zRaw = parseInt($('fubZ').value) / 100.0;  // -1..1
+    $('fubZVal').textContent = zRaw.toFixed(2);
+
+    const pad = 40;
+    const halfW = W/2;
+
+    // ── LEFT: cross-section disk ──────────────────────────────────
+    const lCx = halfW * 0.5, lCy = H * 0.5;
+    const maxR = Math.min(halfW, H) * 0.38;
+
+    // Draw sphere outline (circle)
+    ctx.strokeStyle = 'rgba(126,184,247,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.arc(lCx, lCy, maxR, 0, 2*Math.PI);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Compute cross-section radius
+    const rSlice = zRaw*zRaw > 1 ? 0 : Math.sqrt(Math.max(0, 1 - zRaw*zRaw));
+    const sliceR = rSlice * maxR;
+
+    // Filled disk at height z
+    if(sliceR > 0){
+      const grad = ctx.createRadialGradient(lCx, lCy, 0, lCx, lCy, sliceR);
+      grad.addColorStop(0, 'rgba(157,232,176,0.35)');
+      grad.addColorStop(1, 'rgba(157,232,176,0.08)');
+      ctx.beginPath();
+      ctx.ellipse(lCx, lCy, sliceR, sliceR * 0.22, 0, 0, 2*Math.PI);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(157,232,176,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Radius line
+      ctx.strokeStyle = 'rgba(232,201,109,0.8)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(lCx, lCy);
+      ctx.lineTo(lCx + sliceR, lCy);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(232,201,109,0.9)';
+      ctx.font = '10px DM Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('r = √(1−z²)', lCx + sliceR/2, lCy - 6);
+    }
+
+    // Height marker on left
+    const yCur = lCy - zRaw * maxR;
+    ctx.strokeStyle = 'rgba(232,201,109,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(lCx - maxR - 10, yCur);
+    ctx.lineTo(lCx + maxR + 10, yCur);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Left label
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('cross-section at z = ' + zRaw.toFixed(2), lCx, H - 10);
+
+    // z-axis on left
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(lCx - maxR - 12, lCy - maxR);
+    ctx.lineTo(lCx - maxR - 12, lCy + maxR);
+    ctx.stroke();
+    ['-1','0','1'].forEach((lbl,i) => {
+      const yy = lCy + maxR - i * maxR;
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.textAlign = 'right';
+      ctx.fillText(lbl, lCx - maxR - 16, yy + 4);
+    });
+
+    // ── RIGHT: accumulated volume curve ──────────────────────────
+    const rL = halfW + pad, rR = W - 20, rT = 20, rB = H - 20;
+    const rW = rR - rL, rH = rB - rT;
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 0.5;
+    [0.25, 0.5, 0.75, 1].forEach(frac => {
+      const yy = rB - frac * rH;
+      ctx.beginPath(); ctx.moveTo(rL, yy); ctx.lineTo(rR, yy); ctx.stroke();
+    });
+
+    // Axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(rL, rT); ctx.lineTo(rL, rB); ctx.lineTo(rR, rB);
+    ctx.stroke();
+
+    const maxVol = 4 * Math.PI / 3;  // 4.18879...
+
+    function zToX(z){ return rL + (z + 1) / 2 * rW; }
+    function volToY(v){ return rB - (v / maxVol) * rH; }
+
+    // A(z) curve = π(1−z²)
+    ctx.strokeStyle = 'rgba(232,201,109,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();
+    for(let i=0; i<=200; i++){
+      const z = -1 + 2*i/200;
+      const area = Math.PI * (1 - z*z);
+      const x = zToX(z);
+      const y = rB - (area / (Math.PI * 1)) * rH * 0.3;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Accumulated volume curve
+    ctx.strokeStyle = 'rgba(157,232,176,0.85)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for(let i=0; i<=200; i++){
+      const z = -1 + 2*i/200;
+      // ∫_{-1}^{z} π(1−t²) dt = π[t − t³/3]_{-1}^{z} = π(z − z³/3 + 1 − 1/3) = π(z − z³/3 + 2/3)
+      const vol = Math.PI * (z - z*z*z/3 + 2/3);
+      const x = zToX(z);
+      const y = volToY(vol);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // Current z marker
+    const curZ = zRaw;
+    const curVol = Math.PI * (curZ - curZ*curZ*curZ/3 + 2/3);
+    const cx2 = zToX(curZ), cy2 = volToY(curVol);
+    ctx.fillStyle = 'rgba(157,232,176,0.9)';
+    ctx.beginPath();
+    ctx.arc(cx2, cy2, 5, 0, 2*Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(157,232,176,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2,2]);
+    ctx.beginPath(); ctx.moveTo(cx2, rB); ctx.lineTo(cx2, cy2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Right labels
+    ctx.fillStyle = 'rgba(157,232,176,0.7)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('∫ A(z) dz (volume)', rL + 6, rT + 14);
+    ctx.fillStyle = 'rgba(232,201,109,0.6)';
+    ctx.fillText('A(z) = π(1−z²) (area)', rL + 6, rT + 28);
+
+    // y-axis labels
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.textAlign = 'right';
+    ctx.fillText('4π/3', rL - 4, volToY(maxVol) + 4);
+    ctx.fillText('0', rL - 4, rB + 4);
+
+    // x-axis labels
+    ctx.textAlign = 'center';
+    ['-1','0','1'].forEach((lbl,i) => {
+      ctx.fillText(lbl, zToX([-1,0,1][i]), rB + 14);
+    });
+    ctx.fillText('z', rL + rW/2, rB + 26);
+
+    $('fubR').textContent   = rSlice.toFixed(4);
+    $('fubA').textContent   = (Math.PI * rSlice * rSlice).toFixed(4);
+    $('fubVol').textContent = curVol.toFixed(4);
+  }
+
+  $('fubZ').addEventListener('input', draw);
+  draw();
+})();
+
+// ─── VP 3: JACOBIAN / SPHERICAL ELEMENT ──────────────────────────────
+(function(){
+  function draw(){
+    const cv = $('cvJacobian');
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0,0,W,H);
+
+    const rNorm = parseInt($('jrSlider').value) / 100;  // 0..1
+    const phiDeg = parseInt($('jphiSlider').value);     // 5..175
+    const phi = phiDeg * Math.PI / 180;
+
+    $('jrVal').textContent   = rNorm.toFixed(2);
+    $('jphiVal').textContent = phiDeg + '°';
+
+    // Left: Meridional cross-section (rz-plane) showing the spherical element
+    const lCx = W * 0.28, lCy = H * 0.52;
+    const scale = Math.min(W * 0.22, H * 0.42);
+    const R = rNorm * scale;
+
+    // Sphere boundary
+    ctx.strokeStyle = 'rgba(126,184,247,0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.arc(lCx, lCy, scale, 0, 2*Math.PI);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // dr, dphi increments
+    const dr     = scale * 0.10;
+    const dphi   = 20 * Math.PI / 180;
+    const dtheta = 30 * Math.PI / 180;
+
+    // Four corners of the wedge in r-phi plane
+    function toCart(r, p){ return { x: lCx + r * Math.sin(p), y: lCy - r * Math.cos(p) }; }
+
+    const p0 = phi - dphi/2, p1 = phi + dphi/2;
+    const r0 = R, r1 = R + dr;
+
+    const c00 = toCart(r0, p0);
+    const c10 = toCart(r1, p0);
+    const c11 = toCart(r1, p1);
+    const c01 = toCart(r0, p1);
+
+    // Filled wedge
+    ctx.beginPath();
+    ctx.moveTo(c00.x, c00.y);
+    // Arc for r0
+    ctx.arc(lCx, lCy, r0, p0 - Math.PI/2, p1 - Math.PI/2);
+    ctx.lineTo(c11.x, c11.y);
+    // Arc back for r1
+    ctx.arc(lCx, lCy, r1, p1 - Math.PI/2, p0 - Math.PI/2, true);
+    ctx.closePath();
+
+    const grad = ctx.createRadialGradient(lCx, lCy, r0, lCx, lCy, r1);
+    grad.addColorStop(0, 'rgba(232,201,109,0.45)');
+    grad.addColorStop(1, 'rgba(232,201,109,0.15)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(232,201,109,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Annotate r and phi
+    const midPhi = phi;
+    const midR = (r0+r1)/2;
+    const midPt = toCart(midR, midPhi);
+
+    ctx.fillStyle = 'rgba(232,201,109,0.9)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('r', toCart(midR, midPhi + 0.35).x + 5, toCart(midR, midPhi + 0.35).y);
+
+    // z and r axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(lCx, lCy + scale + 10); ctx.lineTo(lCx, lCy - scale - 10);
+    ctx.moveTo(lCx - scale - 10, lCy); ctx.lineTo(lCx + scale + 10, lCy);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('z', lCx, lCy - scale - 14);
+    ctx.textAlign = 'left';
+    ctx.fillText('ρ', lCx + scale + 14, lCy + 4);
+
+    // Phi angle arc
+    const phiArcR = R * 0.4;
+    ctx.strokeStyle = 'rgba(157,232,176,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(lCx, lCy, phiArcR > 15 ? phiArcR : 15, -Math.PI/2, phi - Math.PI/2);
+    ctx.stroke();
+    const phiLbl = toCart(phiArcR > 15 ? phiArcR*0.7 : 22, phi/2);
+    ctx.fillStyle = 'rgba(157,232,176,0.8)';
+    ctx.textAlign = 'left';
+    ctx.fillText('φ', phiLbl.x + 2, phiLbl.y);
+
+    // Right: formula panel showing the Jacobian breakdown
+    const rx = W * 0.56, ry = 30, rW = W * 0.40, rH = H - 60;
+    ctx.fillStyle = 'rgba(22,22,28,0.0)';
+
+    // Title
+    ctx.fillStyle = 'rgba(232,201,109,0.9)';
+    ctx.font = '11px DM Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('dV = r² sin(φ) dr dφ dθ', rx, ry + 20);
+
+    ctx.fillStyle = 'rgba(126,184,247,0.6)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.fillText('Jacobian factor decomposition:', rx, ry + 48);
+
+    // Three contribution bars
+    const jacobian = rNorm * rNorm * Math.abs(Math.sin(phi));
+    const r2Factor = rNorm * rNorm;
+    const sinFactor = Math.abs(Math.sin(phi));
+
+    function bar(label, value, color, y){
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.font = '9px DM Mono, monospace';
+      ctx.fillText(label, rx, y);
+      const bw = rW * 0.7, bh = 14;
+      const by = y + 5;
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      ctx.fillRect(rx, by, bw, bh);
+      ctx.fillStyle = color;
+      ctx.fillRect(rx, by, Math.max(1, bw * value), bh);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.textAlign = 'right';
+      ctx.fillText(value.toFixed(4), rx + bw + rW * 0.22, by + 11);
+      ctx.textAlign = 'left';
+    }
+
+    bar('r² (grows with distance)', r2Factor, 'rgba(232,201,109,0.6)', ry + 68);
+    bar('sin(φ) (polar latitude)', sinFactor, 'rgba(157,232,176,0.6)', ry + 108);
+    bar('Jacobian r²sin(φ)', Math.min(jacobian, 1), 'rgba(126,184,247,0.6)', ry + 148);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.font = '9px DM Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('At r=0: element vanishes (r²→0)', rx, ry + 188);
+    ctx.fillText('At φ=0,π: element vanishes (sin(φ)→0)', rx, ry + 204);
+    ctx.fillText('At r=1, φ=π/2: element is maximal', rx, ry + 220);
+
+    // Current actual dV (for Δr=0.1, Δφ=20°, Δθ=30°)
+    const dr_actual = 0.10;
+    const dV_approx = rNorm * rNorm * Math.abs(Math.sin(phi)) * dr_actual * (dphi) * (dtheta);
+    ctx.fillStyle = 'rgba(232,201,109,0.7)';
+    ctx.font = '9px DM Mono, monospace';
+    ctx.fillText('Approx wedge volume:', rx, ry + 250);
+    ctx.fillStyle = 'rgba(232,201,109,0.95)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.fillText(dV_approx.toFixed(5), rx, ry + 266);
+
+    $('jrDisp').textContent   = rNorm.toFixed(2);
+    $('jphiDisp').textContent = phiDeg + '°';
+    $('jsinPhi').textContent  = Math.abs(Math.sin(phi)).toFixed(4);
+    $('jJac').textContent     = jacobian.toFixed(4);
+  }
+
+  $('jrSlider').addEventListener('input', draw);
+  $('jphiSlider').addEventListener('input', draw);
+  draw();
+})();
+
+// ─── SCROLL REVEAL + NAV DOTS ─────────────────────────────────────────
+const sections = Array.from(document.querySelectorAll('section'));
+const navDots  = Array.from(document.querySelectorAll('.nav-dot'));
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      const idx = sections.indexOf(e.target);
+      navDots.forEach((d,i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.12 });
+
+sections.forEach(s => observer.observe(s));
+navDots.forEach((dot,i) => dot.addEventListener('click', () =>
+  sections[i].scrollIntoView({ behavior: 'smooth' })
+));
+sections[0].classList.add('visible');
+</script>
+</body>
+</html>
