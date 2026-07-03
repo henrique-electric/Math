@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Jacobian — Why Derivatives Generalize</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">JACOBIAN</div>
+  <button class="tab-btn active" data-tab="t1">I · Why Derivatives</button>
+  <button class="tab-btn" data-tab="t2">II · Many Dimensions</button>
+  <button class="tab-btn" data-tab="t3">III · The Matrix</button>
+  <button class="tab-btn" data-tab="t4">IV · Geometry</button>
+  <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t6">VI · Extensions</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>The Jacobian</h1>
+<div class="subtitle">why derivatives — and how they survive contact with more than one dimension</div>
+
+<h2>The one thing a derivative is actually for</h2>
+<p>Forget the mechanical rules for a moment — the power rule, the chain rule, all of it. Underneath every one of them is a single idea: <em>near a point, most functions look like straight lines if you zoom in enough.</em> The derivative is just the slope of that line.</p>
+
+<p>Formally, for \(f:\mathbb{R}\to\mathbb{R}\), we say \(f\) is differentiable at \(a\) if there is a number \(f'(a)\) such that</p>
+<div class="katex-display" data-katex="f(a+h) = f(a) + f'(a)\,h + o(h) \quad \text{as } h\to 0"></div>
+
+<div class="callout definition">
+<span class="callout-label">Definition</span>
+<p>The term \(o(h)\) means an error that vanishes <em>faster</em> than \(h\) itself — so fast that dividing by \(h\) and taking the limit still sends it to zero. This is the precise content of "the curve looks like a line up close."</p>
+</div>
+
+<p>Notice what this really says: \(f'(a)\) is not primarily "the slope of the tangent line" as a geometric decoration. It's the coefficient of the <strong>best linear approximation</strong> to \(f\) near \(a\). The function</p>
+<div class="katex-display" data-katex="L(h) = f(a) + f'(a)\,h"></div>
+<p>is a linear (affine) function of \(h\), and it matches \(f\) so well near \(a\) that the mismatch is negligible compared to \(h\) itself.</p>
+
+<h3>Making "negligible" precise</h3>
+<p>Unpack the \(o(h)\) with an honest \(\varepsilon\)-\(\delta\) statement, since that's the only version that actually pins anything down: \(f\) is differentiable at \(a\) with derivative \(L\) if for every \(\varepsilon>0\) there exists \(\delta>0\) such that</p>
+<div class="katex-display" data-katex="0<|h|<\delta \implies \left|\frac{f(a+h)-f(a)}{h} - L\right| < \varepsilon"></div>
+<p>This is exactly the ordinary limit definition applied to the difference quotient — nothing new yet. But it's worth restating in the "approximation" language because that's the version that survives the jump to several variables, while the difference-quotient version (dividing by a <em>vector</em> \(h\)) does not even typecheck once \(h\in\mathbb{R}^n\) for \(n>1\).</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>You cannot divide by a vector. The moment inputs become multidimensional, "\(\frac{f(a+h)-f(a)}{h}\)" is meaningless — there is no such thing as dividing by \(h\in\mathbb{R}^n\). This single obstruction is why the approximation formulation (which only ever divides by the <em>scalar</em> \(\|h\|\), never by \(h\) itself) is the one that generalizes, and it's worth sitting with that fact before moving on.</p>
+</div>
+
+<h3>Differentiability is stronger than you'd guess</h3>
+<p>A cheap but important theorem: if \(f\) is differentiable at \(a\), then \(f\) is continuous at \(a\). The proof is a one-liner once you have the approximation formulation — as \(h\to0\), \(f(a+h)-f(a) = f'(a)h + o(h) \to 0\), since both terms vanish. This seems obvious, but it's the reason differentiability is treated as a genuinely stronger hypothesis than continuity: continuous-but-nowhere-differentiable functions exist (Weierstrass's function is the classical example), so "the curve looks like a line up close" is a real commitment, not a formality.</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>There is a subtlety worth flagging early, because it resurfaces with teeth in Panel II: for a single-variable function, the existence of the ordinary two-sided limit defining \(f'(a)\) is <em>equivalent</em> to differentiability. In several variables this equivalence breaks — a function can have every directional derivative exist at a point and still fail to be (Fréchet) differentiable there. Keep that discomfort in the back of your mind.</p>
+</div>
+
+<div class="ascii">        f(x)
+          │        ╭─────  actual curve
+          │      ╭─╯
+          │    ╭─╯
+     f(a) ┤━━╱<span class="hl">●</span>━━━━━━  L(h) = f(a) + f'(a)·h   (the local straight-line stand-in)
+          │  ╱
+          │╱
+          └──────────────── x
+             a
+
+  Zoom in near <span class="hl">●</span> and the curve becomes indistinguishable from the line.</div>
+
+<h3>Why bother with this reframing?</h3>
+<p>Because "slope" only makes sense when there's a single input and a single output — a 1-dimensional line has one direction to tilt. The moment a function eats a <em>vector</em> and spits out a <em>vector</em>, "slope" stops meaning anything. But "best linear approximation" still means something perfectly well, because linear maps between vector spaces are a rich, well-understood object — they're just matrices.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the whole story of the Jacobian in one sentence: <strong>we keep the idea of "local linear approximation" and simply let the approximating object grow from a number into a matrix.</strong> Everything else — partial derivatives, the chain rule in several variables, the geometry of stretching and rotating — falls out of taking that sentence seriously.</p>
+</div>
+
+<p>So before writing down a single partial derivative, hold onto this: differentiation is the act of asking <em>"what linear map best mimics this function, right here, at this point?"</em> In one dimension the answer is a number. In general, the answer is the Jacobian.</p>
+
+<h3>A first glimpse of why this is the "right" definition</h3>
+<p>One more thing worth noticing before leaving one dimension behind: among <em>all</em> functions \(h\mapsto c\cdot h\), why is there a <em>unique</em> best one? Suppose \(L_1\) and \(L_2\) both satisfy \(f(a+h) = f(a) + L_i h + o(h)\). Subtracting the two approximations gives \((L_1-L_2)h = o(h)\), and dividing by \(h\ne0\) and letting \(h\to0\) forces \(L_1=L_2\). Uniqueness of the derivative is not an assumption — it's forced by the definition. This same uniqueness argument, essentially unchanged, is what guarantees the Jacobian matrix in Panel II is well-defined rather than one of several equally-good candidates.</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>Phrased more abstractly: for fixed \(a\), the derivative \(f'(a)\) is the unique element of the 1-dimensional vector space of linear maps \(\mathbb{R}\to\mathbb{R}\) that approximates \(f\) to first order at \(a\). Once inputs and outputs become \(\mathbb{R}^n\) and \(\mathbb{R}^m\), that vector space of linear maps becomes the space of \(m\times n\) matrices — still finite-dimensional, still with a well-defined notion of "closeness" (an operator norm), and the same uniqueness argument goes through verbatim. Push this one step further, to functions between infinite-dimensional Banach spaces, and you land on the <strong>Fréchet derivative</strong>, revisited in Panel VI.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Many Dimensions</h1>
+<div class="subtitle">what happens when both the input and the output become vectors</div>
+
+<h2>From one number to a whole map</h2>
+<p>Consider a function \(F:\mathbb{R}^n \to \mathbb{R}^m\). It takes in a vector of \(n\) numbers and produces a vector of \(m\) numbers. Write it out coordinate by coordinate:</p>
+<div class="katex-display" data-katex="F(x_1,\dots,x_n) = \big(f_1(x_1,\dots,x_n),\ f_2(x_1,\dots,x_n),\ \dots,\ f_m(x_1,\dots,x_n)\big)"></div>
+
+<p>Each \(f_i\) is an ordinary scalar-valued function, but it depends on <em>all</em> \(n\) inputs at once. So the very first question differentiation has to answer is: differentiate <em>with respect to what</em>?</p>
+
+<h3>Partial derivatives: freezing everything but one axis</h3>
+<p>The partial derivative \(\frac{\partial f_i}{\partial x_j}\) answers a narrower question than "how does \(f_i\) change?" — it asks <em>how does \(f_i\) change if we nudge only \(x_j\), holding every other coordinate fixed?</em></p>
+
+<div class="katex-display" data-katex="\frac{\partial f_i}{\partial x_j}(a) = \lim_{h\to 0} \frac{f_i(a_1,\dots,a_j+h,\dots,a_n) - f_i(a)}{h}"></div>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>A partial derivative is genuinely just a single-variable derivative in disguise — you've frozen \(n-1\) of the variables into constants, so the ordinary 1-D machinery from Panel I applies directly along that one axis.</p>
+</div>
+
+<p>But here's the catch: knowing every partial derivative of every \(f_i\) at a point doesn't yet tell you what happens when you move in an <em>arbitrary</em> direction — say, a little bit in \(x_1\) and a little bit in \(x_2\) simultaneously. For that you need to know how all these partial slopes combine.</p>
+
+<h3>The generalization of "best linear approximation"</h3>
+<p>The right definition of differentiability at a point \(a\in\mathbb{R}^n\) is: there exists a <em>linear map</em> \(DF(a): \mathbb{R}^n \to \mathbb{R}^m\) such that</p>
+<div class="katex-display" data-katex="F(a+h) = F(a) + DF(a)\,h + o(\|h\|) \quad \text{as } h \to 0"></div>
+
+<p>This is the exact same sentence as before, with \(f'(a)\cdot h\) — multiplying a number by a number — replaced by \(DF(a)\,h\) — a linear map acting on a vector. A linear map \(\mathbb{R}^n\to\mathbb{R}^m\) is represented, once you fix coordinates, by an \(m\times n\) matrix. <strong>That matrix is the Jacobian.</strong></p>
+
+<div class="ascii">   ONE DIMENSION                     MANY DIMENSIONS
+
+   f: ℝ → ℝ                          F: ℝⁿ → ℝᵐ
+   number in, number out             vector in, vector out
+
+   best linear approx:               best linear approx:
+   L(h) = f'(a)·h                    L(h) = <span class="hl">J(a)</span>·h
+   (multiply by a number)            (multiply by a matrix)
+
+   f'(a) ∈ ℝ                         <span class="hl">J(a)</span> ∈ ℝ^(m×n)
+   "the slope"                       "the Jacobian matrix"</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The reason we need <em>all</em> the partial derivatives, arranged just so, is that a linear map \(\mathbb{R}^n\to\mathbb{R}^m\) has exactly \(m\times n\) degrees of freedom — and it turns out those degrees of freedom are precisely the \(m \times n\) partial derivatives \(\partial f_i/\partial x_j\). Nothing more is needed, and nothing less will do, because a linear map is fully determined by where it sends each of the \(n\) basis vectors, and \(\partial F/\partial x_j\) is exactly the image of the \(j\)-th basis vector.</p>
+</div>
+
+<h2>The uncomfortable gap: partials existing vs. being differentiable</h2>
+<p>Here is the subtlety flagged at the end of Panel I, made concrete. It's tempting to think "all partial derivatives exist at \(a\)" and "\(F\) is differentiable at \(a\)" are the same statement. They are not, and the gap between them is exactly the gap between a purely axis-aligned notion of change and the true, all-directions notion of local linearity.</p>
+
+<div class="katex-display" data-katex="f(x,y) = \begin{cases} \dfrac{xy}{x^2+y^2} &amp; (x,y)\neq(0,0) \\ 0 &amp; (x,y)=(0,0)\end{cases}"></div>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>For this classic example, both partial derivatives \(\partial f/\partial x(0,0)\) and \(\partial f/\partial y(0,0)\) exist and equal \(0\) — freezing \(y=0\) or \(x=0\) makes \(f\) identically \(0\) along each axis. Yet \(f\) is not even <em>continuous</em> at the origin: approach along \(y=x\) and \(f\to \tfrac12\), approach along the axes and \(f\to0\). Since differentiability implies continuity (Panel I), \(f\) cannot be differentiable at the origin — even though every partial derivative exists there. Partial derivatives only ever look along the coordinate axes; they can be individually well-behaved while the function does something genuinely different along a diagonal direction.</p>
+</div>
+
+<p>This is precisely why the definition of differentiability in Panel II was stated as "there exists a linear map \(DF(a)\) such that \(F(a+h)=F(a)+DF(a)h+o(\|h\|)\)" — a condition about <em>every</em> direction \(h\) simultaneously — rather than "all the partial derivatives exist," which is a much weaker, axis-only condition.</p>
+
+<h3>The fix: continuity of the partials is enough</h3>
+<p>Fortunately there's a clean sufficient condition that covers essentially every function you'll meet in practice:</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the \(C^1\) criterion</span>
+<p>If all partial derivatives \(\partial f_i/\partial x_j\) exist in a neighborhood of \(a\) <em>and are continuous at \(a\)</em>, then \(F\) is (Fréchet) differentiable at \(a\), and its derivative is exactly the Jacobian matrix built from those partials. Functions with this property are called \(C^1\) (continuously differentiable).</p>
+</div>
+
+<p>This is the theorem that quietly licenses almost every Jacobian computed in practice: you compute the partials, check (usually by inspection, since they're built from polynomials, sines, exponentials) that they're continuous, and the existence of the true multivariable derivative is guaranteed for free. The pathological example above fails this test — its partials exist at the origin but are not continuous there.</p>
+
+<h3>Directional derivatives: the honest in-between notion</h3>
+<p>Between "partial derivative" (change along one axis) and "full derivative" (change predicted correctly in every direction at once) sits the directional derivative. For a unit vector \(\mathbf{v}\),</p>
+<div class="katex-display" data-katex="D_{\mathbf v}f(a) = \lim_{t\to0}\frac{f(a+t\mathbf v)-f(a)}{t}"></div>
+<p>When \(F\) actually is differentiable at \(a\), every directional derivative is captured correctly by the Jacobian: \(D_{\mathbf v}F(a) = J_F(a)\,\mathbf{v}\) — you don't need to recompute anything, just apply the one linear map to whichever direction you care about. The pathological example above is exactly a case where this formula fails, because the object on the right-hand side (a genuine linear map) doesn't exist yet.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Jacobian Matrix</h1>
+<div class="subtitle">assembling the partial derivatives into the linear map that matters</div>
+
+<h2>Definition</h2>
+<p>Given \(F:\mathbb{R}^n\to\mathbb{R}^m\) with component functions \(f_1,\dots,f_m\), the Jacobian matrix at a point \(a\) is the \(m\times n\) array of all first partial derivatives:</p>
+
+<div class="katex-display" data-katex="J_F(a) = \begin{bmatrix} \dfrac{\partial f_1}{\partial x_1} &amp; \dfrac{\partial f_1}{\partial x_2} &amp; \cdots &amp; \dfrac{\partial f_1}{\partial x_n} \\[10pt] \dfrac{\partial f_2}{\partial x_1} &amp; \dfrac{\partial f_2}{\partial x_2} &amp; \cdots &amp; \dfrac{\partial f_2}{\partial x_n} \\[6pt] \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\[4pt] \dfrac{\partial f_m}{\partial x_1} &amp; \dfrac{\partial f_m}{\partial x_2} &amp; \cdots &amp; \dfrac{\partial f_m}{\partial x_n} \end{bmatrix}"></div>
+
+<div class="callout definition">
+<span class="callout-label">Definition</span>
+<p><strong>Row \(i\)</strong> is the gradient of \(f_i\) — how the \(i\)-th output responds to each input. <strong>Column \(j\)</strong> is \(\partial F/\partial x_j\) — the direction, in output space, that the whole vector \(F\) moves when only \(x_j\) is nudged. Reading it either way gives the same object.</p>
+</div>
+
+<h3>Worked example</h3>
+<p>Let \(F(u,v) = (u^2 - v^2,\ 2uv)\) — this is complex squaring, \(z\mapsto z^2\), written in real coordinates with \(z=u+iv\). Its two component functions are \(f_1 = u^2-v^2\) and \(f_2=2uv\), so:</p>
+
+<div class="katex-display" data-katex="J_F(u,v) = \begin{bmatrix} \partial f_1/\partial u &amp; \partial f_1/\partial v \\ \partial f_2/\partial u &amp; \partial f_2/\partial v \end{bmatrix} = \begin{bmatrix} 2u &amp; -2v \\ 2v &amp; 2u \end{bmatrix}"></div>
+
+<p>At the point \((u,v)=(1,1)\), this becomes \(\begin{bmatrix}2&-2\\2&2\end{bmatrix}\) — a matrix that <em>rotates and scales</em>. You can check this is exactly \(2\sqrt2\) times a rotation by \(45°\), which matches the complex-analysis fact that \(\frac{d}{dz}z^2 = 2z\), and multiplication by a complex number \(2z\) is precisely a rotate-and-scale. You'll get to watch this happen live in Panel V.</p>
+
+<h3>A second example, in three variables</h3>
+<p>Jacobians aren't confined to square matrices or to \(n=m=2\). Take \(F:\mathbb{R}^3\to\mathbb{R}^2\), \(F(x,y,z) = (x^2y,\ y+\sin z)\). Then \(f_1=x^2y\), \(f_2=y+\sin z\), and</p>
+<div class="katex-display" data-katex="J_F(x,y,z) = \begin{bmatrix} 2xy &amp; x^2 &amp; 0 \\ 0 &amp; 1 &amp; \cos z \end{bmatrix}"></div>
+<p>Notice the shape: \(2\times3\), because there are \(2\) outputs and \(3\) inputs — a rectangular, non-square Jacobian, which is the generic case and has no determinant at all. The zero entries are informative too: \(f_1\) doesn't depend on \(z\), so the whole first-row-third-column entry is \(0\); \(f_2\) doesn't depend on \(x\), so the second-row-first-column entry is \(0\). Reading zeros off a Jacobian tells you exactly which outputs are decoupled from which inputs, locally.</p>
+
+<h3>Special case: the gradient is a \(1\times n\) Jacobian</h3>
+<p>When \(m=1\) — a scalar-valued function \(f:\mathbb{R}^n\to\mathbb{R}\) — the Jacobian collapses to a single row:</p>
+<div class="katex-display" data-katex="J_f(a) = \begin{bmatrix}\dfrac{\partial f}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f}{\partial x_n}\end{bmatrix} = \nabla f(a)^{\mathsf T}"></div>
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>The gradient \(\nabla f\), usually introduced as a standalone character — "the vector of partial derivatives, pointing in the direction of steepest ascent" — is nothing but the Jacobian of a scalar field, transposed into a column for convenience. There is no separate theory of gradients; there is one theory of Jacobians, and the gradient is its \(m=1\) special case. Push \(m=1\) further and differentiate <em>again</em>: the Jacobian of \(\nabla f\) (an \(n\times n\) matrix of second partials) is the Hessian — so the Hessian is, likewise, just "the Jacobian one derivative up."</p>
+</div>
+
+<h2>The chain rule becomes matrix multiplication</h2>
+<p>This is where the reframing from Panel I pays for itself. If \(G = F\circ H\), the single-variable chain rule \((f\circ h)'(a) = f'(h(a))\cdot h'(a)\) generalizes to</p>
+<div class="katex-display" data-katex="J_G(a) = J_F(H(a))\ \cdot\ J_H(a)"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Composing two functions means composing their best linear approximations — and composing linear maps is exactly matrix multiplication. The "multiply the derivatives" rule you memorized in single-variable calculus was secretly matrix multiplication all along; it just looked like ordinary multiplication because \(1\times1\) matrices <em>are</em> ordinary numbers.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>Matrix multiplication doesn't commute, and neither does the multivariable chain rule in general — the order \(J_F(H(a))\cdot J_H(a)\) matters, and the two matrices being multiplied usually have different, only-compatible-in-one-order shapes (\(m\times k\) times \(k\times n\)).</p>
+</div>
+
+<h3>Why the composition rule is true: a two-line proof</h3>
+<p>The proof is worth seeing once because it's short and it's the exact same "best linear approximation composes" idea stated as an actual argument. Write \(H\) differentiable at \(a\) and \(F\) differentiable at \(b=H(a)\):</p>
+<div class="katex-display" data-katex="H(a+h) = H(a) + J_H(a)h + o(\|h\|), \qquad F(b+k) = F(b) + J_F(b)k + o(\|k\|)"></div>
+<p>Substitute \(k = H(a+h)-H(a) = J_H(a)h + o(\|h\|)\) — which is itself \(O(\|h\|)\) — into the second expansion:</p>
+<div class="katex-display" data-katex="F(H(a+h)) = F(b) + J_F(b)\big[J_H(a)h + o(\|h\|)\big] + o(\|k\|) = F(b) + \underbrace{J_F(b)J_H(a)}_{\text{linear in }h}h + o(\|h\|)"></div>
+<p>The middle term is linear in \(h\) with matrix \(J_F(b)J_H(a)\); every other term collapses into the error \(o(\|h\|)\), using that \(J_F(b)\) applied to an \(o(\|h\|)\) term is still \(o(\|h\|)\), and that \(o(\|k\|)=o(\|h\|)\) since \(\|k\|=O(\|h\|)\). By the uniqueness argument from Panel I, this identifies \(J_{F\circ H}(a)\) as exactly \(J_F(b)J_H(a)\) — no additional assumption required beyond differentiability of each piece.</p>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Geometric Meaning</h1>
+<div class="subtitle">what the Jacobian does to shapes, area, and volume</div>
+
+<h2>A linear map bends grids into parallelograms</h2>
+<p>Picture the input space tiled by a fine square grid. Apply a smooth map \(F\). Far from any particular point, the grid lines become curved. But zoom into a small neighborhood of a point \(a\), and — because \(F(a+h)\approx F(a) + J_F(a)h\) — the tiny square around \(a\) gets mapped, to excellent approximation, onto a small <strong>parallelogram</strong>: the image of a square under the linear map \(J_F(a)\).</p>
+
+<div class="ascii">   DOMAIN (near a)              IMAGE UNDER F (near F(a))
+
+   ┌─┬─┬─┬─┐                     ⟋‾‾‾⟍___
+   ├─┼─┼─┼─┤        F           ⟋  <span class="hl">╱╱╱</span>  ⟍___     curved globally,
+   ├─┼─┼─┼─┤   ────────▶       ⟋  <span class="hl">╱╱╱</span>      ⟍__   but locally...
+   ├─┼─┼─┼─┤                   ╲__<span class="hl">╱╱╱</span>__________⟍
+   └─┴─┴─┴─┘                     
+    small square                zoom in near F(a):
+    around a                    <span class="hl2">▱</span>  ← a clean parallelogram,
+                                    exactly J_F(a) · (the square)</div>
+
+<h2>The determinant measures the local scaling of area</h2>
+<p>When \(n=m\), the Jacobian is a square matrix, and its determinant has a precise geometric meaning: \(|\det J_F(a)|\) is the factor by which \(F\) scales area (in 2D) or volume (in higher dimensions) right at \(a\).</p>
+
+<div class="katex-display" data-katex="\text{(area of image)} \approx |\det J_F(a)| \times \text{(area of a small region around } a)"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is exactly why the Jacobian determinant appears in the change-of-variables formula for multivariable integrals: \(\displaystyle\int_{F(D)} g\, dV = \int_D (g\circ F)\,|\det J_F|\,dV\). Integrating means summing up little pieces of area/volume, and when you change coordinates, every little piece gets rescaled locally by \(|\det J_F|\) — so that factor has to appear to keep the total honest.</p>
+</div>
+
+<p>The <em>sign</em> of the determinant also carries meaning: positive means \(F\) preserves orientation (a counterclockwise loop stays counterclockwise); negative means it flips orientation, like a reflection. And where \(\det J_F(a)=0\), the map crushes a whole neighborhood into something of lower dimension — a fold, a crease, a singular point — which is precisely why these are the points where the Inverse Function Theorem fails.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition</span>
+<p><strong>Inverse Function Theorem (informally):</strong> if \(J_F(a)\) is invertible, then \(F\) itself is locally invertible near \(a\), and \(J_{F^{-1}}(F(a)) = J_F(a)^{-1}\). Local linear invertibility upgrades to local invertibility of the true function — another payoff of taking "best linear approximation" seriously.</p>
+</div>
+
+<h2>A concrete determinant: polar coordinates</h2>
+<p>The change-of-variables formula from the insight box above has a famous special case worth computing directly. Let \(F(r,\theta) = (r\cos\theta,\ r\sin\theta)\), converting polar to Cartesian coordinates. Then</p>
+<div class="katex-display" data-katex="J_F(r,\theta) = \begin{bmatrix}\cos\theta &amp; -r\sin\theta \\ \sin\theta &amp; r\cos\theta\end{bmatrix}, \qquad \det J_F = r\cos^2\theta + r\sin^2\theta = r"></div>
+<p>That lone factor of \(r\) is the entire reason \(dx\,dy\) becomes \(r\,dr\,d\theta\) in every polar-coordinates integral you've ever computed — it is not a separate geometric fact to memorize, it's this determinant, computed once. It also explains <em>why</em> the scaling isn't uniform: near \(r=0\) a small patch of \((r,\theta)\)-space gets crushed toward a point (area scaling \(\to0\)), while far from the origin the same-sized patch gets stretched into a much larger wedge — exactly matching the visual fact that polar grid cells are tiny near the pole and huge far away.</p>
+
+<h2>Beyond a single number: principal stretches (SVD)</h2>
+<p>The determinant tells you the <em>net</em> area-scaling factor, but it can't tell you the whole shape story — a matrix with determinant \(1\) could be doing nothing at all, or it could be stretching space by a factor of \(100\) in one direction and squashing it by \(1/100\) in a perpendicular direction. The finer-grained tool is the singular value decomposition of \(J_F(a)\):</p>
+<div class="katex-display" data-katex="J_F(a) = U\Sigma V^{\mathsf T}"></div>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>\(V^{\mathsf T}\) rotates the input square into an axis-aligned position, \(\Sigma=\text{diag}(\sigma_1,\dots,\sigma_n)\) stretches it independently along each axis by the <em>singular values</em> \(\sigma_i\ge0\), and \(U\) rotates the result into its final orientation. So every local linearization, however it looks, decomposes into: rotate, stretch along perpendicular axes, rotate again. The determinant is just \(\det J_F = \pm\sigma_1\sigma_2\cdots\sigma_n\) — the product of all the individual stretch factors — which is exactly why a single number can report net area/volume scaling while still discarding the directional information the \(\sigma_i\) carry individually.</p>
+</div>
+<p>This is precisely what the little square becomes an ellipse under a linear map: circle through \(\Sigma\) and it becomes an axis-aligned ellipse with semi-axes \(\sigma_1,\dots,\sigma_n\); the two rotations just reposition that ellipse without changing its shape. Watch for this in the interactive lab — the parallelogram the small square becomes is always consistent with some pair of perpendicular stretch directions, even though a general linear map doesn't preserve right angles everywhere.</p>
+
+<h2>Linearization and stability: eigenvalues of the Jacobian</h2>
+<p>When \(F:\mathbb{R}^n\to\mathbb{R}^n\) describes the velocity field of a dynamical system, \(\dot x = F(x)\), and \(x^*\) is an equilibrium (\(F(x^*)=0\)), the Jacobian \(J_F(x^*)\) governs the system's behavior in a small neighborhood of \(x^*\), because to first order \(\dot h \approx J_F(x^*)\,h\) for \(h=x-x^*\) — a linear ODE, whose solutions are fully determined by the eigenvalues of \(J_F(x^*)\).</p>
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>If every eigenvalue of \(J_F(x^*)\) has negative real part, nearby trajectories are pulled in and \(x^*\) is (locally) stable; if any eigenvalue has positive real part, nearby trajectories are pushed away and \(x^*\) is unstable. This is the Hartman–Grobman circle of ideas, and it's the single most consequential use of the Jacobian outside of pure calculus — the entire local qualitative behavior of a nonlinear system, near an equilibrium, is read off from one linear-algebra computation on the Jacobian.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Interactive Lab</h1>
+<div class="subtitle">watch a curved map become a parallelogram as you zoom in</div>
+
+<p>Drag the point <strong>P</strong> in the left canvas to move where you're linearizing. Shrink the neighborhood with the slider and watch the actual curved image (right, in <span style="color:var(--red)">rust</span>) converge onto the flat parallelogram predicted by the Jacobian (right, in <span style="color:var(--blue)">blue</span>) — this convergence <em>is</em> the definition of differentiability made visible.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">DOMAIN — drag P</div>
+      <canvas id="domainCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">IMAGE UNDER F</div>
+      <canvas id="imageCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Map F(u,v)</label>
+      <select id="mapSelect">
+        <option value="square">(u² − v², 2uv)  — complex squaring</option>
+        <option value="polar">(u·cos v, u·sin v)  — polar-like</option>
+        <option value="saddle">(u + v, u·v)  — saddle</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Neighborhood size</label>
+      <input type="range" id="sizeSlider" min="4" max="90" value="60">
+      <span class="readout" id="sizeReadout">0.60</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">POINT P</div>
+      <div class="v" id="pointReadout">(1.00, 1.00)</div>
+    </div>
+    <div class="block">
+      <div class="k">JACOBIAN J(P)</div>
+      <div class="v" id="jacReadout">[ 2.00  −2.00 ]<br>[ 2.00   2.00 ]</div>
+    </div>
+    <div class="block">
+      <div class="k">det J(P)</div>
+      <div class="v" id="detReadout">8.00</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> full grid image (global, curved)</span>
+    <span><span class="swatch" style="background:var(--red)"></span> actual image of the small square</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> J(P)-predicted parallelogram</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>At a large neighborhood size, the red (actual) and blue (predicted) shapes visibly diverge — the linear approximation is a rough sketch. Drag the slider down and they snap together: below a certain scale they become visually identical, no matter how curvy \(F\) is globally. That convergence rate is exactly the \(o(\|h\|)\) from Panel II — the error shrinks faster than the neighborhood itself.</p>
+</div>
+
+<p>Try moving P near \((0,0)\) with the <code>saddle</code> map — the Jacobian there is singular in one special sense worth noticing (its determinant vanishes along a certain configuration), and you'll see the parallelogram flatten toward a line, mirroring the "crushing" behavior described in Panel IV.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Extensions</h1>
+<div class="subtitle">where the Jacobian goes to work — numerics, implicit equations, infinite dimensions</div>
+
+<h2>Newton's method in several variables</h2>
+<p>The single-variable Newton iteration \(x_{n+1} = x_n - f(x_n)/f'(x_n)\) solves \(f(x)=0\) by repeatedly replacing \(f\) with its best linear approximation and solving <em>that</em> exactly. The multivariable version does the identical thing, with the Jacobian standing in for \(f'\):</p>
+<div class="katex-display" data-katex="x_{n+1} = x_n - J_F(x_n)^{-1} F(x_n)"></div>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>At each step, solve the <em>linear</em> system \(J_F(x_n)\,\Delta = -F(x_n)\) for \(\Delta\) and set \(x_{n+1}=x_n+\Delta\) — never actually inverting the matrix in practice. This is the workhorse behind root-finding for nonlinear systems, and it's also, underneath the hood, what training a neural network with second-order optimization methods leans on: the Jacobian (of the residuals, or the gradient, depending on context) turns an intractable nonlinear problem into a sequence of tractable linear ones.</p>
+</div>
+
+<h2>The Implicit Function Theorem</h2>
+<p>Given an equation \(G(x,y)=0\) with \(G:\mathbb{R}^n\times\mathbb{R}^m\to\mathbb{R}^m\), when can you solve for \(y\) as a function of \(x\) near a solution point \((a,b)\)? The answer is again a Jacobian invertibility condition — specifically, invertibility of the <em>partial</em> Jacobian with respect to the \(y\)-block:</p>
+<div class="katex-display" data-katex="\text{if } D_yG(a,b) \text{ is invertible, then } y=\phi(x) \text{ exists locally, and } D\phi(a) = -\big[D_yG(a,b)\big]^{-1}D_xG(a,b)"></div>
+<p>That formula for \(D\phi\) is worth staring at: it's obtained by implicitly differentiating \(G(x,\phi(x))=0\) with the chain rule from Panel III (\(D_xG + D_yG\cdot D\phi = 0\)) and solving the resulting linear equation for \(D\phi\) — the Implicit Function Theorem is a direct corollary of "the chain rule is matrix multiplication," not an independent piece of machinery.</p>
+
+<h2>The Fréchet derivative: Jacobians in infinite dimensions</h2>
+<p>Panel I ended by noting that the derivative, at any given point, lives in a vector space of linear maps. Nothing in that sentence required the domain or codomain to be finite-dimensional. Let \(X,Y\) be Banach spaces (complete normed vector spaces — think function spaces, like \(L^2\) or \(C[0,1]\)) and \(F:X\to Y\). Then \(F\) is Fréchet differentiable at \(a\in X\) if there is a <strong>bounded linear operator</strong> \(DF(a):X\to Y\) with</p>
+<div class="katex-display" data-katex="\|F(a+h) - F(a) - DF(a)h\|_Y = o(\|h\|_X) \quad \text{as } h\to 0"></div>
+<div class="callout definition">
+<span class="callout-label">Definition</span>
+<p>This is, symbol for symbol, the exact same definition as Panel II's \(F(a+h)=F(a)+DF(a)h+o(\|h\|)\) — only now \(\|\cdot\|\) denotes a Banach-space norm rather than the Euclidean one, and \(DF(a)\) is an operator rather than a matrix. When \(X=\mathbb{R}^n\), \(Y=\mathbb{R}^m\), every bounded linear operator <em>is</em> a matrix (boundedness is automatic in finite dimensions), and \(DF(a)\) reduces exactly to the Jacobian. The Jacobian is the shadow the Fréchet derivative casts onto finite-dimensional coordinates.</p>
+</div>
+<p>This is where the machinery becomes genuinely necessary rather than a convenient bookkeeping device: functionals on function spaces — energy functionals in the calculus of variations, loss functionals over function-valued hypothesis spaces, solution operators of differential equations — are functions between infinite-dimensional spaces, where there is no matrix of partial derivatives to fall back on, only the operator \(DF(a)\) itself, characterized abstractly by the same approximation property that opened this essay.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>In infinite dimensions, the distinction from Panel II between "all directional derivatives exist" (called Gâteaux differentiability) and "the Fréchet derivative exists" becomes sharper and more consequential than the finite-dimensional pathology you saw earlier — Gâteaux differentiability doesn't even imply continuity in general, let alone the stronger Fréchet condition. The \(C^1\) sufficiency theorem from Panel II also has infinite-dimensional analogues, but they require more care about which topology "continuous" refers to.</p>
+</div>
+
+<h2>One line to carry away</h2>
+<p>Every idea in this essay is a single sentence, restated at increasing levels of generality: <em>the derivative is whatever linear object best mimics a function near a point, and everything else — the chain rule, area scaling, stability, Newton's method, even the calculus of variations — is linear algebra applied to that one linear object.</em></p>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderLab();
+});
+
+// ---------- KaTeX render ----------
+// Render the display-math blocks (built from data-katex attributes)
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+// Render all inline \( ... \) math scattered through the prose.
+// (Already-rendered data-katex divs contain no raw "\(" text anymore, so this is safe to run over the whole body.)
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ INTERACTIVE LAB ============
+const domainCv = document.getElementById('domainCanvas');
+const imageCv = document.getElementById('imageCanvas');
+const dctx = domainCv.getContext('2d');
+const ictx = imageCv.getContext('2d');
+const mapSelect = document.getElementById('mapSelect');
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeReadout = document.getElementById('sizeReadout');
+const pointReadout = document.getElementById('pointReadout');
+const jacReadout = document.getElementById('jacReadout');
+const detReadout = document.getElementById('detReadout');
+
+let P = {u:1, v:1};
+let dragging = false;
+
+const maps = {
+  square: {
+    F: (u,v)=>[u*u - v*v, 2*u*v],
+    J: (u,v)=>[[2*u,-2*v],[2*v,2*u]]
+  },
+  polar: {
+    F: (u,v)=>[u*Math.cos(v), u*Math.sin(v)],
+    J: (u,v)=>[[Math.cos(v), -u*Math.sin(v)],[Math.sin(v), u*Math.cos(v)]]
+  },
+  saddle: {
+    F: (u,v)=>[u+v, u*v],
+    J: (u,v)=>[[1,1],[v,u]]
+  }
+};
+
+const DOMAIN_RANGE = 2.2; // world coords span [-2.2, 2.2]
+function worldToScreenDomain(x,y){
+  const s = 300 / (2*DOMAIN_RANGE);
+  return [150 + x*s, 150 - y*s];
+}
+function screenToWorldDomain(px,py){
+  const s = 300 / (2*DOMAIN_RANGE);
+  return [(px-150)/s, (150-py)/s];
+}
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function drawDomain(){
+  dctx.clearRect(0,0,300,300);
+  dctx.fillStyle = cssVar('--bg-elevated');
+  dctx.fillRect(0,0,300,300);
+
+  // grid
+  dctx.strokeStyle = cssVar('--border');
+  dctx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.5){
+    let [x1,y1] = worldToScreenDomain(g,-2.2);
+    let [x2,y2] = worldToScreenDomain(g,2.2);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+    [x1,y1] = worldToScreenDomain(-2.2,g);
+    [x2,y2] = worldToScreenDomain(2.2,g);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+  }
+  // axes
+  dctx.strokeStyle = cssVar('--ink-faint');
+  dctx.lineWidth = 1.2;
+  let [ax1,ay1] = worldToScreenDomain(-2.2,0), [ax2,ay2] = worldToScreenDomain(2.2,0);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+  [ax1,ay1] = worldToScreenDomain(0,-2.2); [ax2,ay2] = worldToScreenDomain(0,2.2);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+
+  // small square around P
+  const h = sizeSlider.value/100;
+  const corners = [[P.u-h,P.v-h],[P.u+h,P.v-h],[P.u+h,P.v+h],[P.u-h,P.v+h]];
+  dctx.strokeStyle = cssVar('--blue');
+  dctx.lineWidth = 1.5;
+  dctx.beginPath();
+  corners.forEach(([x,y],i)=>{
+    const [sx,sy] = worldToScreenDomain(x,y);
+    i===0 ? dctx.moveTo(sx,sy) : dctx.lineTo(sx,sy);
+  });
+  dctx.closePath(); dctx.stroke();
+
+  // point P
+  const [px,py] = worldToScreenDomain(P.u,P.v);
+  dctx.fillStyle = cssVar('--accent');
+  dctx.beginPath(); dctx.arc(px,py,5,0,7); dctx.fill();
+}
+
+function drawImage(){
+  ictx.clearRect(0,0,300,300);
+  ictx.fillStyle = cssVar('--bg-elevated');
+  ictx.fillRect(0,0,300,300);
+
+  const map = maps[mapSelect.value];
+
+  // determine scale by sampling range roughly
+  let maxAbs = 6;
+  if(mapSelect.value==='square') maxAbs = 8;
+  if(mapSelect.value==='polar') maxAbs = 2.5;
+  if(mapSelect.value==='saddle') maxAbs = 6;
+  const scale = 300/(2*maxAbs);
+  const w2s = (x,y)=>[150+x*scale, 150-y*scale];
+
+  // faint global grid image
+  ictx.strokeStyle = cssVar('--ink-faint');
+  ictx.globalAlpha = 0.35;
+  ictx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.4){
+    ictx.beginPath();
+    for(let t=-2.2;t<=2.2;t+=0.05){
+      const [x,y]=map.F(g,t); const [sx,sy]=w2s(x,y);
+      t===-2.2 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+    ictx.beginPath();
+    for(let t=-2.2;t<=2.2;t+=0.05){
+      const [x,y]=map.F(t,g); const [sx,sy]=w2s(x,y);
+      t===-2.2 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+  }
+  ictx.globalAlpha = 1;
+
+  const h = sizeSlider.value/100;
+  const Fp = map.F(P.u,P.v);
+  const J = map.J(P.u,P.v);
+
+  // actual curved image of the small square boundary
+  ictx.strokeStyle = cssVar('--red');
+  ictx.lineWidth = 2;
+  ictx.beginPath();
+  const N = 40;
+  const path = [];
+  for(let i=0;i<=N;i++) path.push([P.u-h+2*h*i/N, P.v-h]);
+  for(let i=0;i<=N;i++) path.push([P.u+h, P.v-h+2*h*i/N]);
+  for(let i=0;i<=N;i++) path.push([P.u+h-2*h*i/N, P.v+h]);
+  for(let i=0;i<=N;i++) path.push([P.u-h, P.v+h-2*h*i/N]);
+  path.forEach(([u,v],i)=>{
+    const [x,y] = map.F(u,v); const [sx,sy]=w2s(x,y);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+
+  // Jacobian-predicted parallelogram
+  ictx.strokeStyle = cssVar('--blue');
+  ictx.lineWidth = 2;
+  ictx.setLineDash([5,3]);
+  const localCorners = [[-h,-h],[h,-h],[h,h],[-h,h]];
+  ictx.beginPath();
+  localCorners.forEach(([du,dv],i)=>{
+    const ox = J[0][0]*du + J[0][1]*dv;
+    const oy = J[1][0]*du + J[1][1]*dv;
+    const [sx,sy] = w2s(Fp[0]+ox, Fp[1]+oy);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+  ictx.setLineDash([]);
+
+  // F(P) point
+  const [fpx,fpy] = w2s(Fp[0],Fp[1]);
+  ictx.fillStyle = cssVar('--accent');
+  ictx.beginPath(); ictx.arc(fpx,fpy,5,0,7); ictx.fill();
+}
+
+function updateReadouts(){
+  const map = maps[mapSelect.value];
+  const J = map.J(P.u,P.v);
+  pointReadout.textContent = `(${P.u.toFixed(2)}, ${P.v.toFixed(2)})`;
+  jacReadout.innerHTML = `[ ${J[0][0].toFixed(2).padStart(6)}  ${J[0][1].toFixed(2).padStart(6)} ]<br>[ ${J[1][0].toFixed(2).padStart(6)}  ${J[1][1].toFixed(2).padStart(6)} ]`;
+  const det = J[0][0]*J[1][1] - J[0][1]*J[1][0];
+  detReadout.textContent = det.toFixed(3);
+  sizeReadout.textContent = (sizeSlider.value/100).toFixed(2);
+}
+
+function renderLab(){
+  drawDomain();
+  drawImage();
+  updateReadouts();
+}
+
+// interaction
+function domainEventToWorld(e){
+  const rect = domainCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (300/rect.width);
+  const py = (clientY-rect.top) * (300/rect.height);
+  return screenToWorldDomain(px,py);
+}
+domainCv.addEventListener('mousedown', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.6){ dragging = true; }
+});
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+});
+window.addEventListener('mouseup', ()=> dragging=false);
+domainCv.addEventListener('touchstart', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.8){ dragging = true; }
+}, {passive:true});
+domainCv.addEventListener('touchmove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+}, {passive:true});
+window.addEventListener('touchend', ()=> dragging=false);
+
+mapSelect.addEventListener('change', renderLab);
+sizeSlider.addEventListener('input', renderLab);
+
+renderLab();
+</script>
+
+</body>
+</html>
