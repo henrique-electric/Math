@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Double Integral — What Accumulation Means in Two Dimensions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">DOUBLE INTEGRAL</div>
+  <button class="tab-btn active" data-tab="t1">I · Why Two Dimensions</button>
+  <button class="tab-btn" data-tab="t2">II · The Formal Definition</button>
+  <button class="tab-btn" data-tab="t3">III · Fubini &amp; General Regions</button>
+  <button class="tab-btn" data-tab="t4">IV · Warping the Grid</button>
+  <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t6">VI · What It Actually Computes</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>The Double Integral</h1>
+<div class="subtitle">what "accumulation" means once there are two directions to accumulate along</div>
+
+<h2>The one thing an integral is actually for</h2>
+<p>Set aside the mechanics — antiderivatives, bounds, <code>dx</code> — for a moment. Underneath every integral is a single recurring maneuver: <em>chop the domain into pieces small enough that the integrand is nearly constant on each one, multiply, add them all up, and watch what happens as the pieces shrink to nothing.</em> That maneuver doesn't care how many dimensions the domain has. \(\int_a^b f(x)\,dx\) runs it along a line. The double integral runs the exact same maneuver over a patch of the plane.</p>
+
+<p>The geometric payoff shifts along with the dimension. In one variable, \(\int_a^b f(x)\,dx\) is the signed <em>area</em> trapped between a curve and the x-axis. In two variables, a function \(f(x,y)\) traces out a <em>surface</em> hovering over the xy-plane, and the double integral is the signed <strong>volume</strong> trapped between that surface and a region \(D\) of the plane.</p>
+
+<div class="callout definition">
+<span class="callout-label">Informally</span>
+<p>Cover the region \(D\) with a fine grid of small rectangles. Over each rectangle, the surface is nearly flat, so the sliver of volume above it is nearly a rectangular box: <em>base area times height</em>. Add up every box. As the grid gets finer, that sum should settle on a single number — the true volume. That number is \(\iint_D f(x,y)\,dA\).</p>
+</div>
+
+<div class="ascii">   ONE DIMENSION                        TWO DIMENSIONS
+
+   chop [a,b] into strips                chop D into little rectangles
+   strip width Δx, height f(x*)          cell area <span class="hl">ΔA</span>, height f(x*,y*)
+   sum of thin rectangles                sum of thin <span class="hl2">prisms</span>
+        ↓                                       ↓
+   Σ f(x*)Δx  →  area                     Σ f(x*,y*)<span class="hl">ΔA</span>  →  <span class="hl2">volume</span></div>
+
+<p>What makes this worth a whole essay, rather than a one-line analogy, is that almost nothing about the definition changes — but several things that were automatic in one dimension stop being automatic. There is no longer a single natural "direction" to sweep in; the boundary of \(D\) can be an arbitrary curve rather than two endpoints; and the very question "does the limit exist" now has to survive a much richer space of ways to chop up a 2D region. Chasing down exactly what still works, and why, is the substance of what follows.</p>
+
+<h3>Why not just integrate twice, naively?</h3>
+<p>It's tempting to skip straight to "just integrate with respect to <em>y</em>, then with respect to <em>x</em>" — and for well-behaved functions on rectangles, that instinct turns out to be exactly right (this is Fubini's theorem, Panel III). But stating it as the <em>definition</em> would be circular and fragile: it wouldn't explain why the order doesn't matter, it wouldn't survive regions with curved boundaries, and it wouldn't tell you when the whole enterprise is even legitimate. The honest definition has to start from the same partition-and-limit machinery that defines the 1D integral, run in two dimensions at once. That's Panel II.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Every genuinely new idea about double integrals — Fubini's theorem, general regions, the change-of-variables formula — is really an answer to the question <em>"how do I turn a 2D accumulation problem into something I can compute with 1D tools?"</em> The double integral itself is the honest, dimension-agnostic definition; everything else is a computational bridge back to single-variable calculus.</p>
+</div>
+
+<h3>Signed volume: what negative values mean</h3>
+<p>The word "volume" above is doing a specific, <em>signed</em> job, exactly as it does for the single integral. Where \(f(x,y)\ge0\), each Riemann-sum term \(f(x_{ij}^*,y_{ij}^*)\,\Delta A_{ij}\) is the volume of an honest box sitting above the plane. Where \(f(x,y)<0\), that same term is negative: the surface dips below the xy-plane, and the "box" contributes negative volume. So \(\iint_D f\,dA\) is really <em>(volume above the plane) − (volume below the plane)</em>, a net signed quantity — it only equals a literal, physical volume once you already know \(f\ge0\) on all of \(D\). This matters the moment \(f\) represents something that can go negative, such as a velocity, a charge density, or a difference of two heights.</p>
+
+<h3>Two equally rigorous routes to the same limit</h3>
+<p>Panel II states integrability as "the Riemann sums converge, for every partition and every sample choice." There's a second, equivalent way to say the same thing that never has to quantify over sample points at all: bound the sum above and below using the best-case and worst-case heights available on each cell, and require those two bounding sums to squeeze together. This is the <strong>Darboux</strong> formulation, and it is not a stylistic alternative — it is the version that actually makes the proofs in Panel II and Panel III tractable, rather than merely plausible.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>The Formal Definition</h1>
+<div class="subtitle">partitions, norms, and the limit that has to exist before any of this means anything</div>
+
+<h2>Partitioning a rectangle</h2>
+<p>Let \(R = [a,b]\times[c,d]\) be a closed rectangle. A <strong>partition</strong> \(\mathcal{P}\) of \(R\) is built from a partition \(a=x_0&lt;x_1&lt;\dots&lt;x_m=b\) of \([a,b]\) together with a partition \(c=y_0&lt;y_1&lt;\dots&lt;y_n=d\) of \([c,d]\). Together these slice \(R\) into \(mn\) sub-rectangles \(R_{ij}=[x_{i-1},x_i]\times[y_{j-1},y_j]\), each with area \(\Delta A_{ij} = \Delta x_i\,\Delta y_j\).</p>
+
+<p>Pick any sample point \((x_{ij}^*,y_{ij}^*)\in R_{ij}\) and form the <strong>double Riemann sum</strong>:</p>
+<div class="katex-display" data-katex="S(\mathcal{P}) = \sum_{i=1}^{m}\sum_{j=1}^{n} f(x_{ij}^*,y_{ij}^*)\,\Delta A_{ij}"></div>
+
+<p>Define the <strong>norm</strong> of the partition, \(\|\mathcal{P}\|\), as the length of the longest diagonal among all the sub-rectangles — not the number of pieces, but the size of the coarsest piece. This is the quantity that has to go to zero.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the double integral</span>
+<p>\(f\) is (Riemann) integrable on \(R\) with integral \(L\) if for every \(\varepsilon>0\) there exists \(\delta>0\) such that <em>every</em> partition \(\mathcal{P}\) with \(\|\mathcal{P}\|<\delta\), <em>with any choice of sample points</em>, satisfies \(|S(\mathcal{P}) - L| < \varepsilon\). When this \(L\) exists, it is unique, and we write</p>
+<div class="katex-display" data-katex="\iint_R f(x,y)\,dA = \lim_{\|\mathcal P\|\to 0} \sum_{i,j} f(x_{ij}^*,y_{ij}^*)\,\Delta A_{ij}"></div>
+</div>
+
+<p>Read the quantifiers carefully — they're doing all the work. It's not enough that <em>some</em> sequence of grids converges nicely; <em>every</em> sufficiently fine partition, sampled <em>however you like</em>, has to land within \(\varepsilon\) of the same number \(L\). That's a strong requirement, and it's exactly what makes the resulting value \(L\) a property of \(f\) and \(R\) alone — not an artifact of how you happened to chop things up.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the same shape of guarantee that made the single-variable derivative well-defined: there, uniqueness came from forcing the approximation to work for <em>every</em> direction of approach, not just one. Here, uniqueness comes from forcing the sum to converge for <em>every</em> partition and sample choice, not just a convenient sequence of grids. Both are the same mathematical instinct — refuse to let the answer depend on an arbitrary choice — applied to two different limiting processes.</p>
+</div>
+
+<h3>An equivalent formulation: Darboux sums</h3>
+<p>Quantifying over "every choice of sample point" is correct but awkward to reason with. The Darboux formulation sidesteps sample points entirely by using the best- and worst-case heights available on each sub-rectangle. For bounded \(f\) and sub-rectangle \(R_{ij}\), set</p>
+<div class="katex-display" data-katex="M_{ij} = \sup_{(x,y)\in R_{ij}} f(x,y), \qquad m_{ij} = \inf_{(x,y)\in R_{ij}} f(x,y)"></div>
+<p>and define the <strong>upper</strong> and <strong>lower sums</strong>:</p>
+<div class="katex-display" data-katex="U(f,\mathcal P) = \sum_{i,j} M_{ij}\,\Delta A_{ij}, \qquad L(f,\mathcal P) = \sum_{i,j} m_{ij}\,\Delta A_{ij}"></div>
+<p>Every genuine Riemann sum \(S(\mathcal P)\), for any sample choice, satisfies \(L(f,\mathcal P)\le S(\mathcal P)\le U(f,\mathcal P)\) — it is trapped between the worst case and the best case on every cell. Refining a partition can only push \(L\) up and \(U\) down, never the reverse, so as partitions refine, the two sums close in on each other from opposite sides.</p>
+
+<div class="callout definition">
+<span class="callout-label">Darboux's criterion</span>
+<p>\(f\) is integrable on \(R\) if and only if for every \(\varepsilon>0\) there exists a partition \(\mathcal P\) with \(U(f,\mathcal P)-L(f,\mathcal P)<\varepsilon\). When this holds, the squeezed common value equals the double integral, and this criterion is <em>provably equivalent</em> to the Riemann definition above. Its advantage is structural: Darboux sums involve no arbitrary sample-point choice, which is exactly what makes them the workhorse behind the integrability proofs that follow — in particular the continuity proof below and the proof of Fubini's theorem in Panel III.</p>
+</div>
+
+<h3>What guarantees the limit exists?</h3>
+<p>Not every bounded function is integrable. The clean, practically-universal sufficient condition is continuity:</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>If \(f\) is continuous on a closed, bounded rectangle \(R\), then \(f\) is integrable on \(R\). More generally (this is the fact that actually licenses the "general regions" of Panel III), a bounded function is Riemann integrable on \(R\) as long as its set of discontinuities has <em>measure zero</em> — informally, a set thin enough that it can be covered by rectangles of arbitrarily small total area. A finite union of smooth curves inside \(R\) always qualifies, which is precisely the situation when you integrate a continuous \(f\) over a region \(D\subset R\) by declaring it \(0\) outside \(D\): the discontinuity you introduce sits exactly on \(\partial D\), a curve.</p>
+</div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — measure zero</span>
+<p>A set \(Z\subset\mathbb R^2\) has measure zero if for every \(\varepsilon>0\) there is a countable collection of rectangles covering \(Z\) whose total area is less than \(\varepsilon\). Points, finite sets, and — the case that matters here — any finite union of smooth curves all qualify: a curve can be covered by a chain of thin rectangles hugging it, and shrinking their width shrinks their total area to nothing, no matter how long the curve is. A measure-zero set can still be uncountably infinite; "measure zero" is a statement about total area, not about how many points the set contains.</p>
+</div>
+
+<h3>Why continuity is enough: a proof sketch</h3>
+<p>The Darboux criterion turns "continuous implies integrable" into a short, genuinely illuminating argument rather than a fact to take on faith. Because \(R\) is closed and bounded and \(f\) is continuous, \(f\) is <em>uniformly</em> continuous on \(R\) (Heine–Cantor theorem): given \(\varepsilon>0\), there is a single \(\delta>0\) that works everywhere on \(R\) at once, so that any two points within distance \(\delta\) of each other have \(f\)-values within \(\varepsilon\) of each other.</p>
+<p>Take any partition \(\mathcal P\) with norm \(\|\mathcal P\|<\delta\). On each sub-rectangle \(R_{ij}\), every pair of points is within \(\delta\) of each other, so the <em>oscillation</em> \(M_{ij}-m_{ij}\) is at most \(\varepsilon\). Then</p>
+<div class="katex-display" data-katex="U(f,\mathcal P) - L(f,\mathcal P) = \sum_{i,j}(M_{ij}-m_{ij})\,\Delta A_{ij} \;\le\; \varepsilon\sum_{i,j}\Delta A_{ij} \;=\; \varepsilon\cdot\text{Area}(R)"></div>
+<p>Since \(\varepsilon\) was arbitrary and \(\text{Area}(R)\) is a fixed number, \(U-L\) can be forced below any target — exactly the Darboux criterion. The whole proof is one inequality, and it never had to name a specific favorable sequence of partitions; uniform continuity handed us a single \(\delta\) that works for <em>every</em> sufficiently fine partition simultaneously — the same "no dependence on an arbitrary choice" theme running through this entire essay.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>Boundedness alone is not enough. Let \(f(x,y)=1\) if both \(x\) and \(y\) are rational, and \(0\) otherwise, on \(R=[0,1]^2\). Every sub-rectangle of every partition, no matter how fine, contains both rational and irrational coordinate pairs, so it contains points where \(f=1\) and points where \(f=0\). The Riemann sum can therefore be forced to equal \(1\) (sample only rational points) or \(0\) (sample only irrational points) for the <em>same</em> partition — indeed \(M_{ij}=1\) and \(m_{ij}=0\) on every cell of every partition, so \(U(f,\mathcal P)-L(f,\mathcal P)=\text{Area}(R)\) never shrinks. The limit in the definition above does not exist — this function is simply not Riemann integrable, however fine you make the grid.</p>
+</div>
+
+<h3>A hand-computed example, to make the limit concrete</h3>
+<p>Let \(f(x,y)=x+y\) on \(R=[0,1]\times[0,1]\), whose exact double integral will follow from Fubini in Panel III as \(1\). Partition into a \(2\times2\) grid of side-\(\tfrac12\) squares and sample at each cell's midpoint:</p>
+<div class="katex-display" data-katex="S = \tfrac14\Big[f(\tfrac14,\tfrac14)+f(\tfrac14,\tfrac34)+f(\tfrac34,\tfrac14)+f(\tfrac34,\tfrac34)\Big] = \tfrac14\big[\tfrac12+1+1+\tfrac32\big] = 1"></div>
+<p>The midpoint rule already hits the exact answer at \(N=2\), because \(f\) is linear: a single midpoint sample per cell exactly represents a linear function's average over that cell, no matter how coarse the grid. That's the exception, not the rule — repeat the computation for \(f(x,y)=x^2+y^2\) instead (Panel V's second interactive lab does exactly this, numerically) and a coarse grid only approximates the true value, improving steadily as the partition refines. Comparing the two cases is the fastest way to feel why the definition insists on a <em>limit</em> as the norm shrinks to zero, rather than accepting any single partition's answer.</p>
+
+<h3>The sum inherits algebra from being a sum</h3>
+<p>Because the double integral is defined as a limit of finite sums, it inherits linearity and monotonicity directly from the algebra of sums, with no extra machinery required:</p>
+<div class="katex-display" data-katex="\iint_R \big[\alpha f + \beta g\big]\,dA = \alpha\iint_R f\,dA + \beta \iint_R g\,dA, \qquad f\ge g \text{ on } R \implies \iint_R f\,dA \ge \iint_R g\,dA"></div>
+<p>and if \(R\) is split into two non-overlapping pieces \(R_1,R_2\) along a shared edge, \(\iint_R f\,dA = \iint_{R_1} f\,dA + \iint_{R_2} f\,dA\) — additivity over regions, which is the fact that makes "split the domain and handle each piece separately" a legitimate move rather than a heuristic.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>Fubini &amp; General Regions</h1>
+<div class="subtitle">turning a 2D limit into two ordinary 1D integrals, then letting the boundary curve</div>
+
+<h2>Fubini's theorem: the bridge back to single-variable calculus</h2>
+<p>The partition-limit definition is correct but nearly useless for actually computing anything — nobody evaluates a double limit of double sums by hand. <strong>Fubini's theorem</strong> is the bridge: for \(f\) continuous on \(R=[a,b]\times[c,d]\),</p>
+<div class="katex-display" data-katex="\iint_R f(x,y)\,dA \;=\; \int_a^b\!\!\left[\int_c^d f(x,y)\,dy\right]dx \;=\; \int_c^d\!\!\left[\int_a^b f(x,y)\,dx\right]dy"></div>
+<p>Two claims are bundled into that statement, and it's worth separating them: (1) the double integral <em>equals</em> an iterated pair of ordinary single-variable integrals, and (2) it does so <strong>regardless of which variable you integrate first</strong>.</p>
+
+<h3>Why this is true: Cavalieri's principle made algebraic</h3>
+<p>Freeze \(x\) at some fixed value. The function \(y\mapsto f(x,y)\) is now an ordinary single-variable function, and \(\int_c^d f(x,y)\,dy\) is the area of the cross-section of the solid sliced at that \(x\) — call this cross-sectional area function \(A(x)\). Fubini's theorem says the volume is obtained by accumulating these cross-sectional areas along \(x\):</p>
+<div class="katex-display" data-katex="V = \int_a^b A(x)\,dx, \qquad A(x) = \int_c^d f(x,y)\,dy"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is exactly Cavalieri's principle from solid geometry — a solid's volume is determined by the areas of its parallel cross-sections — restated as an algebraic identity rather than an appeal to intuition. Slicing vertically first and integrating the resulting areas horizontally (or vice versa) are two different bookkeeping strategies for summing the <em>same</em> infinitesimal volume elements \(f(x,y)\,dx\,dy\), which is why the two iterated integrals are forced to agree.</p>
+</div>
+
+<div class="ascii">   VERTICAL SLICING (dy first)         HORIZONTAL SLICING (dx first)
+
+   for each fixed x:                   for each fixed y:
+     A(x) = ∫ f(x,y) dy   <span class="hl">(area)</span>       A(y) = ∫ f(x,y) dx   <span class="hl">(area)</span>
+   then  V = ∫ A(x) dx                 then  V = ∫ A(y) dy
+
+              same volume V either way — Fubini's theorem</div>
+
+<h3>A genuine proof, via Darboux sums</h3>
+<p>The Cavalieri picture is convincing, but the Darboux machinery from Panel II upgrades it into an actual proof for continuous \(f\) on \(R=[a,b]\times[c,d]\). Fix a grid of sub-rectangles \(R_{ij}\) as before. For each fixed \(x\) in the \(i\)-th column, the cross-sectional area function is itself an ordinary single integral, so it's trapped between its own lower and upper Darboux sums along that column:</p>
+<div class="katex-display" data-katex="\sum_j m_{ij}\,\Delta y_j \;\le\; A(x)=\int_c^d f(x,y)\,dy \;\le\; \sum_j M_{ij}\,\Delta y_j \qquad \text{for every } x \text{ in column } i"></div>
+<p>Integrating this chain of inequalities over \(x\in[x_{i-1},x_i]\) and summing over every column \(i\) produces exactly \(L(f,\mathcal P) \le \int_a^b A(x)\,dx \le U(f,\mathcal P)\). But \(\iint_R f\,dA\) is <em>also</em> trapped between \(L(f,\mathcal P)\) and \(U(f,\mathcal P)\), by definition of the double integral. Since \(f\) is continuous, Panel II's proof sketch shows \(U(f,\mathcal P)-L(f,\mathcal P)\) can be forced below any \(\varepsilon\) by refining the partition. Two numbers squeezed into the same shrinking interval must coincide — hence \(\int_a^b A(x)\,dx=\iint_R f\,dA\), with no appeal to physical intuition required anywhere in the argument.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — Fubini needs integrability, not merely that the iterated integrals exist</span>
+<p>It's possible for both iterated integrals \(\int\int f\,dy\,dx\) and \(\int\int f\,dx\,dy\) to exist as ordinary single-variable computations and yet <strong>disagree</strong>, when \(f\) is not integrable over \(R\) as a genuine double integral. The standard counterexample is \(f(x,y)=\dfrac{x^2-y^2}{(x^2+y^2)^2}\) on \((0,1]\times(0,1]\): direct computation gives \(\int_0^1\!\int_0^1 f\,dy\,dx = \tfrac{\pi}{4}\) but \(\int_0^1\!\int_0^1 f\,dx\,dy = -\tfrac{\pi}{4}\). The culprit is that \(f\) is unbounded as \((x,y)\to(0,0)\), so it fails the hypotheses of Fubini's theorem outright — continuity (or at least boundedness plus integrability) is not fine print here, it is load-bearing, exactly as the proof sketch above required it at the step where the Darboux gap was forced to zero.</p>
+</div>
+
+<h2>General regions: letting the bounds curve</h2>
+<p>Real domains are rarely rectangles. The extension is to let the <em>inner</em> limits of integration be functions rather than constants, while the <em>outer</em> limits stay fixed numbers:</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>This asymmetry is the single most common source of setup errors: <strong>the outer bounds of an iterated integral must be absolute constants.</strong> If a variable survives into the outer limits, the "answer" you get back is a function, not a volume — a sure sign the bounds were read off incorrectly.</p>
+</div>
+
+<p>We classify curved domains into two operational categories:</p>
+<div class="katex-display" data-katex="\textbf{Type I: } D=\{(x,y): a\le x\le b,\ g_1(x)\le y\le g_2(x)\} \implies \iint_D f\,dA = \int_a^b\!\int_{g_1(x)}^{g_2(x)} f(x,y)\,dy\,dx"></div>
+<div class="katex-display" data-katex="\textbf{Type II: } D=\{(x,y): c\le y\le d,\ h_1(y)\le x\le h_2(y)\} \implies \iint_D f\,dA = \int_c^d\!\int_{h_1(y)}^{h_2(y)} f(x,y)\,dx\,dy"></div>
+
+<p>The most reliable way to set these up is geometric, not algebraic: sketch \(D\), then imagine a scanning arrow — vertical for Type I, horizontal for Type II — sweeping across the region. The curve the arrow <em>enters</em> through is the lower inner bound; the curve it <em>exits</em> through is the upper inner bound; the range the arrow's base sweeps over is the pair of outer constants.</p>
+
+<h3>Seeing it in 3D: volume over a curved region</h3>
+<p>Take a genuinely curved Type I region — the lens \(D=\{(x,y): 0\le x\le1,\ x^2\le y\le\sqrt{x}\}\), bounded below by a parabola and above by its own inverse — and put the same surface from Panel V's Lab 2 over it, \(f(x,y)=x^2+y^2\). Reusing the integrand isolates exactly what's new here: not the function, but the fact that its footprint is no longer a rectangle. Fubini's theorem still applies exactly as stated above — for each fixed \(x\), the inner integral runs from \(g_1(x)=x^2\) up to \(g_2(x)=\sqrt{x}\) — so the same "chop into columns, evaluate a cross-sectional slice, accumulate along \(x\)" machinery from earlier in this panel is what's rendered below, column by curved column.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">f(x,y) = x² + y² over 0≤x≤1, x²≤y≤√x — drag to orbit</div>
+      <canvas id="cvRegion" width="480" height="380" style="width:100%;max-width:480px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Columns N</label>
+      <input type="range" id="nRegionSlider" min="1" max="22" value="4">
+      <span class="readout" id="nRegionD">4</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">COLUMNS × ROWS</div>
+      <div class="v" id="regionN">4 × 4 = 16</div>
+    </div>
+    <div class="block">
+      <div class="k">NESTED MIDPOINT SUM</div>
+      <div class="v" id="regionSum">…</div>
+    </div>
+    <div class="block">
+      <div class="k">EXACT VALUE</div>
+      <div class="v">0.171429</div>
+    </div>
+    <div class="block">
+      <div class="k">|ERROR|</div>
+      <div class="v" id="regionErr">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue); opacity:0.5;"></span> true surface, clipped exactly to \(x^2\le y\le\sqrt x\)</span>
+    <span><span class="swatch" style="background:var(--green)"></span> prisms — one column of boxes per x-slice</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Each column of boxes is built exactly the way the text above describes: pick a representative \(x\) for that column, evaluate \(g_1(x)\) and \(g_2(x)\) <em>at that one \(x\)</em>, and subdivide the resulting \(y\)-range into that column's own boxes. Neighboring columns don't quite line up at their shared edge, because \(g_1,g_2\) shift slightly between one column's representative \(x\) and the next's — and that's not a rendering bug, it's the visual signature of a Type I partition approximating a curved boundary with flat-topped, straight-edged pieces. Raise \(N\) and watch those seams shrink into the true curve, the same convergence from Panel II's definition, now with a non-rectangular footprint.</p>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>A region might not be classifiable as a single Type I or Type II piece — the "entering" or "exiting" curve can switch partway across. When that happens, additivity of regions (Panel II) is the escape hatch: split \(D\) at the point where the bounding curve changes, treat each piece as its own Type I or Type II region, and add the results. Often, switching the slicing direction entirely (Type I ↔ Type II) avoids the split altogether — worth checking before committing to extra algebra.</p>
+</div>
+
+<h3>A compound region, solved by splitting — and solved again without splitting</h3>
+<p>Take the region \(D\) bounded by \(y=x\), \(y=2x\), and \(y=2\), and compute its area, \(\iint_D 1\,dA\). Sliced vertically (Type I), the lower boundary switches from \(y=2x\) (for \(0\le x\le1\)) to \(y=x\) (for \(1\le x\le2\)), forcing a split exactly where those two lines meet the cap \(y=2\):</p>
+<div class="katex-display" data-katex="\text{Area} = \int_0^1\!\!\int_{2x}^{2} dy\,dx \;+\; \int_1^2\!\!\int_{x}^{2} dy\,dx = \int_0^1(2-2x)\,dx + \int_1^2(2-x)\,dx = 1+\tfrac12 = \tfrac32"></div>
+<p>Sliced horizontally (Type II) instead, the left boundary is always \(x=y/2\) and the right boundary is always \(x=y\), for every \(y\in[0,2]\) at once — one integral, no split required:</p>
+<div class="katex-display" data-katex="\text{Area} = \int_0^2\!\!\int_{y/2}^{y} dx\,dy = \int_0^2 \tfrac{y}{2}\,dy = \tfrac32"></div>
+<p>Both routes agree, as additivity of regions guarantees they must — but the horizontal slicing reached the identical number with half the algebra. Checking which slicing direction avoids a split, before committing to a set of bounds, is a genuine time-saver rather than an aesthetic preference.</p>
+
+<h3>Changing order to rescue an unsolvable integral</h3>
+<p>Order of integration is not just a bookkeeping choice — sometimes only one order is computable at all. Consider \(I=\int_0^1\!\int_y^1 e^{x^2}\,dx\,dy\): the inner integral has no elementary antiderivative, full stop. Reading the bounds geometrically, this is the triangle with vertices \((0,0),(1,0),(1,1)\), bounded by \(x=y\), \(x=1\), \(y=0\), \(y=1\). Reslicing that same triangle vertically instead of horizontally:</p>
+<div class="katex-display" data-katex="I = \int_0^1\!\int_0^x e^{x^2}\,dy\,dx = \int_0^1 x\,e^{x^2}\,dx = \tfrac12(e-1)"></div>
+<p>Swapping the slicing direction attached an extra factor of \(x\) to \(e^{x^2}\) purely as a byproduct of the new bounds — exactly what a \(u=x^2\) substitution needs. Nothing about the region changed; only the direction we chose to sum its infinitesimal strips in did.</p>
+
+<h3>The Mean Value Theorem for double integrals</h3>
+<p>If \(f\) is continuous on a closed, connected, bounded region \(D\), there exists at least one point \((x_0,y_0)\in D\) where \(f\) exactly equals the <em>average value</em> of \(f\) over \(D\):</p>
+<div class="katex-display" data-katex="f(x_0,y_0) = \bar f = \frac{1}{\text{Area}(D)}\iint_D f(x,y)\,dA"></div>
+<p>The proof is another squeeze, and a short one: continuity on a closed, bounded set guarantees \(f\) attains a minimum \(m\) and maximum \(M\) somewhere on \(D\), so monotonicity (Panel II) gives \(m\cdot\text{Area}(D) \le \iint_D f\,dA \le M\cdot\text{Area}(D)\), which places \(\bar f\) between \(m\) and \(M\). Continuity then guarantees (via the Intermediate Value Theorem, applied along a path connecting the two extremum points) that \(f\) actually attains that intermediate value somewhere in \(D\) — it isn't merely sandwiched between two values \(f\) achieves elsewhere, it hits \(\bar f\) exactly, at some genuine point of the region.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This theorem is what makes "average value," "centroid," and — read through a probability lens — "expected value" all meaningful concepts rather than just formulas: each is defined as exactly this kind of area-normalized double integral, and the Mean Value Theorem is the guarantee that the resulting number is not an abstraction floating outside the region, but a value \(f\) genuinely takes on somewhere inside \(D\). Panel VI leans on this fact directly.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Warping the Grid</h1>
+<div class="subtitle">changing coordinates, and the factor you must pay to do it honestly</div>
+
+<h2>Why change coordinates at all</h2>
+<p>Cartesian coordinates are native to straight lines. A disk, forced into Cartesian bounds, becomes a nest of square roots: \(\int_{-1}^1\int_{-\sqrt{1-x^2}}^{\sqrt{1-x^2}} f(x,y)\,dy\,dx\). Under a substitution \(x=r\cos\theta,\ y=r\sin\theta\), that same disk becomes the plain rectangle \(r\in[0,1],\ \theta\in[0,2\pi]\). The region got simpler. But a substitution changes more than the labels of the axes — it changes how much <em>area</em> a fixed-size coordinate cell represents, and any honest change of variables has to account for that.</p>
+
+<h3>Deriving the price geometrically: polar coordinates</h3>
+<p>A small polar "rectangle" — inner radius \(r\), outer radius \(r+\Delta r\), angular width \(\Delta\theta\) — is really an annular sector, not a square. Its area is the outer sector minus the inner sector, \(\tfrac12(r+\Delta r)^2\Delta\theta - \tfrac12 r^2\Delta\theta\), which simplifies to \(\bar r\,\Delta r\,\Delta\theta\) where \(\bar r\) is the average radius. As \(\Delta r\to0\), \(\bar r\to r\), giving the differential area element:</p>
+<div class="katex-display" data-katex="dA = r\,dr\,d\theta"></div>
+<p>That lone factor of \(r\) is not decorative — it is the exact reason polar coordinate cells shrink to nothing near the origin and swell far from it, even though \(\Delta r\) and \(\Delta\theta\) never change.</p>
+
+<h2>The general price: the Jacobian determinant</h2>
+<p>Polar coordinates are one instance of a completely general phenomenon. Let \(T(u,v)=(x(u,v),y(u,v))\) be a smooth, invertible map sending a region \(D'\) in the \(uv\)-plane onto \(D\) in the \(xy\)-plane. Near any point, \(T\) is well-approximated by its Jacobian matrix — a linear map that sends a small square to a small parallelogram, scaling area locally by the factor \(|\det J_T|\). Summing these locally-rescaled pieces gives the <strong>change of variables formula</strong>:</p>
+<div class="katex-display" data-katex="\iint_D f(x,y)\,dx\,dy = \iint_{D'} f\big(T(u,v)\big)\,\left|\det J_T(u,v)\right|\,du\,dv, \qquad J_T = \begin{bmatrix}\partial x/\partial u &amp; \partial x/\partial v \\ \partial y/\partial u &amp; \partial y/\partial v\end{bmatrix}"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Every "extra factor" you've ever multiplied in after a substitution — the lone <em>r</em> in polar coordinates, the extra constants in a linear rescaling — is the same object: \(|\det J_T|\), the local area-scaling factor of the coordinate change. Polar coordinates aren't a special trick with its own rule to memorize; they're the \(T(r,\theta)=(r\cos\theta,r\sin\theta)\) case of one universal formula, and computing \(\det J_T = r\cos^2\theta+r\sin^2\theta = r\) recovers \(dA=r\,dr\,d\theta\) by direct calculation rather than the geometric annulus argument above — the two derivations agree because they're describing the same fact from different angles.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>Unlike the signed determinant that tracks orientation elsewhere in linear algebra, the change-of-variables formula uses <strong>\(|\det J_T|\)</strong> — absolute value. Area is never negative, so a coordinate change that happens to reverse orientation (like a reflection) still contributes a positive area-scaling factor. Dropping the absolute value is a common and consequential setup error.</p>
+</div>
+
+<h3>A famous payoff: the Gaussian integral</h3>
+<p>The function \(e^{-x^2}\) has no elementary antiderivative, so \(\int_{-\infty}^{\infty}e^{-x^2}\,dx\) resists single-variable methods entirely. Squaring it converts the problem into a double integral over the whole plane, \(I^2=\iint_{\mathbb{R}^2} e^{-(x^2+y^2)}\,dx\,dy\), and the combination \(x^2+y^2\) is exactly \(r^2\) — a signal to switch to polar coordinates:</p>
+<div class="katex-display" data-katex="I^2 = \int_0^{2\pi}\!\!\int_0^{\infty} e^{-r^2}\,r\,dr\,d\theta = 2\pi\cdot\tfrac12 = \pi \implies I=\sqrt{\pi}"></div>
+<p>The extra factor of \(r\) — the very quantity derived above as the price of polar coordinates — is precisely what turns an intractable exponential into something a plain \(u\)-substitution finishes off. Without paying that price honestly, the computation gives the wrong answer despite looking algebraically plausible.</p>
+
+<h3>A general linear substitution</h3>
+<p>Polar coordinates are the most famous change of variables, but linear substitutions are the ones reached for most often in practice — typically to tame a combination like \(x+y\) or \(x-y\) that recurs throughout an integrand or its region's boundary. Let \(u=x+y\), \(v=x-y\), so \(x=\tfrac{u+v}{2}\), \(y=\tfrac{u-v}{2}\). Computing the Jacobian of this <em>inverse</em> map directly:</p>
+<div class="katex-display" data-katex="J_{T^{-1}} = \begin{bmatrix}\partial x/\partial u &amp; \partial x/\partial v \\ \partial y/\partial u &amp; \partial y/\partial v\end{bmatrix} = \begin{bmatrix}\tfrac12 &amp; \tfrac12 \\[4pt] \tfrac12 &amp; -\tfrac12\end{bmatrix}, \qquad \det J_{T^{-1}} = -\tfrac12 \implies dx\,dy = \tfrac12\,du\,dv"></div>
+
+<div class="callout note">
+<span class="callout-label">Note — the reciprocal relationship</span>
+<p>Here \(|\det J_{T^{-1}}|=\tfrac12\); computing the forward map's Jacobian directly from \(u=x+y,\ v=x-y\) gives \(\det J_T=-2\), so \(|\det J_T|\cdot|\det J_{T^{-1}}|=1\). This is not a coincidence specific to this example. For any invertible smooth map, \(J_{T^{-1}}(T(p)) = \big[J_T(p)\big]^{-1}\) — the Inverse Function Theorem, from the companion Jacobian essay — and \(\det(A^{-1})=1/\det(A)\) for any invertible matrix \(A\). Whichever direction is more convenient to differentiate, the other Jacobian determinant is just its reciprocal, with no separate computation needed.</p>
+</div>
+
+<h3>Composing changes of variables</h3>
+<p>Nothing prevents chaining two substitutions — shift to \((u,v)\), then again to \((p,q)\) — and the bookkeeping for the combined area-scaling factor is exactly the chain rule for Jacobians: if \(T=T_2\circ T_1\), then \(J_T = J_{T_2}\cdot J_{T_1}\) (each evaluated at the appropriate point), so \(\det J_T = \det J_{T_2}\cdot\det J_{T_1}\), since the determinant of a matrix product is the product of the determinants. Composing coordinate changes composes their local area-scaling factors by plain multiplication — there is never a need to re-derive a combined formula from scratch; the two factors already in hand simply multiply.</p>
+
+<h3>Elliptical coordinates: stretching polar unevenly</h3>
+<p>Polar coordinates are the natural substitution for circular symmetry. For a region shaped like an ellipse instead, stretch each polar axis independently: \(x=ar\cos\theta,\ y=br\sin\theta\). The Jacobian determinant picks up both stretch factors:</p>
+<div class="katex-display" data-katex="J_T = \begin{bmatrix}a\cos\theta &amp; -ar\sin\theta \\ b\sin\theta &amp; br\cos\theta\end{bmatrix}, \qquad \det J_T = ab\,r\cos^2\theta + ab\,r\sin^2\theta = ab\,r"></div>
+<p>Setting \(f\equiv1\) and integrating over \(r\in[0,1],\ \theta\in[0,2\pi]\) gives \(\iint 1\cdot ab\,r\,dr\,d\theta = ab\pi\) — the area of an ellipse with semi-axes \(a,b\), recovered in two lines from a substitution built by inspection, rather than memorized as an isolated formula.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the map must be injective, or the overlap must be accounted for</span>
+<p>The change-of-variables formula assumes \(T\) is a one-to-one correspondence between \(D'\) and \(D\), except possibly on a measure-zero set. Polar coordinates already illustrate the subtlety: \(T(r,\theta)=(r\cos\theta,r\sin\theta)\) collapses the entire segment \(r=0\) to the single point \((0,0)\), and the rays \(\theta\) and \(\theta+2\pi\) describe the same points — both are measure-zero failures of injectivity, harmless to the formula, exactly like the curve-shaped discontinuity sets from Panel II's integrability discussion. But if a substitution folds a <em>positive-area</em> piece of \(D'\) onto itself more than once, applying the formula naively double-counts that region; the fix is to restrict \(D'\) to a piece on which \(T\) is genuinely injective before integrating, then handle the remaining pieces (if any) separately.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Interactive Lab</h1>
+<div class="subtitle">watch a coordinate grid deform, and check that |det J| really is the local area price</div>
+
+<p>Drag the point <strong>P</strong> in the left canvas — the \(uv\)-plane — to relocate where the small cell sits. The right canvas shows where that same cell lands under the map \(T\), in <span style="color:var(--red)">rust</span>, next to the <span style="color:var(--blue)">blue</span> parallelogram the Jacobian alone predicts. Shrink the cell and watch the two converge — that convergence is exactly what licenses replacing the true image area with \(|\det J_T(P)|\,\Delta u\,\Delta v\) inside the change-of-variables formula from Panel IV.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">uv-DOMAIN — drag P</div>
+      <canvas id="domainCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">xy-IMAGE UNDER T</div>
+      <canvas id="imageCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Map T(u,v)</label>
+      <select id="mapSelect">
+        <option value="polar">(u·cos v, u·sin v)  — polar coordinates</option>
+        <option value="shear">(u + 0.6v, v)  — shear</option>
+        <option value="stretch">(1.8u, 0.5v)  — anisotropic stretch</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Cell size Δ</label>
+      <input type="range" id="sizeSlider" min="4" max="90" value="55">
+      <span class="readout" id="sizeReadout">0.55</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">POINT P = (u,v)</div>
+      <div class="v" id="pointReadout">(1.00, 0.60)</div>
+    </div>
+    <div class="block">
+      <div class="k">JACOBIAN J(P)</div>
+      <div class="v" id="jacReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">|det J(P)|</div>
+      <div class="v" id="detReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">CELL AREA RATIO (measured)</div>
+      <div class="v" id="ratioReadout">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> global grid image (curved)</span>
+    <span><span class="swatch" style="background:var(--red)"></span> true image of the small cell</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> J(P)-predicted parallelogram</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Watch the <strong>measured cell-area ratio</strong> (true image area of the cell, divided by \(\Delta u\,\Delta v\)) converge onto <strong>|det J(P)|</strong> as the slider shrinks the cell. At a large cell size the two visibly disagree — the linear prediction is a rough sketch of a genuinely curved deformation. That gap, and its shrinking as \(\Delta\to0\), is the entire content of why \(|\det J_T|\) is the correct — and only the <em>local</em> — area-scaling factor to use inside an integral.</p>
+</div>
+
+<p>Try the <code>polar</code> map with P dragged close to \(u=0\): the predicted parallelogram collapses toward a sliver, matching the geometric fact from Panel IV that polar cells shrink to nothing near the origin. Try <code>shear</code>: the parallelogram tilts but its area never changes as you drag P around, since \(\det J\) is constant for a linear map — the grid distorts in shape but never in local area.</p>
+
+<h3>Lab 2 — Partition Refinement &amp; Convergence, Rendered in 3D</h3>
+<p>The lab above verifies Panel IV's local area-scaling claim, flattened into a plane because a change of variables is inherently a 2D-to-2D map. This one goes back to the raw definition in Panel II, and this time the geometry actually <em>is</em> three-dimensional, so it's rendered with real WebGL rather than a flattened sketch: the translucent shell is the true surface \(f(u,v)=u^2+v^2\) over \([0,1]\times[0,1]\), and the solid bars underneath are the Riemann-sum prisms — one box per grid cell, each with height \(f\) sampled at the cell's midpoint. Drag to orbit; the scene keeps a slow idle spin until you do.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">f(u,v) = u² + v² on [0,1]×[0,1] — drag to orbit</div>
+      <canvas id="cvConverge" width="480" height="380" style="width:100%;max-width:480px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Grid resolution N</label>
+      <input type="range" id="nConvergeSlider" min="1" max="22" value="3">
+      <span class="readout" id="nConvergeD">3</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">CELLS (N×N)</div>
+      <div class="v" id="convN">3 × 3 = 9</div>
+    </div>
+    <div class="block">
+      <div class="k">MIDPOINT RIEMANN SUM</div>
+      <div class="v" id="convSum">…</div>
+    </div>
+    <div class="block">
+      <div class="k">EXACT VALUE</div>
+      <div class="v">0.666667</div>
+    </div>
+    <div class="block">
+      <div class="k">|ERROR|</div>
+      <div class="v" id="convErr">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue); opacity:0.5;"></span> true surface f(u,v) (translucent)</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> Riemann-sum prisms (solid, one per cell)</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>At \(N=1\) a single fat prism is standing in for the entire volume under the surface, and the mismatch between the flat prism top and the curving shell above it is visible at a glance. Drag \(N\) up: the prisms subdivide, their tops hug the surface more and more closely, and the visual gap between "solid bars" and "translucent shell" all but disappears well before \(N\) gets large. The numeric error collapses roughly like \(1/N^2\) — the midpoint rule's characteristic second-order convergence — but here you can <em>watch</em> the geometry doing it: this is the partition norm \(\|\mathcal P\|\to0\) from Panel II's definition, made spatial rather than left as an abstract limit.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>What It Actually Computes</h1>
+<div class="subtitle">beyond volume — mass, moments, probability, and where this generalizes to</div>
+
+<h2>From height to density: physical accumulation</h2>
+<p>Strip away the "volume under a surface" picture and the double integral is really just the general-purpose tool for <em>continuously accumulating a quantity over a 2D region</em>. Let a flat plate (a <em>lamina</em>) occupy region \(D\), with mass density \(\rho(x,y)\) (mass per unit area) varying from point to point. Summing infinitesimal masses \(dm=\rho\,dA\) over \(D\) gives the total mass, and weighting by position before summing gives the moments that locate the centroid:</p>
+<div class="katex-display" data-katex="M = \iint_D \rho(x,y)\,dA, \qquad \bar x = \frac{1}{M}\iint_D x\,\rho(x,y)\,dA, \qquad \bar y = \frac{1}{M}\iint_D y\,\rho(x,y)\,dA"></div>
+<p>Nothing here is new mathematics — it's the same "chop, weight, sum, limit" machinery from Panel I, with \(\rho\,dA\) standing in for \(f\,dA\).</p>
+
+<h3>Moment of inertia and radius of gyration</h3>
+<p>The moment of inertia about an axis, \(I=\iint_D r(x,y)^2\,\rho(x,y)\,dA\) with \(r\) the distance to that axis, measures resistance to rotational acceleration the way mass measures resistance to linear acceleration — it follows the exact same accumulation pattern as \(M\) and the centroid, just with a different weight attached to each infinitesimal piece of mass. Dividing by the total mass and taking a square root gives the <strong>radius of gyration</strong>,</p>
+<div class="katex-display" data-katex="R_g = \sqrt{I/M}"></div>
+<p>— the single radius at which all of the lamina's mass could be concentrated in a thin ring and reproduce the identical moment of inertia. It is, in a precise sense, a mass-weighted "average distance from the axis," exactly parallel to how the centroid is a mass-weighted average position.</p>
+
+<h3>Surface area as a double integral</h3>
+<p>A double integral doesn't only measure the volume <em>under</em> a surface \(z=g(x,y)\) — a close cousin measures the surface's own area. Over a small cell of dimensions \(\Delta x\times\Delta y\), the surface is approximated by the tangent plane spanned by the vectors \((1,0,g_x)\) and \((0,1,g_y)\); the parallelogram those two vectors span has area \(\sqrt{1+g_x^2+g_y^2}\,\Delta x\,\Delta y\) — the same "a linear map distorts a small cell into a parallelogram, and the distortion factor is computable from the local derivative data" idea from Panel IV, now one dimension up, with the cross-product magnitude standing in for the Jacobian determinant. Summing over all cells and taking the limit:</p>
+<div class="katex-display" data-katex="\text{Surface Area} = \iint_D \sqrt{1+\left(\frac{\partial g}{\partial x}\right)^2+\left(\frac{\partial g}{\partial y}\right)^2}\;dA"></div>
+<p>This is the same partition-and-limit machinery from Panel I, reused with yet another geometric payoff: same partition, same limiting process, a different quantity accumulated per cell.</p>
+
+<h2>From density to probability</h2>
+<p>If \(f(x,y)\ge0\) is a joint probability density for two continuous random variables and \(\iint_{\mathbb{R}^2} f\,dA = 1\), then for any region \(E\), \(\iint_E f(x,y)\,dA\) is the probability that the pair \((X,Y)\) lands in \(E\). The Gaussian integral from Panel IV is not a curiosity here — it's the normalizing constant of the 2D normal distribution, and the same polar-coordinates trick that evaluated it is the standard route to deriving that constant in the first place.</p>
+
+<h3>Marginal densities: integrating out a variable</h3>
+<p>Given a joint density \(f(x,y)\), Fubini's theorem (Panel III) is exactly the tool that recovers the density of \(X\) alone: integrate \(y\) out entirely,</p>
+<div class="katex-display" data-katex="f_X(x) = \int_{-\infty}^{\infty} f(x,y)\,dy"></div>
+<p>\(X\) and \(Y\) are called <strong>independent</strong> precisely when the joint density factors as \(f(x,y)=f_X(x)\,f_Y(y)\) — in which case the double integral of any product \(g(x)h(y)\) against \(f\) itself factors into a product of two ordinary single integrals, \(\iint g(x)h(y)f(x,y)\,dA = \Big(\int g\,f_X\,dx\Big)\Big(\int h\,f_Y\,dy\Big)\), collapsing a 2D computation back into two independent 1D ones. This is Fubini's theorem showing up as a modeling assumption about the world, not merely a computational trick for evaluating integrals.</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>All of these readings — volume, mass, probability — are the <em>same integral</em> with a different interpretation attached to \(f\). This is worth sitting with: the double integral doesn't "know" whether it's computing a volume or a probability. The mathematics is agnostic; the meaning is supplied entirely by what you decide the integrand represents.</p>
+</div>
+
+<h2>Where this generalizes to</h2>
+<p>Everything here extends to a third dimension with essentially no new ideas, only more bookkeeping: partitions become boxes, \(dA\) becomes \(dV\), Fubini's theorem becomes three nested integrals in any order, and the change-of-variables formula keeps the identical shape with a \(3\times3\) Jacobian determinant in place of a \(2\times2\) one. Push further, to \(n\) dimensions or to infinite-dimensional integration theory, and the same partition-and-limit skeleton is still recognizably present — though the Riemann framework itself eventually gives way to the more robust Lebesgue integral, which is built by partitioning the <em>range</em> of \(f\) rather than its domain, precisely to fix the kind of integrability failure seen in Panel II's rational-indicator example.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — a forward glance</span>
+<p>Double integrals over a region \(D\) are also tied to line integrals around \(D\)'s boundary curve by <strong>Green's theorem</strong>: \(\iint_D\!\left(\dfrac{\partial Q}{\partial x}-\dfrac{\partial P}{\partial y}\right)dA = \oint_{\partial D} P\,dx+Q\,dy\). One immediate corollary converts plain area into a boundary integral, \(\text{Area}(D)=\tfrac12\oint_{\partial D}(x\,dy-y\,dx)\) — a reminder that the double integral is not an isolated topic but one node in the larger network connecting differentiation, integration, and geometry that the rest of multivariable calculus is built from.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>One line to carry away: <em>the double integral is not a new idea bolted onto single-variable calculus — it is the same partition-sample-sum-limit machinery, run over a two-dimensional domain, and every technique in this essay (Fubini, general regions, change of variables) exists purely to translate that 2D limit back into computations a single-variable toolkit already knows how to finish.</em></p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderLab();
+  refreshLab2Theme();
+  refreshRegionTheme();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ INTERACTIVE LAB ============
+const domainCv = document.getElementById('domainCanvas');
+const imageCv = document.getElementById('imageCanvas');
+const dctx = domainCv.getContext('2d');
+const ictx = imageCv.getContext('2d');
+const mapSelect = document.getElementById('mapSelect');
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeReadout = document.getElementById('sizeReadout');
+const pointReadout = document.getElementById('pointReadout');
+const jacReadout = document.getElementById('jacReadout');
+const detReadout = document.getElementById('detReadout');
+const ratioReadout = document.getElementById('ratioReadout');
+
+let P = {u:1, v:0.6};
+let dragging = false;
+
+const maps = {
+  polar: {
+    F: (u,v)=>[u*Math.cos(v), u*Math.sin(v)],
+    J: (u,v)=>[[Math.cos(v), -u*Math.sin(v)],[Math.sin(v), u*Math.cos(v)]],
+    range: 2.2, imgAbs: 2.4
+  },
+  shear: {
+    F: (u,v)=>[u+0.6*v, v],
+    J: ()=>[[1,0.6],[0,1]],
+    range: 2.2, imgAbs: 3.2
+  },
+  stretch: {
+    F: (u,v)=>[1.8*u, 0.5*v],
+    J: ()=>[[1.8,0],[0,0.5]],
+    range: 2.2, imgAbs: 4.0
+  }
+};
+
+function worldToScreenDomain(x,y,range){
+  const s = 300 / (2*range);
+  return [150 + x*s, 150 - y*s];
+}
+function screenToWorldDomain(px,py,range){
+  const s = 300 / (2*range);
+  return [(px-150)/s, (150-py)/s];
+}
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function drawDomain(){
+  const map = maps[mapSelect.value];
+  const range = map.range;
+  dctx.clearRect(0,0,300,300);
+  dctx.fillStyle = cssVar('--bg-elevated');
+  dctx.fillRect(0,0,300,300);
+
+  dctx.strokeStyle = cssVar('--border');
+  dctx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.5){
+    let [x1,y1] = worldToScreenDomain(g,-range,range);
+    let [x2,y2] = worldToScreenDomain(g,range,range);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+    [x1,y1] = worldToScreenDomain(-range,g,range);
+    [x2,y2] = worldToScreenDomain(range,g,range);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+  }
+  dctx.strokeStyle = cssVar('--ink-faint');
+  dctx.lineWidth = 1.2;
+  let [ax1,ay1] = worldToScreenDomain(-range,0,range), [ax2,ay2] = worldToScreenDomain(range,0,range);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+  [ax1,ay1] = worldToScreenDomain(0,-range,range); [ax2,ay2] = worldToScreenDomain(0,range,range);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+
+  const h = sizeSlider.value/100;
+  const corners = [[P.u-h,P.v-h],[P.u+h,P.v-h],[P.u+h,P.v+h],[P.u-h,P.v+h]];
+  dctx.strokeStyle = cssVar('--blue');
+  dctx.lineWidth = 1.5;
+  dctx.beginPath();
+  corners.forEach(([x,y],i)=>{
+    const [sx,sy] = worldToScreenDomain(x,y,range);
+    i===0 ? dctx.moveTo(sx,sy) : dctx.lineTo(sx,sy);
+  });
+  dctx.closePath(); dctx.stroke();
+
+  const [px,py] = worldToScreenDomain(P.u,P.v,range);
+  dctx.fillStyle = cssVar('--accent');
+  dctx.beginPath(); dctx.arc(px,py,5,0,7); dctx.fill();
+}
+
+function polygonArea(pts){
+  let a = 0;
+  for(let i=0;i<pts.length;i++){
+    const [x1,y1] = pts[i];
+    const [x2,y2] = pts[(i+1)%pts.length];
+    a += x1*y2 - x2*y1;
+  }
+  return Math.abs(a)/2;
+}
+
+function drawImage(){
+  const map = maps[mapSelect.value];
+  const maxAbs = map.imgAbs;
+  ictx.clearRect(0,0,300,300);
+  ictx.fillStyle = cssVar('--bg-elevated');
+  ictx.fillRect(0,0,300,300);
+
+  const scale = 300/(2*maxAbs);
+  const w2s = (x,y)=>[150+x*scale, 150-y*scale];
+
+  ictx.strokeStyle = cssVar('--ink-faint');
+  ictx.globalAlpha = 0.35;
+  ictx.lineWidth = 1;
+  const range = map.range;
+  for(let g=-2; g<=2; g+=0.4){
+    ictx.beginPath();
+    for(let t=-range;t<=range;t+=0.05){
+      const [x,y]=map.F(g,t); const [sx,sy]=w2s(x,y);
+      t===-range ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+    ictx.beginPath();
+    for(let t=-range;t<=range;t+=0.05){
+      const [x,y]=map.F(t,g); const [sx,sy]=w2s(x,y);
+      t===-range ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+  }
+  ictx.globalAlpha = 1;
+
+  const h = sizeSlider.value/100;
+  const Fp = map.F(P.u,P.v);
+  const J = map.J(P.u,P.v);
+
+  // true curved image of the small cell boundary + measure its area
+  ictx.strokeStyle = cssVar('--red');
+  ictx.lineWidth = 2;
+  ictx.beginPath();
+  const N = 40;
+  const path = [];
+  for(let i=0;i<=N;i++) path.push([P.u-h+2*h*i/N, P.v-h]);
+  for(let i=0;i<=N;i++) path.push([P.u+h, P.v-h+2*h*i/N]);
+  for(let i=0;i<=N;i++) path.push([P.u+h-2*h*i/N, P.v+h]);
+  for(let i=0;i<=N;i++) path.push([P.u-h, P.v+h-2*h*i/N]);
+  const imgPts = [];
+  path.forEach(([u,v],i)=>{
+    const [x,y] = map.F(u,v); imgPts.push([x,y]);
+    const [sx,sy]=w2s(x,y);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+  const trueArea = polygonArea(imgPts);
+
+  // Jacobian-predicted parallelogram
+  ictx.strokeStyle = cssVar('--blue');
+  ictx.lineWidth = 2;
+  ictx.setLineDash([5,3]);
+  const localCorners = [[-h,-h],[h,-h],[h,h],[-h,h]];
+  ictx.beginPath();
+  localCorners.forEach(([du,dv],i)=>{
+    const ox = J[0][0]*du + J[0][1]*dv;
+    const oy = J[1][0]*du + J[1][1]*dv;
+    const [sx,sy] = w2s(Fp[0]+ox, Fp[1]+oy);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+  ictx.setLineDash([]);
+
+  const [fpx,fpy] = w2s(Fp[0],Fp[1]);
+  ictx.fillStyle = cssVar('--accent');
+  ictx.beginPath(); ictx.arc(fpx,fpy,5,0,7); ictx.fill();
+
+  const cellArea = (2*h)*(2*h);
+  const ratio = trueArea/cellArea;
+  ratioReadout.textContent = ratio.toFixed(3);
+}
+
+function updateReadouts(){
+  const map = maps[mapSelect.value];
+  const J = map.J(P.u,P.v);
+  pointReadout.textContent = `(${P.u.toFixed(2)}, ${P.v.toFixed(2)})`;
+  jacReadout.innerHTML = `[ ${J[0][0].toFixed(2).padStart(6)}  ${J[0][1].toFixed(2).padStart(6)} ]<br>[ ${J[1][0].toFixed(2).padStart(6)}  ${J[1][1].toFixed(2).padStart(6)} ]`;
+  const det = Math.abs(J[0][0]*J[1][1] - J[0][1]*J[1][0]);
+  detReadout.textContent = det.toFixed(3);
+  sizeReadout.textContent = (sizeSlider.value/100).toFixed(2);
+}
+
+function renderLab(){
+  drawDomain();
+  drawImage();
+  updateReadouts();
+}
+
+function domainEventToWorld(e){
+  const map = maps[mapSelect.value];
+  const rect = domainCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (300/rect.width);
+  const py = (clientY-rect.top) * (300/rect.height);
+  return screenToWorldDomain(px,py,map.range);
+}
+domainCv.addEventListener('mousedown', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.6){ dragging = true; }
+});
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+});
+window.addEventListener('mouseup', ()=> dragging=false);
+domainCv.addEventListener('touchstart', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.8){ dragging = true; }
+}, {passive:true});
+domainCv.addEventListener('touchmove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+}, {passive:true});
+window.addEventListener('touchend', ()=> dragging=false);
+
+mapSelect.addEventListener('change', renderLab);
+sizeSlider.addEventListener('input', renderLab);
+
+renderLab();
+
+// ============ LAB 2: PARTITION REFINEMENT & CONVERGENCE — real WebGL 3D ============
+const cvConverge = document.getElementById('cvConverge');
+const nConvergeSlider = document.getElementById('nConvergeSlider');
+const nConvergeD = document.getElementById('nConvergeD');
+const convN = document.getElementById('convN');
+const convSum = document.getElementById('convSum');
+const convErr = document.getElementById('convErr');
+
+const EXACT_CONVERGE = 2/3; // ∬[0,1]×[0,1] (u²+v²) dA, by Fubini
+function fConverge(u,v){ return u*u + v*v; }
+
+function computeRiemannSum(N){
+  const h = 1/N;
+  let sum = 0;
+  for(let i=0;i<N;i++){
+    for(let j=0;j<N;j++){
+      const um = (i+0.5)*h, vm = (j+0.5)*h;
+      sum += fConverge(um,vm) * h * h;
+    }
+  }
+  return sum;
+}
+
+function hexToRgb01(hex){
+  const h = hex.trim().replace('#','');
+  const v = h.length===3 ? h.split('').map(c=>c+c).join('') : h;
+  const n = parseInt(v,16);
+  return [((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255];
+}
+function lerp3(t, lo, hi){
+  return [lo[0]+(hi[0]-lo[0])*t, lo[1]+(hi[1]-lo[1])*t, lo[2]+(hi[2]-lo[2])*t];
+}
+
+let refreshLab2Theme = ()=>{}; // reassigned below if WebGL is available
+
+const gl = cvConverge.getContext('webgl') || cvConverge.getContext('experimental-webgl');
+
+if(!gl){
+  cvConverge.parentElement.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-faint);padding:2.5rem 1.5rem;text-align:center;max-width:320px;">WebGL isn\'t available in this browser, so the 3D lab can\'t render here. Everything else on the page is unaffected.</div>';
+  nConvergeSlider.addEventListener('input', ()=>{
+    const N = parseInt(nConvergeSlider.value);
+    const sum = computeRiemannSum(N);
+    nConvergeD.textContent = N;
+    convN.textContent = `${N} × ${N} = ${N*N}`;
+    convSum.textContent = sum.toFixed(6);
+    convErr.textContent = Math.abs(sum-EXACT_CONVERGE).toExponential(3);
+  });
+  nConvergeSlider.dispatchEvent(new Event('input'));
+} else {
+  const CSS_W = 480, CSS_H = 380;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  cvConverge.width = CSS_W*DPR;
+  cvConverge.height = CSS_H*DPR;
+
+  const VSRC = `
+    attribute vec3 aPosition;
+    attribute vec3 aNormal;
+    attribute vec4 aColor;
+    uniform mat4 uProjection;
+    uniform mat4 uView;
+    varying vec3 vNormal;
+    varying vec4 vColor;
+    varying vec3 vWorldPos;
+    void main(){
+      vWorldPos = aPosition;
+      vNormal = aNormal;
+      vColor = aColor;
+      gl_Position = uProjection * uView * vec4(aPosition, 1.0);
+    }
+  `;
+  const FSRC = `
+    precision mediump float;
+    varying vec3 vNormal;
+    varying vec4 vColor;
+    varying vec3 vWorldPos;
+    uniform vec3 uLightDir;
+    uniform vec3 uEyePos;
+    void main(){
+      vec3 N = normalize(vNormal);
+      vec3 L = normalize(uLightDir);
+      float diff = max(dot(N,L), 0.0);
+      vec3 V = normalize(uEyePos - vWorldPos);
+      vec3 H = normalize(L+V);
+      float spec = pow(max(dot(N,H),0.0), 28.0) * 0.2;
+      float ambient = 0.45;
+      vec3 rgb = vColor.rgb * (ambient + diff*0.6) + vec3(spec);
+      gl_FragColor = vec4(rgb, vColor.a);
+    }
+  `;
+
+  function compileShader(src, type){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compileShader(VSRC, gl.VERTEX_SHADER));
+  gl.attachShader(prog, compileShader(FSRC, gl.FRAGMENT_SHADER));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+
+  const aPosition = gl.getAttribLocation(prog, 'aPosition');
+  const aNormal = gl.getAttribLocation(prog, 'aNormal');
+  const aColor = gl.getAttribLocation(prog, 'aColor');
+  const uProjection = gl.getUniformLocation(prog, 'uProjection');
+  const uView = gl.getUniformLocation(prog, 'uView');
+  const uLightDir = gl.getUniformLocation(prog, 'uLightDir');
+  const uEyePos = gl.getUniformLocation(prog, 'uEyePos');
+
+  function mat4Perspective(fovy, aspect, near, far){
+    const f = 1/Math.tan(fovy/2), nf = 1/(near-far);
+    return new Float32Array([
+      f/aspect,0,0,0,
+      0,f,0,0,
+      0,0,(far+near)*nf,-1,
+      0,0,2*far*near*nf,0
+    ]);
+  }
+  function mat4LookAt(eye, center, up){
+    let zx=eye[0]-center[0], zy=eye[1]-center[1], zz=eye[2]-center[2];
+    let zl=Math.hypot(zx,zy,zz)||1; zx/=zl; zy/=zl; zz/=zl;
+    let xx=up[1]*zz-up[2]*zy, xy=up[2]*zx-up[0]*zz, xz=up[0]*zy-up[1]*zx;
+    let xl=Math.hypot(xx,xy,xz)||1; xx/=xl; xy/=xl; xz/=xl;
+    let yx=zy*xz-zz*xy, yy=zz*xx-zx*xz, yz=zx*xy-zy*xx;
+    return new Float32Array([
+      xx,yx,zx,0,
+      xy,yy,zy,0,
+      xz,yz,zz,0,
+      -(xx*eye[0]+xy*eye[1]+xz*eye[2]),
+      -(yx*eye[0]+yy*eye[1]+yz*eye[2]),
+      -(zx*eye[0]+zy*eye[1]+zz*eye[2]),
+      1
+    ]);
+  }
+
+  function pushTri(arr,p0,p1,p2,n,c,a){
+    for(const p of [p0,p1,p2]) arr.push(p[0],p[1],p[2], n[0],n[1],n[2], c[0],c[1],c[2],a);
+  }
+  function addBox(arr, x0,x1,y0,y1,z0,z1, color, alpha){
+    // no bottom face — the camera never dips below the ground plane, so it's never seen
+    const faces = [
+      {n:[0,1,0],  v:[[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]]},
+      {n:[0,0,1],  v:[[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]]},
+      {n:[0,0,-1], v:[[x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]},
+      {n:[1,0,0],  v:[[x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]]},
+      {n:[-1,0,0], v:[[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0]]},
+    ];
+    for(const f of faces){
+      const [a0,b0,c0,d0] = f.v;
+      pushTri(arr,a0,b0,c0,f.n,color,alpha);
+      pushTri(arr,a0,c0,d0,f.n,color,alpha);
+    }
+  }
+  function buildSurfaceMesh(res){
+    const arr = [];
+    const color = hexToRgb01(cssVar('--blue'));
+    const alpha = 0.30;
+    const step = 1/res;
+    function normalAt(u,v){
+      const e = 1e-3;
+      const u0=Math.max(0,u-e), u1=Math.min(1,u+e);
+      const v0=Math.max(0,v-e), v1=Math.min(1,v+e);
+      const dhdu = (fConverge(u1,v)-fConverge(u0,v))/(u1-u0);
+      const dhdv = (fConverge(u,v1)-fConverge(u,v0))/(v1-v0);
+      const nx=-dhdu, ny=1, nz=-dhdv;
+      const l = Math.hypot(nx,ny,nz)||1;
+      return [nx/l, ny/l, nz/l];
+    }
+    function pos(i,j){ const u=i*step, v=j*step; return [u-0.5, fConverge(u,v), v-0.5]; }
+    function norm(i,j){ const u=i*step, v=j*step; return normalAt(u,v); }
+    for(let i=0;i<res;i++){
+      for(let j=0;j<res;j++){
+        const p00=pos(i,j), p10=pos(i+1,j), p11=pos(i+1,j+1), p01=pos(i,j+1);
+        const n00=norm(i,j), n10=norm(i+1,j), n11=norm(i+1,j+1), n01=norm(i,j+1);
+        // per-vertex normals (not pushTri's single shared normal) for smooth curvature shading
+        for(const [p,n] of [[p00,n00],[p10,n10],[p11,n11],[p00,n00],[p11,n11],[p01,n01]]){
+          arr.push(p[0],p[1],p[2], n[0],n[1],n[2], color[0],color[1],color[2],alpha);
+        }
+      }
+    }
+    return new Float32Array(arr);
+  }
+  function buildPrisms(N){
+    const arr = [];
+    const loColor = hexToRgb01(cssVar('--accent-dim'));
+    const hiColor = hexToRgb01(cssVar('--accent'));
+    const maxF = 2;
+    const cell = 1/N;
+    for(let i=0;i<N;i++){
+      for(let j=0;j<N;j++){
+        const um=(i+0.5)/N, vm=(j+0.5)/N;
+        const hgt = fConverge(um,vm);
+        const t = Math.min(1, hgt/maxF);
+        const color = lerp3(t, loColor, hiColor);
+        const x0=i*cell-0.5, x1=(i+1)*cell-0.5;
+        const z0=j*cell-0.5, z1=(j+1)*cell-0.5;
+        addBox(arr, x0,x1,0,hgt,z0,z1, color, 0.97);
+      }
+    }
+    return new Float32Array(arr);
+  }
+
+  const surfaceBuf = gl.createBuffer();
+  const prismBuf = gl.createBuffer();
+  let surfaceVertCount = 0, prismVertCount = 0;
+
+  function uploadSurface(){
+    const data = buildSurfaceMesh(28);
+    surfaceVertCount = data.length/10;
+    gl.bindBuffer(gl.ARRAY_BUFFER, surfaceBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  }
+  function uploadPrisms(N){
+    const data = buildPrisms(N);
+    prismVertCount = data.length/10;
+    gl.bindBuffer(gl.ARRAY_BUFFER, prismBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+  }
+  function bindAttribs(buf){
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    const stride = 10*4;
+    gl.enableVertexAttribArray(aPosition);
+    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, stride, 0);
+    gl.enableVertexAttribArray(aNormal);
+    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, stride, 3*4);
+    gl.enableVertexAttribArray(aColor);
+    gl.vertexAttribPointer(aColor, 4, gl.FLOAT, false, stride, 6*4);
+  }
+
+  let theta = 0.9, phi = 0.5, radius = 2.4;
+  let autoRotate = true, dragging = false, lastX = 0, lastY = 0;
+  function eyeFromOrbit(){
+    return [
+      radius*Math.cos(phi)*Math.sin(theta),
+      radius*Math.sin(phi),
+      radius*Math.cos(phi)*Math.cos(theta)
+    ];
+  }
+
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  function draw(){
+    gl.viewport(0,0,cvConverge.width,cvConverge.height);
+    const bg = hexToRgb01(cssVar('--bg-elevated'));
+    gl.clearColor(bg[0],bg[1],bg[2],1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    const aspect = cvConverge.width/cvConverge.height;
+    const proj = mat4Perspective(Math.PI/4, aspect, 0.1, 20);
+    const eye = eyeFromOrbit();
+    const view = mat4LookAt(eye, [0,0.5,0], [0,1,0]);
+
+    gl.uniformMatrix4fv(uProjection, false, proj);
+    gl.uniformMatrix4fv(uView, false, view);
+    gl.uniform3f(uLightDir, 0.5, 1.0, 0.4);
+    gl.uniform3f(uEyePos, eye[0], eye[1], eye[2]);
+
+    gl.depthMask(true);
+    bindAttribs(prismBuf);
+    gl.drawArrays(gl.TRIANGLES, 0, prismVertCount);
+
+    gl.depthMask(false); // translucent pass: test depth, don't write it
+    bindAttribs(surfaceBuf);
+    gl.drawArrays(gl.TRIANGLES, 0, surfaceVertCount);
+    gl.depthMask(true);
+  }
+
+  const t5Panel = document.getElementById('t5');
+  function tick(){
+    if(t5Panel.classList.contains('active')){
+      if(autoRotate && !dragging) theta += 0.0035;
+      draw();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  cvConverge.style.cursor = 'grab';
+  cvConverge.addEventListener('pointerdown', e=>{
+    dragging = true; autoRotate = false;
+    lastX = e.clientX; lastY = e.clientY;
+    cvConverge.style.cursor = 'grabbing';
+    cvConverge.setPointerCapture(e.pointerId);
+  });
+  cvConverge.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const dx = e.clientX-lastX, dy = e.clientY-lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    theta -= dx*0.008;
+    phi = Math.max(0.12, Math.min(1.45, phi + dy*0.008));
+  });
+  cvConverge.addEventListener('pointerup', ()=>{ dragging=false; cvConverge.style.cursor='grab'; });
+  cvConverge.addEventListener('pointerleave', ()=>{ dragging=false; cvConverge.style.cursor='grab'; });
+
+  function updateConvergeReadouts(N){
+    const sum = computeRiemannSum(N);
+    const err = Math.abs(sum - EXACT_CONVERGE);
+    nConvergeD.textContent = N;
+    convN.textContent = `${N} × ${N} = ${N*N}`;
+    convSum.textContent = sum.toFixed(6);
+    convErr.textContent = err.toExponential(3);
+  }
+
+  function rebuild(){
+    const N = parseInt(nConvergeSlider.value);
+    uploadPrisms(N);
+    updateConvergeReadouts(N);
+  }
+
+  refreshLab2Theme = function(){
+    uploadSurface();
+    uploadPrisms(parseInt(nConvergeSlider.value));
+  };
+
+  uploadSurface();
+  rebuild();
+  nConvergeSlider.addEventListener('input', rebuild);
+  tick();
+}
+
+// ============ PANEL III VIEWPORT: NON-RECTANGULAR REGION — WebGL 3D ============
+const cvRegion = document.getElementById('cvRegion');
+const nRegionSlider = document.getElementById('nRegionSlider');
+const nRegionD = document.getElementById('nRegionD');
+const regionN = document.getElementById('regionN');
+const regionSum = document.getElementById('regionSum');
+const regionErr = document.getElementById('regionErr');
+
+const EXACT_REGION = 6/35; // ∬_D (x²+y²) dA,  D: 0≤x≤1, x²≤y≤√x
+function g1Region(x){ return x*x; }
+function g2Region(x){ return Math.sqrt(x); }
+
+function computeRegionSum(N){
+  // nested midpoint rule: for each x-column, evaluate the y-bounds at that
+  // column's representative x, then subdivide that column's own y-range
+  const dx = 1/N;
+  let sum = 0;
+  for(let i=0;i<N;i++){
+    const xm = (i+0.5)*dx;
+    const y0 = g1Region(xm), y1 = g2Region(xm);
+    const dy = (y1-y0)/N;
+    for(let j=0;j<N;j++){
+      const ym = y0 + (j+0.5)*dy;
+      sum += fConverge(xm,ym) * dx * dy;
+    }
+  }
+  return sum;
+}
+
+let refreshRegionTheme = ()=>{};
+
+const glR = cvRegion.getContext('webgl') || cvRegion.getContext('experimental-webgl');
+
+if(!glR){
+  cvRegion.parentElement.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-faint);padding:2.5rem 1.5rem;text-align:center;max-width:320px;">WebGL isn\'t available in this browser, so the 3D viewport can\'t render here. Everything else on the page is unaffected.</div>';
+  nRegionSlider.addEventListener('input', ()=>{
+    const N = parseInt(nRegionSlider.value);
+    const sum = computeRegionSum(N);
+    nRegionD.textContent = N;
+    regionN.textContent = `${N} × ${N} = ${N*N}`;
+    regionSum.textContent = sum.toFixed(6);
+    regionErr.textContent = Math.abs(sum-EXACT_REGION).toExponential(3);
+  });
+  nRegionSlider.dispatchEvent(new Event('input'));
+} else {
+  const CSS_W = 480, CSS_H = 380;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  cvRegion.width = CSS_W*DPR;
+  cvRegion.height = CSS_H*DPR;
+
+  const VSRC = `
+    attribute vec3 aPosition;
+    attribute vec3 aNormal;
+    attribute vec4 aColor;
+    uniform mat4 uProjection;
+    uniform mat4 uView;
+    varying vec3 vNormal;
+    varying vec4 vColor;
+    varying vec3 vWorldPos;
+    void main(){
+      vWorldPos = aPosition;
+      vNormal = aNormal;
+      vColor = aColor;
+      gl_Position = uProjection * uView * vec4(aPosition, 1.0);
+    }
+  `;
+  const FSRC = `
+    precision mediump float;
+    varying vec3 vNormal;
+    varying vec4 vColor;
+    varying vec3 vWorldPos;
+    uniform vec3 uLightDir;
+    uniform vec3 uEyePos;
+    void main(){
+      vec3 N = normalize(vNormal);
+      vec3 L = normalize(uLightDir);
+      float diff = max(dot(N,L), 0.0);
+      vec3 V = normalize(uEyePos - vWorldPos);
+      vec3 H = normalize(L+V);
+      float spec = pow(max(dot(N,H),0.0), 28.0) * 0.2;
+      float ambient = 0.45;
+      vec3 rgb = vColor.rgb * (ambient + diff*0.6) + vec3(spec);
+      gl_FragColor = vec4(rgb, vColor.a);
+    }
+  `;
+
+  function compileShaderR(src, type){
+    const s = glR.createShader(type);
+    glR.shaderSource(s, src);
+    glR.compileShader(s);
+    if(!glR.getShaderParameter(s, glR.COMPILE_STATUS)) console.error(glR.getShaderInfoLog(s));
+    return s;
+  }
+  const prog = glR.createProgram();
+  glR.attachShader(prog, compileShaderR(VSRC, glR.VERTEX_SHADER));
+  glR.attachShader(prog, compileShaderR(FSRC, glR.FRAGMENT_SHADER));
+  glR.linkProgram(prog);
+  if(!glR.getProgramParameter(prog, glR.LINK_STATUS)) console.error(glR.getProgramInfoLog(prog));
+  glR.useProgram(prog);
+
+  const aPosition = glR.getAttribLocation(prog, 'aPosition');
+  const aNormal = glR.getAttribLocation(prog, 'aNormal');
+  const aColor = glR.getAttribLocation(prog, 'aColor');
+  const uProjection = glR.getUniformLocation(prog, 'uProjection');
+  const uView = glR.getUniformLocation(prog, 'uView');
+  const uLightDir = glR.getUniformLocation(prog, 'uLightDir');
+  const uEyePos = glR.getUniformLocation(prog, 'uEyePos');
+
+  function mat4PerspectiveR(fovy, aspect, near, far){
+    const f = 1/Math.tan(fovy/2), nf = 1/(near-far);
+    return new Float32Array([
+      f/aspect,0,0,0,
+      0,f,0,0,
+      0,0,(far+near)*nf,-1,
+      0,0,2*far*near*nf,0
+    ]);
+  }
+  function mat4LookAtR(eye, center, up){
+    let zx=eye[0]-center[0], zy=eye[1]-center[1], zz=eye[2]-center[2];
+    let zl=Math.hypot(zx,zy,zz)||1; zx/=zl; zy/=zl; zz/=zl;
+    let xx=up[1]*zz-up[2]*zy, xy=up[2]*zx-up[0]*zz, xz=up[0]*zy-up[1]*zx;
+    let xl=Math.hypot(xx,xy,xz)||1; xx/=xl; xy/=xl; xz/=xl;
+    let yx=zy*xz-zz*xy, yy=zz*xx-zx*xz, yz=zx*xy-zy*xx;
+    return new Float32Array([
+      xx,yx,zx,0,
+      xy,yy,zy,0,
+      xz,yz,zz,0,
+      -(xx*eye[0]+xy*eye[1]+xz*eye[2]),
+      -(yx*eye[0]+yy*eye[1]+yz*eye[2]),
+      -(zx*eye[0]+zy*eye[1]+zz*eye[2]),
+      1
+    ]);
+  }
+
+  function pushTriR(arr,p0,p1,p2,n0,n1,n2,c,a){
+    arr.push(p0[0],p0[1],p0[2], n0[0],n0[1],n0[2], c[0],c[1],c[2],a);
+    arr.push(p1[0],p1[1],p1[2], n1[0],n1[1],n1[2], c[0],c[1],c[2],a);
+    arr.push(p2[0],p2[1],p2[2], n2[0],n2[1],n2[2], c[0],c[1],c[2],a);
+  }
+  function addBoxR(arr, x0,x1,y0,y1,z0,z1, color, alpha){
+    // no bottom face — the camera never dips below the ground plane
+    const faces = [
+      {n:[0,1,0],  v:[[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]]},
+      {n:[0,0,1],  v:[[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]]},
+      {n:[0,0,-1], v:[[x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]},
+      {n:[1,0,0],  v:[[x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]]},
+      {n:[-1,0,0], v:[[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0]]},
+    ];
+    for(const f of faces){
+      const [a0,b0,c0,d0] = f.v;
+      pushTriR(arr,a0,b0,c0,f.n,f.n,f.n,color,alpha);
+      pushTriR(arr,a0,c0,d0,f.n,f.n,f.n,color,alpha);
+    }
+  }
+
+  function regionNormalAt(x,y){
+    const e = 1e-3;
+    const x0=Math.max(0,x-e), x1=Math.min(1,x+e);
+    const y0=Math.max(0,y-e), y1=Math.min(1,y+e);
+    const dhdx = (fConverge(x1,y)-fConverge(x0,y))/(x1-x0);
+    const dhdy = (fConverge(x,y1)-fConverge(x,y0))/(y1-y0);
+    const nx=-dhdx, ny=1, nz=-dhdy;
+    const l = Math.hypot(nx,ny,nz)||1;
+    return [nx/l, ny/l, nz/l];
+  }
+  function yAtRegion(x,t){ const y0=g1Region(x), y1=g2Region(x); return y0 + t*(y1-y0); }
+
+  function buildRegionSurfaceMesh(resX, resY){
+    const arr = [];
+    const color = hexToRgb01(cssVar('--blue'));
+    const alpha = 0.32;
+    function vertexAt(x,t){
+      const y = yAtRegion(x,t);
+      return { p:[x-0.5, fConverge(x,y), y-0.5], n:regionNormalAt(x,y) };
+    }
+    for(let i=0;i<resX;i++){
+      const xA=i/resX, xB=(i+1)/resX;
+      for(let k=0;k<resY;k++){
+        const tA=k/resY, tB=(k+1)/resY;
+        const v00=vertexAt(xA,tA), v10=vertexAt(xB,tA), v11=vertexAt(xB,tB), v01=vertexAt(xA,tB);
+        for(const v of [v00,v10,v11,v00,v11,v01]){
+          arr.push(v.p[0],v.p[1],v.p[2], v.n[0],v.n[1],v.n[2], color[0],color[1],color[2],alpha);
+        }
+      }
+    }
+    return new Float32Array(arr);
+  }
+  function buildRegionPrisms(N){
+    const arr = [];
+    const hi = hexToRgb01(cssVar('--green'));
+    const lo = [hi[0]*0.45, hi[1]*0.45, hi[2]*0.45];
+    const maxF = 2; // max of x²+y² on the unit square bounding the region
+    const dx = 1/N;
+    for(let i=0;i<N;i++){
+      const x0 = i*dx, x1 = (i+1)*dx, xm = (i+0.5)*dx;
+      const y0 = g1Region(xm), y1 = g2Region(xm);
+      const dy = (y1-y0)/N;
+      for(let j=0;j<N;j++){
+        const yb0 = y0 + j*dy, yb1 = y0 + (j+1)*dy, ym = y0 + (j+0.5)*dy;
+        const hgt = fConverge(xm,ym);
+        const t = Math.min(1, hgt/maxF);
+        const color = lerp3(t, lo, hi);
+        addBoxR(arr, x0-0.5, x1-0.5, 0, hgt, yb0-0.5, yb1-0.5, color, 0.97);
+      }
+    }
+    return new Float32Array(arr);
+  }
+
+  const surfaceBuf = glR.createBuffer();
+  const prismBuf = glR.createBuffer();
+  let surfaceVertCount = 0, prismVertCount = 0;
+
+  function uploadSurfaceR(){
+    const data = buildRegionSurfaceMesh(48, 24);
+    surfaceVertCount = data.length/10;
+    glR.bindBuffer(glR.ARRAY_BUFFER, surfaceBuf);
+    glR.bufferData(glR.ARRAY_BUFFER, data, glR.STATIC_DRAW);
+  }
+  function uploadPrismsR(N){
+    const data = buildRegionPrisms(N);
+    prismVertCount = data.length/10;
+    glR.bindBuffer(glR.ARRAY_BUFFER, prismBuf);
+    glR.bufferData(glR.ARRAY_BUFFER, data, glR.DYNAMIC_DRAW);
+  }
+  function bindAttribsR(buf){
+    glR.bindBuffer(glR.ARRAY_BUFFER, buf);
+    const stride = 10*4;
+    glR.enableVertexAttribArray(aPosition);
+    glR.vertexAttribPointer(aPosition, 3, glR.FLOAT, false, stride, 0);
+    glR.enableVertexAttribArray(aNormal);
+    glR.vertexAttribPointer(aNormal, 3, glR.FLOAT, false, stride, 3*4);
+    glR.enableVertexAttribArray(aColor);
+    glR.vertexAttribPointer(aColor, 4, glR.FLOAT, false, stride, 6*4);
+  }
+
+  let theta = 0.9, phi = 0.5, radius = 2.4;
+  let autoRotate = true, dragging = false, lastX = 0, lastY = 0;
+  function eyeFromOrbitR(){
+    return [
+      radius*Math.cos(phi)*Math.sin(theta),
+      radius*Math.sin(phi),
+      radius*Math.cos(phi)*Math.cos(theta)
+    ];
+  }
+
+  glR.enable(glR.DEPTH_TEST);
+  glR.enable(glR.BLEND);
+  glR.blendFunc(glR.SRC_ALPHA, glR.ONE_MINUS_SRC_ALPHA);
+
+  function drawR(){
+    glR.viewport(0,0,cvRegion.width,cvRegion.height);
+    const bg = hexToRgb01(cssVar('--bg-elevated'));
+    glR.clearColor(bg[0],bg[1],bg[2],1);
+    glR.clear(glR.COLOR_BUFFER_BIT | glR.DEPTH_BUFFER_BIT);
+
+    const aspect = cvRegion.width/cvRegion.height;
+    const proj = mat4PerspectiveR(Math.PI/4, aspect, 0.1, 20);
+    const eye = eyeFromOrbitR();
+    const view = mat4LookAtR(eye, [0,0.5,0], [0,1,0]);
+
+    glR.uniformMatrix4fv(uProjection, false, proj);
+    glR.uniformMatrix4fv(uView, false, view);
+    glR.uniform3f(uLightDir, 0.5, 1.0, 0.4);
+    glR.uniform3f(uEyePos, eye[0], eye[1], eye[2]);
+
+    glR.depthMask(true);
+    bindAttribsR(prismBuf);
+    glR.drawArrays(glR.TRIANGLES, 0, prismVertCount);
+
+    glR.depthMask(false);
+    bindAttribsR(surfaceBuf);
+    glR.drawArrays(glR.TRIANGLES, 0, surfaceVertCount);
+    glR.depthMask(true);
+  }
+
+  const t3Panel = document.getElementById('t3');
+  function tickR(){
+    if(t3Panel.classList.contains('active')){
+      if(autoRotate && !dragging) theta += 0.0035;
+      drawR();
+    }
+    requestAnimationFrame(tickR);
+  }
+
+  cvRegion.style.cursor = 'grab';
+  cvRegion.addEventListener('pointerdown', e=>{
+    dragging = true; autoRotate = false;
+    lastX = e.clientX; lastY = e.clientY;
+    cvRegion.style.cursor = 'grabbing';
+    cvRegion.setPointerCapture(e.pointerId);
+  });
+  cvRegion.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const dx = e.clientX-lastX, dy = e.clientY-lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    theta -= dx*0.008;
+    phi = Math.max(0.12, Math.min(1.45, phi + dy*0.008));
+  });
+  cvRegion.addEventListener('pointerup', ()=>{ dragging=false; cvRegion.style.cursor='grab'; });
+  cvRegion.addEventListener('pointerleave', ()=>{ dragging=false; cvRegion.style.cursor='grab'; });
+
+  function updateRegionReadouts(N){
+    const sum = computeRegionSum(N);
+    const err = Math.abs(sum - EXACT_REGION);
+    nRegionD.textContent = N;
+    regionN.textContent = `${N} × ${N} = ${N*N}`;
+    regionSum.textContent = sum.toFixed(6);
+    regionErr.textContent = err.toExponential(3);
+  }
+  function rebuildR(){
+    const N = parseInt(nRegionSlider.value);
+    uploadPrismsR(N);
+    updateRegionReadouts(N);
+  }
+
+  refreshRegionTheme = function(){
+    uploadSurfaceR();
+    uploadPrismsR(parseInt(nRegionSlider.value));
+  };
+
+  uploadSurfaceR();
+  rebuildR();
+  nRegionSlider.addEventListener('input', rebuildR);
+  tickR();
+}
+</script>
+
+</body>
+</html>
