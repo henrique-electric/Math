@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Jacobian — Why Derivatives Generalize</title>
+<title>The Jacobian — How Maps Warp Space</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -149,12 +149,17 @@ code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; b
 
 <nav>
   <div class="brand">JACOBIAN</div>
-  <button class="tab-btn active" data-tab="t1">I · Why Derivatives</button>
-  <button class="tab-btn" data-tab="t2">II · Many Dimensions</button>
-  <button class="tab-btn" data-tab="t3">III · The Matrix</button>
-  <button class="tab-btn" data-tab="t4">IV · Geometry</button>
+  <button class="tab-btn active" data-tab="t1">I · Space Under a Map</button>
+  <button class="tab-btn" data-tab="t2">II · Making It Rigorous</button>
+  <button class="tab-btn" data-tab="t3">III · Anatomy of a Warp</button>
+  <button class="tab-btn" data-tab="t4">IV · How &amp; Why Maps Arise</button>
   <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
-  <button class="tab-btn" data-tab="t6">VI · Extensions</button>
+  <button class="tab-btn" data-tab="t6">VI · Consequences</button>
+  <button class="tab-btn" data-tab="t7">VII · Worked Problems</button>
+  <button class="tab-btn" data-tab="t8">VIII · The Hessian</button>
+  <button class="tab-btn" data-tab="t9">IX · Rank &amp; Constraints</button>
+  <button class="tab-btn" data-tab="t10">X · Non-Square Jacobians</button>
+  <button class="tab-btn" data-tab="t11">XI · The Metric Tensor</button>
   <button class="theme-toggle" id="themeToggle">☾ light</button>
 </nav>
 
@@ -163,261 +168,263 @@ code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; b
 <!-- ============ PANEL 1 ============ -->
 <section class="panel active" id="t1">
 <h1>The Jacobian</h1>
-<div class="subtitle">why derivatives — and how they survive contact with more than one dimension</div>
+<div class="subtitle">how a single matrix captures the way a map bends, stretches, and folds space</div>
 
-<h2>The one thing a derivative is actually for</h2>
-<p>Forget the mechanical rules for a moment — the power rule, the chain rule, all of it. Underneath every one of them is a single idea: <em>near a point, most functions look like straight lines if you zoom in enough.</em> The derivative is just the slope of that line.</p>
+<h2>A function is a rule for relocating points</h2>
+<p>Stop reading \(f(x,y)\) as "a formula that spits out a number," just for a moment, and read it instead as an instruction: <em>take the point \((x,y)\), and move it somewhere else.</em> A map \(F:\mathbb{R}^n\to\mathbb{R}^m\) does this to every point of its domain at once — and when you picture the domain as a solid sheet rather than a scattering of individual points, applying \(F\) to all of it simultaneously is not a metaphor. It's an honest, physical deformation: straight grid lines get pulled into curves, right angles get sheared into oblique ones, a patch that started out as a neat square can come out as a stretched sliver, a ballooned wedge, or a mirror-flipped copy of itself.</p>
 
-<p>Formally, for \(f:\mathbb{R}\to\mathbb{R}\), we say \(f\) is differentiable at \(a\) if there is a number \(f'(a)\) such that</p>
-<div class="katex-display" data-katex="f(a+h) = f(a) + f'(a)\,h + o(h) \quad \text{as } h\to 0"></div>
+<p>This is the picture the whole essay is built around. Take \(F(x,y) = (x+0.4y,\ y)\) — an unremarkable-looking pair of formulas. Applied to a square grid, it does something visibly geometric, not because the formulas are complicated (they're linear), but because <em>any</em> map, viewed this way, does something to the shape of space:</p>
+
+<div class="ascii">   BEFORE — a plain square grid           AFTER — under F(x,y) = (x+0.4y, y)
+
+   ┌─┬─┬─┬─┐                               ⟋⟋⟋⟋
+   ├─┼─┼─┼─┤                              ⟋⟋⟋⟋
+   ├─┼─┼─┼─┤          F                  ⟋⟋⟋⟋
+   ├─┼─┼─┼─┤     ────────▶               ⟋⟋⟋⟋
+   └─┴─┴─┴─┘
+
+                                     squares → <span class="hl">parallelograms</span>,
+                                     every horizontal line tilts,
+                                     vertical lines stay put</div>
 
 <div class="callout definition">
 <span class="callout-label">Definition</span>
-<p>The term \(o(h)\) means an error that vanishes <em>faster</em> than \(h\) itself — so fast that dividing by \(h\) and taking the limit still sends it to zero. This is the precise content of "the curve looks like a line up close."</p>
+<p>A <strong>map</strong> (or <strong>transformation</strong>) \(F:\mathbb{R}^n\to\mathbb{R}^m\) assigns to every point of its domain exactly one point of its codomain. To say \(F\) "transforms space" is to shift attention from a single input–output pair to the <em>whole picture at once</em>: what happens to a region, a grid, a shape, when every one of its points is relocated by \(F\) simultaneously.</p>
 </div>
 
-<p>Notice what this really says: \(f'(a)\) is not primarily "the slope of the tangent line" as a geometric decoration. It's the coefficient of the <strong>best linear approximation</strong> to \(f\) near \(a\). The function</p>
-<div class="katex-display" data-katex="L(h) = f(a) + f'(a)\,h"></div>
-<p>is a linear (affine) function of \(h\), and it matches \(f\) so well near \(a\) that the mismatch is negligible compared to \(h\) itself.</p>
+<h3>The question this whole essay chases</h3>
+<p>The shear above is deliberately tame — a linear map, so it does the exact same thing to every square in the grid, no matter where that square sits. Most maps worth studying aren't so obliging. Let \(F(x,y)=(x^2-y^2,\ 2xy)\): far from the origin the grid doesn't just tilt, it curls, and a square near \((2,0)\) gets stretched completely differently from a square near \((0,2)\). The transformation's effect genuinely <em>depends on where you are</em>.</p>
 
-<h3>Making "negligible" precise</h3>
-<p>Unpack the \(o(h)\) with an honest \(\varepsilon\)-\(\delta\) statement, since that's the only version that actually pins anything down: \(f\) is differentiable at \(a\) with derivative \(L\) if for every \(\varepsilon>0\) there exists \(\delta>0\) such that</p>
-<div class="katex-display" data-katex="0<|h|<\delta \implies \left|\frac{f(a+h)-f(a)}{h} - L\right| < \varepsilon"></div>
-<p>This is exactly the ordinary limit definition applied to the difference quotient — nothing new yet. But it's worth restating in the "approximation" language because that's the version that survives the jump to several variables, while the difference-quotient version (dividing by a <em>vector</em> \(h\)) does not even typecheck once \(h\in\mathbb{R}^n\) for \(n>1\).</p>
+<p>And yet — this is the discovery underneath everything that follows — if you stop looking at the whole grid and zoom in on one single point, that dependence disappears. However curled the transformation is globally, a small enough patch around any one point gets carried, to breathtaking approximation, into a plain parallelogram: the image of a square under <em>some</em> linear map. Different points get different parallelograms, but at each individual point, the local behavior is exactly as simple as the shear above.</p>
 
-<div class="callout warning">
-<span class="callout-label">Warning</span>
-<p>You cannot divide by a vector. The moment inputs become multidimensional, "\(\frac{f(a+h)-f(a)}{h}\)" is meaningless — there is no such thing as dividing by \(h\in\mathbb{R}^n\). This single obstruction is why the approximation formulation (which only ever divides by the <em>scalar</em> \(\|h\|\), never by \(h\) itself) is the one that generalizes, and it's worth sitting with that fact before moving on.</p>
-</div>
+<div class="ascii">   GLOBAL PICTURE (curls, bends)         ZOOM IN NEAR ONE POINT
 
-<h3>Differentiability is stronger than you'd guess</h3>
-<p>A cheap but important theorem: if \(f\) is differentiable at \(a\), then \(f\) is continuous at \(a\). The proof is a one-liner once you have the approximation formulation — as \(h\to0\), \(f(a+h)-f(a) = f'(a)h + o(h) \to 0\), since both terms vanish. This seems obvious, but it's the reason differentiability is treated as a genuinely stronger hypothesis than continuity: continuous-but-nowhere-differentiable functions exist (Weierstrass's function is the classical example), so "the curve looks like a line up close" is a real commitment, not a formality.</p>
-
-<div class="callout note">
-<span class="callout-label">Note</span>
-<p>There is a subtlety worth flagging early, because it resurfaces with teeth in Panel II: for a single-variable function, the existence of the ordinary two-sided limit defining \(f'(a)\) is <em>equivalent</em> to differentiability. In several variables this equivalence breaks — a function can have every directional derivative exist at a point and still fail to be (Fréchet) differentiable there. Keep that discomfort in the back of your mind.</p>
-</div>
-
-<div class="ascii">        f(x)
-          │        ╭─────  actual curve
-          │      ╭─╯
-          │    ╭─╯
-     f(a) ┤━━╱<span class="hl">●</span>━━━━━━  L(h) = f(a) + f'(a)·h   (the local straight-line stand-in)
-          │  ╱
-          │╱
-          └──────────────── x
-             a
-
-  Zoom in near <span class="hl">●</span> and the curve becomes indistinguishable from the line.</div>
-
-<h3>Why bother with this reframing?</h3>
-<p>Because "slope" only makes sense when there's a single input and a single output — a 1-dimensional line has one direction to tilt. The moment a function eats a <em>vector</em> and spits out a <em>vector</em>, "slope" stops meaning anything. But "best linear approximation" still means something perfectly well, because linear maps between vector spaces are a rich, well-understood object — they're just matrices.</p>
+        ╭─────╮                              ┌──┐
+       ╱ ╱╱╱╱  ╲                              │▱ │  ← still a little curved
+      │ ╱╱╱╱╱╱  │        zoom in →            │  │     further out, but this
+       ╲ ╲╲╲╲  ╱                              └──┘     tiny patch is, for all
+        ╰─────╯                                        practical purposes, a
+                                                        flat <span class="hl">parallelogram</span></div>
 
 <div class="callout insight">
 <span class="callout-label">Insight</span>
-<p>This is the whole story of the Jacobian in one sentence: <strong>we keep the idea of "local linear approximation" and simply let the approximating object grow from a number into a matrix.</strong> Everything else — partial derivatives, the chain rule in several variables, the geometry of stretching and rotating — falls out of taking that sentence seriously.</p>
+<p>Every genuinely nonlinear transformation of space is a <em>linear</em> transformation of space in disguise — one linear map per point, changing smoothly as the point changes. That single sentence is the entire content of differentiability, restated geometrically instead of algebraically. The Jacobian is nothing more than the name for that point-by-point linear map. The rest of this essay pins the claim down with a proof (Panel II), catalogues everything a linear map is capable of doing to a shape (Panel III), and asks why you keep running into transformations like these in the first place (Panel IV).</p>
 </div>
 
-<p>So before writing down a single partial derivative, hold onto this: differentiation is the act of asking <em>"what linear map best mimics this function, right here, at this point?"</em> In one dimension the answer is a number. In general, the answer is the Jacobian.</p>
+<h3>Why "linear" is the right kind of simple</h3>
+<p>It's worth pausing on why reducing the local behavior to a linear map is a substantial simplification, not just a technicality. A linear map \(L:\mathbb{R}^n\to\mathbb{R}^m\) is completely determined by where it sends just \(n\) vectors — the standard basis \(e_1,\dots,e_n\) — because every other point is a combination, \(L(c_1e_1+\dots+c_ne_n) = c_1L(e_1)+\dots+c_nL(e_n)\). Know \(n\) vectors' worth of output, and you know the map's action on the <em>entire</em> infinite space, exactly, with no approximation involved. A nonlinear map has no such shortcut: describing it exactly means describing what happens at every one of its infinitely many points, independently.</p>
 
-<h3>A first glimpse of why this is the "right" definition</h3>
-<p>One more thing worth noticing before leaving one dimension behind: among <em>all</em> functions \(h\mapsto c\cdot h\), why is there a <em>unique</em> best one? Suppose \(L_1\) and \(L_2\) both satisfy \(f(a+h) = f(a) + L_i h + o(h)\). Subtracting the two approximations gives \((L_1-L_2)h = o(h)\), and dividing by \(h\ne0\) and letting \(h\to0\) forces \(L_1=L_2\). Uniqueness of the derivative is not an assumption — it's forced by the definition. This same uniqueness argument, essentially unchanged, is what guarantees the Jacobian matrix in Panel II is well-defined rather than one of several equally-good candidates.</p>
+<p>What makes calculus necessary at all is exactly this contrast. A nonlinear transformation can't be captured by one matrix valid everywhere — but it can be captured by <em>infinitely many</em> matrices, one attached to each point, each valid only in an infinitesimal neighborhood of that point. Assembling that one matrix, at one point, out of the raw material of partial derivatives is the entire business of Panel II.</p>
 
 <div class="callout note">
 <span class="callout-label">Note</span>
-<p>Phrased more abstractly: for fixed \(a\), the derivative \(f'(a)\) is the unique element of the 1-dimensional vector space of linear maps \(\mathbb{R}\to\mathbb{R}\) that approximates \(f\) to first order at \(a\). Once inputs and outputs become \(\mathbb{R}^n\) and \(\mathbb{R}^m\), that vector space of linear maps becomes the space of \(m\times n\) matrices — still finite-dimensional, still with a well-defined notion of "closeness" (an operator norm), and the same uniqueness argument goes through verbatim. Push this one step further, to functions between infinite-dimensional Banach spaces, and you land on the <strong>Fréchet derivative</strong>, revisited in Panel VI.</p>
+<p>The cleanest mental picture — grid lines warping into curves — lives in the case \(n=m\), where input and output share a space and you can genuinely picture one deforming into the other. Everything here also covers \(n\ne m\): a curve's parametrization is a map \(\mathbb{R}\to\mathbb{R}^3\); a scalar field like temperature is a map \(\mathbb{R}^n\to\mathbb{R}\). The grid-warping picture just specializes beautifully when the dimensions match, which is why most of the illustrations here use it.</p>
 </div>
 
 </section>
 
 <!-- ============ PANEL 2 ============ -->
 <section class="panel" id="t2">
-<h1>Many Dimensions</h1>
-<div class="subtitle">what happens when both the input and the output become vectors</div>
+<h1>Making It Rigorous</h1>
+<div class="subtitle">from "zoom in and it looks flat" to a matrix you can actually compute</div>
 
-<h2>From one number to a whole map</h2>
-<p>Consider a function \(F:\mathbb{R}^n \to \mathbb{R}^m\). It takes in a vector of \(n\) numbers and produces a vector of \(m\) numbers. Write it out coordinate by coordinate:</p>
-<div class="katex-display" data-katex="F(x_1,\dots,x_n) = \big(f_1(x_1,\dots,x_n),\ f_2(x_1,\dots,x_n),\ \dots,\ f_m(x_1,\dots,x_n)\big)"></div>
-
-<p>Each \(f_i\) is an ordinary scalar-valued function, but it depends on <em>all</em> \(n\) inputs at once. So the very first question differentiation has to answer is: differentiate <em>with respect to what</em>?</p>
-
-<h3>Partial derivatives: freezing everything but one axis</h3>
-<p>The partial derivative \(\frac{\partial f_i}{\partial x_j}\) answers a narrower question than "how does \(f_i\) change?" — it asks <em>how does \(f_i\) change if we nudge only \(x_j\), holding every other coordinate fixed?</em></p>
-
-<div class="katex-display" data-katex="\frac{\partial f_i}{\partial x_j}(a) = \lim_{h\to 0} \frac{f_i(a_1,\dots,a_j+h,\dots,a_n) - f_i(a)}{h}"></div>
-
-<div class="callout note">
-<span class="callout-label">Note</span>
-<p>A partial derivative is genuinely just a single-variable derivative in disguise — you've frozen \(n-1\) of the variables into constants, so the ordinary 1-D machinery from Panel I applies directly along that one axis.</p>
-</div>
-
-<p>But here's the catch: knowing every partial derivative of every \(f_i\) at a point doesn't yet tell you what happens when you move in an <em>arbitrary</em> direction — say, a little bit in \(x_1\) and a little bit in \(x_2\) simultaneously. For that you need to know how all these partial slopes combine.</p>
-
-<h3>The generalization of "best linear approximation"</h3>
-<p>The right definition of differentiability at a point \(a\in\mathbb{R}^n\) is: there exists a <em>linear map</em> \(DF(a): \mathbb{R}^n \to \mathbb{R}^m\) such that</p>
-<div class="katex-display" data-katex="F(a+h) = F(a) + DF(a)\,h + o(\|h\|) \quad \text{as } h \to 0"></div>
-
-<p>This is the exact same sentence as before, with \(f'(a)\cdot h\) — multiplying a number by a number — replaced by \(DF(a)\,h\) — a linear map acting on a vector. A linear map \(\mathbb{R}^n\to\mathbb{R}^m\) is represented, once you fix coordinates, by an \(m\times n\) matrix. <strong>That matrix is the Jacobian.</strong></p>
-
-<div class="ascii">   ONE DIMENSION                     MANY DIMENSIONS
-
-   f: ℝ → ℝ                          F: ℝⁿ → ℝᵐ
-   number in, number out             vector in, vector out
-
-   best linear approx:               best linear approx:
-   L(h) = f'(a)·h                    L(h) = <span class="hl">J(a)</span>·h
-   (multiply by a number)            (multiply by a matrix)
-
-   f'(a) ∈ ℝ                         <span class="hl">J(a)</span> ∈ ℝ^(m×n)
-   "the slope"                       "the Jacobian matrix"</div>
-
-<div class="callout insight">
-<span class="callout-label">Insight</span>
-<p>The reason we need <em>all</em> the partial derivatives, arranged just so, is that a linear map \(\mathbb{R}^n\to\mathbb{R}^m\) has exactly \(m\times n\) degrees of freedom — and it turns out those degrees of freedom are precisely the \(m \times n\) partial derivatives \(\partial f_i/\partial x_j\). Nothing more is needed, and nothing less will do, because a linear map is fully determined by where it sends each of the \(n\) basis vectors, and \(\partial F/\partial x_j\) is exactly the image of the \(j\)-th basis vector.</p>
-</div>
-
-<h2>The uncomfortable gap: partials existing vs. being differentiable</h2>
-<p>Here is the subtlety flagged at the end of Panel I, made concrete. It's tempting to think "all partial derivatives exist at \(a\)" and "\(F\) is differentiable at \(a\)" are the same statement. They are not, and the gap between them is exactly the gap between a purely axis-aligned notion of change and the true, all-directions notion of local linearity.</p>
-
-<div class="katex-display" data-katex="f(x,y) = \begin{cases} \dfrac{xy}{x^2+y^2} &amp; (x,y)\neq(0,0) \\ 0 &amp; (x,y)=(0,0)\end{cases}"></div>
+<h2>Restating one dimension as approximation, not slope</h2>
+<p>Before chasing matrices, get the single-variable case into the right shape — the "slope" framing is about to stop working entirely. Say \(f:\mathbb{R}\to\mathbb{R}\) is differentiable at \(a\) if there is a number \(L\) such that</p>
+<div class="katex-display" data-katex="f(a+h) = f(a) + L\,h + o(h) \quad\text{as } h\to 0"></div>
+<p>where \(o(h)\) denotes an error that vanishes faster than \(h\) itself — precisely, \(o(h)/h\to0\) as \(h\to0\). Written out with an honest \(\varepsilon\)-\(\delta\), since that's the only version that's actually checkable: for every \(\varepsilon&gt;0\) there is a \(\delta&gt;0\) such that</p>
+<div class="katex-display" data-katex="0&lt;|h|&lt;\delta \implies \left|\frac{f(a+h)-f(a)}{h} - L\right| &lt; \varepsilon"></div>
+<p>This is just the ordinary limit defining \(f'(a)\), unpacked — but it's the "approximation" framing, not the "ratio" framing, that is about to matter.</p>
 
 <div class="callout warning">
 <span class="callout-label">Warning</span>
-<p>For this classic example, both partial derivatives \(\partial f/\partial x(0,0)\) and \(\partial f/\partial y(0,0)\) exist and equal \(0\) — freezing \(y=0\) or \(x=0\) makes \(f\) identically \(0\) along each axis. Yet \(f\) is not even <em>continuous</em> at the origin: approach along \(y=x\) and \(f\to \tfrac12\), approach along the axes and \(f\to0\). Since differentiability implies continuity (Panel I), \(f\) cannot be differentiable at the origin — even though every partial derivative exists there. Partial derivatives only ever look along the coordinate axes; they can be individually well-behaved while the function does something genuinely different along a diagonal direction.</p>
+<p>You cannot divide by a vector. The instant the input becomes \(h\in\mathbb{R}^n\) for \(n&gt;1\), the expression \(\frac{f(a+h)-f(a)}{h}\) stops meaning anything — there is no operation "divide by \(h\)" for a vector \(h\). The approximation framing above never divides by \(h\); it only ever divides the <em>scalar</em> error by the <em>scalar</em> \(|h|\). That's the one feature of the definition that has to survive the jump to several variables, and it's exactly why this is the version worth memorizing.</p>
 </div>
 
-<p>This is precisely why the definition of differentiability in Panel II was stated as "there exists a linear map \(DF(a)\) such that \(F(a+h)=F(a)+DF(a)h+o(\|h\|)\)" — a condition about <em>every</em> direction \(h\) simultaneously — rather than "all the partial derivatives exist," which is a much weaker, axis-only condition.</p>
+<h2>Several inputs: partial derivatives are single-variable derivatives in disguise</h2>
+<p>Let \(F:\mathbb{R}^n\to\mathbb{R}^m\), written coordinate by coordinate as \(F=(f_1,\dots,f_m)\). Freeze every input except \(x_j\), and differentiate \(f_i\) as an ordinary function of that one variable:</p>
+<div class="katex-display" data-katex="\frac{\partial f_i}{\partial x_j}(a) = \lim_{h\to0}\frac{f_i(a_1,\dots,a_j+h,\dots,a_n)-f_i(a)}{h}"></div>
+<p>Every partial derivative is, individually, exactly the 1D construction above, run along one coordinate axis with the rest of space held motionless. But a collection of axis-aligned slopes doesn't yet say what happens when you nudge <em>several</em> coordinates together — which is exactly what "moving a point" requires, since a general displacement \(h\in\mathbb{R}^n\) has nonzero components along every axis at once.</p>
 
-<h3>The fix: continuity of the partials is enough</h3>
-<p>Fortunately there's a clean sufficient condition that covers essentially every function you'll meet in practice:</p>
+<h3>The right generalization: a linear map, not a list of numbers</h3>
+<p>\(F\) is differentiable at \(a\) if there exists a linear map \(J:\mathbb{R}^n\to\mathbb{R}^m\) such that</p>
+<div class="katex-display" data-katex="F(a+h) = F(a) + J\,h + o(\|h\|) \quad\text{as } h\to 0"></div>
+<p>Symbol for symbol, this is the same sentence as the 1D definition — a number times a number has become a matrix times a vector, and \(|h|\) has become \(\|h\|\), the one change needed to keep "divide by a scalar" legal. A linear map \(\mathbb{R}^n\to\mathbb{R}^m\), once coordinates are fixed, <em>is</em> an \(m\times n\) matrix. <strong>That matrix is the Jacobian</strong>, written \(J_F(a)\).</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>A linear map \(\mathbb{R}^n\to\mathbb{R}^m\) has exactly \(mn\) degrees of freedom — and those degrees of freedom turn out to be exactly the \(mn\) partial derivatives \(\partial f_i/\partial x_j\), no more and no fewer. This isn't a coincidence: a linear map is fully pinned down by the images of the \(n\) basis vectors \(e_j\), and \(J\,e_j\) is precisely the \(m\)-vector of partial derivatives \(\partial F/\partial x_j\). Nothing about this construction is extra machinery bolted onto partial derivatives — it's just the unique way to arrange them so the result is a bona fide linear map.</p>
+</div>
+
+<h3>Existence of partials is not enough — the gap has teeth</h3>
+<p>It's tempting to think "all the partial derivatives exist at \(a\)" and "\(F\) is differentiable at \(a\)" say the same thing. They don't, and the gap between them is the entire difference between axis-aligned information and true, all-directions local linearity.</p>
+<div class="katex-display" data-katex="f(x,y) = \begin{cases}\dfrac{xy}{x^2+y^2} &amp; (x,y)\ne(0,0)\\[4pt] 0 &amp; (x,y)=(0,0)\end{cases}"></div>
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>Both partials \(\partial f/\partial x(0,0)\) and \(\partial f/\partial y(0,0)\) exist and equal \(0\) — along either axis, \(f\) is identically zero. But approach the origin along the diagonal \(y=x\) instead, and \(f\to\tfrac12\) — so \(f\) isn't even continuous at \((0,0)\), let alone differentiable there (differentiability forces continuity: as \(h\to0\), \(F(a+h)-F(a)=Jh+o(\|h\|)\to0\) directly from the definition). Two perfectly well-behaved axis-slopes coexisted with a function doing something completely different along a direction neither axis happens to point in — exactly why the correct definition demands one linear map working for <em>every</em> direction \(h\) at once, rather than one slope per axis.</p>
+</div>
 
 <div class="callout definition">
 <span class="callout-label">Definition — the \(C^1\) criterion</span>
-<p>If all partial derivatives \(\partial f_i/\partial x_j\) exist in a neighborhood of \(a\) <em>and are continuous at \(a\)</em>, then \(F\) is (Fréchet) differentiable at \(a\), and its derivative is exactly the Jacobian matrix built from those partials. Functions with this property are called \(C^1\) (continuously differentiable).</p>
+<p>The gap closes under one clean, almost-always-true hypothesis: if every partial \(\partial f_i/\partial x_j\) exists near \(a\) and is <em>continuous</em> at \(a\), then \(F\) is genuinely differentiable at \(a\), with derivative exactly the matrix of those partials. Such an \(F\) is called \(C^1\). Panel IV proves this rather than just asserting it — it's the most satisfying "why" in the whole essay.</p>
 </div>
 
-<p>This is the theorem that quietly licenses almost every Jacobian computed in practice: you compute the partials, check (usually by inspection, since they're built from polynomials, sines, exponentials) that they're continuous, and the existence of the true multivariable derivative is guaranteed for free. The pathological example above fails this test — its partials exist at the origin but are not continuous there.</p>
+<h2>Assembling the Jacobian matrix</h2>
 
-<h3>Directional derivatives: the honest in-between notion</h3>
-<p>Between "partial derivative" (change along one axis) and "full derivative" (change predicted correctly in every direction at once) sits the directional derivative. For a unit vector \(\mathbf{v}\),</p>
-<div class="katex-display" data-katex="D_{\mathbf v}f(a) = \lim_{t\to0}\frac{f(a+t\mathbf v)-f(a)}{t}"></div>
-<p>When \(F\) actually is differentiable at \(a\), every directional derivative is captured correctly by the Jacobian: \(D_{\mathbf v}F(a) = J_F(a)\,\mathbf{v}\) — you don't need to recompute anything, just apply the one linear map to whichever direction you care about. The pathological example above is exactly a case where this formula fails, because the object on the right-hand side (a genuine linear map) doesn't exist yet.</p>
+<h3>Deriving the matrix's entries from scratch</h3>
+<p>The row/column layout below is usually just handed over as notation to memorize. It doesn't have to be — the placement of every entry, row \(i\), column \(j\), value \(\partial f_i/\partial x_j\), is forced, with no free choice left anywhere, by nothing more than the definition of matrix-vector multiplication and the definition of \(J\) already pinned down above.</p>
+<p>Start from the defining approximation, \(F(a+h)-F(a)=Jh+o(\|h\|)\), and read it one output coordinate at a time. By the ordinary mechanics of matrix-vector multiplication, the \(i\)-th entry of \(Jh\) is the dot product of row \(i\) of \(J\) with \(h\) — write that row's entries as \((J_{i1},\dots,J_{in})\), unknown for now. The \(i\)-th component of the defining equation then reads</p>
+<div class="katex-display" data-katex="f_i(a+h) - f_i(a) = J_{i1}h_1 + J_{i2}h_2 + \cdots + J_{in}h_n + o(\|h\|), \qquad i=1,\dots,m"></div>
+<p>an equation purely about the single scalar function \(f_i\) — the other \(m-1\) component functions don't even appear in it. To isolate one unknown coefficient \(J_{ij}\), move in only the \(j\)-th coordinate direction: set \(h=t\,e_j\) for a small scalar \(t\), so every \(h_k\) with \(k\ne j\) is exactly \(0\) and \(\|h\|=|t|\). Every term but one on the right vanishes:</p>
+<div class="katex-display" data-katex="f_i(a+t\,e_j) - f_i(a) = J_{ij}\,t + o(|t|)"></div>
+<p>Divide by \(t\) and let \(t\to0\). The left side becomes, by definition, exactly the partial derivative of \(f_i\) with respect to \(x_j\) — freeze every input except \(x_j\) and take a plain single-variable limit, the same construction from earlier in this panel — and the error term vanishes because it's \(o(t)/t\to0\):</p>
+<div class="katex-display" data-katex="J_{ij} = \lim_{t\to0}\frac{f_i(a+t\,e_j)-f_i(a)}{t} = \frac{\partial f_i}{\partial x_j}(a)"></div>
+<p>Nothing above was a convention or a choice. <strong>Row</strong> came from reading the matrix-vector product one output coordinate at a time — one row per component of \(F\), because there's one equation \(f_i(a+h)-f_i(a)=\dots\) per output. <strong>Column</strong> came from restricting to a single input direction \(e_j\) to isolate one coefficient — one column per input variable, because there's one coordinate direction to move in per input. The entry sitting at their intersection is pinned down by nothing more exotic than a limit already defined earlier in this very panel.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>There's a second, equally valid route to the identical matrix, worth seeing because it explains "column \(j\) is \(\partial F/\partial x_j\)" as one object rather than \(m\) separate limits stitched together afterward. Instead of reading the defining equation component-by-component, read all \(m\) components <em>together</em> and set \(h=t\,e_j\) directly: \(F(a+t\,e_j)-F(a)=t\,(Je_j)+o(t)\), so dividing by \(t\) and taking the limit gives \(Je_j=\lim_{t\to0}\frac{F(a+te_j)-F(a)}{t}\) — the entire column vector of partials \(\partial F/\partial x_j\) extracted in one shot. And \(Je_j\) is, by the ordinary mechanics of matrix-vector multiplication, always exactly the \(j\)-th column of \(J\) — multiplying a matrix by a standard basis vector reads off that column, no more and no less. Row-first or column-first, restricting to one output or one input direction, both derivations are forced to land on the same \(m\times n\) array, because both are just the single defining equation, read in two different orders.</p>
+</div>
+
+<p>Collecting every entry \(J_{ij}=\partial f_i/\partial x_j(a)\) into one array gives exactly the matrix this logic was building toward:</p>
+<div class="katex-display" data-katex="J_F(a) = \begin{bmatrix}\dfrac{\partial f_1}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f_1}{\partial x_n}\\[8pt] \vdots &amp; \ddots &amp; \vdots \\[4pt] \dfrac{\partial f_m}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f_m}{\partial x_n}\end{bmatrix}"></div>
+<div class="callout definition">
+<span class="callout-label">Definition</span>
+<p><strong>Row \(i\)</strong> is \(\nabla f_i(a)^{\mathsf T}\) — how output coordinate \(i\) alone responds to a nudge in each input. <strong>Column \(j\)</strong> is \(\partial F/\partial x_j\), the direction — in the <em>output</em> space — that the whole vector \(F\) moves when only \(x_j\) is nudged. Since column \(j\) is exactly \(J_F(a)\,e_j\), the columns of the Jacobian are literally where the standard basis vectors of the domain land under the local linear map.</p>
+</div>
+
+<h3>Worked example: watching the local map change from point to point</h3>
+<p>Let \(F(x,y)=(x^2-y^2,\ 2xy)\) — complex squaring, \(z\mapsto z^2\), written in real coordinates. Then</p>
+<div class="katex-display" data-katex="J_F(x,y) = \begin{bmatrix}2x &amp; -2y\\ 2y &amp; 2x\end{bmatrix}"></div>
+<p>At \((1,0)\) this is \(\begin{bmatrix}2&amp;0\\0&amp;2\end{bmatrix}\) — pure scaling by \(2\), no rotation. At \((0,1)\) it's \(\begin{bmatrix}0&amp;-2\\2&amp;0\end{bmatrix}\) — scaling by \(2\) <em>and</em> a \(90°\) rotation. Same formula for \(F\), two completely different local transformations, purely because the point changed — precisely the point-dependence flagged in Panel I, now numerically concrete. (At a general \((x,y)\), \(J_F\) is always \(2\sqrt{x^2+y^2}\) times a rotation — matching the complex-analysis fact \(\frac{d}{dz}z^2=2z\): multiplying by the complex number \(2z\) is exactly "rotate by \(\arg(2z)\) and scale by \(|2z|\)".)</p>
+
+<h3>Uniqueness: why there's only one honest candidate</h3>
+<p>Suppose two linear maps \(J_1,J_2\) both satisfy the defining approximation at \(a\). Subtracting the two expansions gives \((J_1-J_2)h = o(\|h\|)\); divide by \(\|h\|\ne0\) and let \(h\to0\) along any fixed direction \(u\) (that is, \(h=tu\), \(t\to0^+\)) to get \((J_1-J_2)u=0\) for every unit vector \(u\) — which forces \(J_1=J_2\). The Jacobian isn't one of several equally-good linear stand-ins picked by convention; it's forced to be unique by the same one-line argument that pins down the ordinary 1D derivative.</p>
 
 </section>
 
 <!-- ============ PANEL 3 ============ -->
 <section class="panel" id="t3">
-<h1>The Jacobian Matrix</h1>
-<div class="subtitle">assembling the partial derivatives into the linear map that matters</div>
+<h1>Anatomy of a Warp</h1>
+<div class="subtitle">everything a single linear map can do to a shape — and nothing it can't</div>
 
-<h2>Definition</h2>
-<p>Given \(F:\mathbb{R}^n\to\mathbb{R}^m\) with component functions \(f_1,\dots,f_m\), the Jacobian matrix at a point \(a\) is the \(m\times n\) array of all first partial derivatives:</p>
+<h2>Every linear map is rotate, stretch, rotate</h2>
+<p>Panel II pinned down \(J_F(a)\) as a matrix; this panel asks what a matrix, geometrically, is capable of doing. The answer is total: every linear map \(L:\mathbb{R}^n\to\mathbb{R}^n\) factors as</p>
+<div class="katex-display" data-katex="L = U\Sigma V^{\mathsf T}"></div>
+<p>the <strong>singular value decomposition</strong>. \(V^{\mathsf T}\) is a rotation (or reflection) that lines up a chosen set of perpendicular directions with the coordinate axes; \(\Sigma=\text{diag}(\sigma_1,\dots,\sigma_n)\), the <em>singular values</em>, stretches independently along each of those axes; \(U\) rotates the result into its final orientation. Feed in a circle: rotate it (no visible change — a circle is rotation-symmetric), stretch it along perpendicular axes into an ellipse with semi-axes \(\sigma_1,\dots,\sigma_n\), then rotate the ellipse into place.</p>
 
-<div class="katex-display" data-katex="J_F(a) = \begin{bmatrix} \dfrac{\partial f_1}{\partial x_1} &amp; \dfrac{\partial f_1}{\partial x_2} &amp; \cdots &amp; \dfrac{\partial f_1}{\partial x_n} \\[10pt] \dfrac{\partial f_2}{\partial x_1} &amp; \dfrac{\partial f_2}{\partial x_2} &amp; \cdots &amp; \dfrac{\partial f_2}{\partial x_n} \\[6pt] \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\[4pt] \dfrac{\partial f_m}{\partial x_1} &amp; \dfrac{\partial f_m}{\partial x_2} &amp; \cdots &amp; \dfrac{\partial f_m}{\partial x_n} \end{bmatrix}"></div>
-
-<div class="callout definition">
-<span class="callout-label">Definition</span>
-<p><strong>Row \(i\)</strong> is the gradient of \(f_i\) — how the \(i\)-th output responds to each input. <strong>Column \(j\)</strong> is \(\partial F/\partial x_j\) — the direction, in output space, that the whole vector \(F\) moves when only \(x_j\) is nudged. Reading it either way gives the same object.</p>
-</div>
-
-<h3>Worked example</h3>
-<p>Let \(F(u,v) = (u^2 - v^2,\ 2uv)\) — this is complex squaring, \(z\mapsto z^2\), written in real coordinates with \(z=u+iv\). Its two component functions are \(f_1 = u^2-v^2\) and \(f_2=2uv\), so:</p>
-
-<div class="katex-display" data-katex="J_F(u,v) = \begin{bmatrix} \partial f_1/\partial u &amp; \partial f_1/\partial v \\ \partial f_2/\partial u &amp; \partial f_2/\partial v \end{bmatrix} = \begin{bmatrix} 2u &amp; -2v \\ 2v &amp; 2u \end{bmatrix}"></div>
-
-<p>At the point \((u,v)=(1,1)\), this becomes \(\begin{bmatrix}2&-2\\2&2\end{bmatrix}\) — a matrix that <em>rotates and scales</em>. You can check this is exactly \(2\sqrt2\) times a rotation by \(45°\), which matches the complex-analysis fact that \(\frac{d}{dz}z^2 = 2z\), and multiplication by a complex number \(2z\) is precisely a rotate-and-scale. You'll get to watch this happen live in Panel V.</p>
-
-<h3>A second example, in three variables</h3>
-<p>Jacobians aren't confined to square matrices or to \(n=m=2\). Take \(F:\mathbb{R}^3\to\mathbb{R}^2\), \(F(x,y,z) = (x^2y,\ y+\sin z)\). Then \(f_1=x^2y\), \(f_2=y+\sin z\), and</p>
-<div class="katex-display" data-katex="J_F(x,y,z) = \begin{bmatrix} 2xy &amp; x^2 &amp; 0 \\ 0 &amp; 1 &amp; \cos z \end{bmatrix}"></div>
-<p>Notice the shape: \(2\times3\), because there are \(2\) outputs and \(3\) inputs — a rectangular, non-square Jacobian, which is the generic case and has no determinant at all. The zero entries are informative too: \(f_1\) doesn't depend on \(z\), so the whole first-row-third-column entry is \(0\); \(f_2\) doesn't depend on \(x\), so the second-row-first-column entry is \(0\). Reading zeros off a Jacobian tells you exactly which outputs are decoupled from which inputs, locally.</p>
-
-<h3>Special case: the gradient is a \(1\times n\) Jacobian</h3>
-<p>When \(m=1\) — a scalar-valued function \(f:\mathbb{R}^n\to\mathbb{R}\) — the Jacobian collapses to a single row:</p>
-<div class="katex-display" data-katex="J_f(a) = \begin{bmatrix}\dfrac{\partial f}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f}{\partial x_n}\end{bmatrix} = \nabla f(a)^{\mathsf T}"></div>
-<div class="callout note">
-<span class="callout-label">Note</span>
-<p>The gradient \(\nabla f\), usually introduced as a standalone character — "the vector of partial derivatives, pointing in the direction of steepest ascent" — is nothing but the Jacobian of a scalar field, transposed into a column for convenience. There is no separate theory of gradients; there is one theory of Jacobians, and the gradient is its \(m=1\) special case. Push \(m=1\) further and differentiate <em>again</em>: the Jacobian of \(\nabla f\) (an \(n\times n\) matrix of second partials) is the Hessian — so the Hessian is, likewise, just "the Jacobian one derivative up."</p>
-</div>
-
-<h2>The chain rule becomes matrix multiplication</h2>
-<p>This is where the reframing from Panel I pays for itself. If \(G = F\circ H\), the single-variable chain rule \((f\circ h)'(a) = f'(h(a))\cdot h'(a)\) generalizes to</p>
-<div class="katex-display" data-katex="J_G(a) = J_F(H(a))\ \cdot\ J_H(a)"></div>
+<div class="ascii">   circle           rotate by Vᵀ           stretch by Σ            rotate by U
+    ╭───╮      ──▶     ╭───╮        ──▶      ╭─────╮       ──▶      ⟋─────⟍
+   │  ●  │            │  ●  │                │  ●  │              ⟋   ●   ⟍
+    ╰───╯              ╰───╯                  ╰─────╯              ⟍─────⟋
+  (still a          (repositions the       (elongates along       (tilts the ellipse
+   circle — no        axes about to be       the now-aligned        to its final
+   visible change)    stretched)              axes into an           orientation)
+                                               ellipse)</div>
 
 <div class="callout insight">
 <span class="callout-label">Insight</span>
-<p>Composing two functions means composing their best linear approximations — and composing linear maps is exactly matrix multiplication. The "multiply the derivatives" rule you memorized in single-variable calculus was secretly matrix multiplication all along; it just looked like ordinary multiplication because \(1\times1\) matrices <em>are</em> ordinary numbers.</p>
+<p>This is the complete vocabulary of what a linear map — and therefore, locally, <em>any</em> differentiable map — can do to space: rotate, stretch along some set of perpendicular directions (possibly by different amounts, possibly by zero), rotate again. Shape distortion always reduces to this three-step recipe; there is nothing else a linear map is capable of doing.</p>
 </div>
+
+<h2>The determinant is the local volume-scaling factor</h2>
+<p>Restrict to \(n=2\) to derive this cleanly, then state the general pattern. A linear map with matrix \(\begin{bmatrix}a&amp;b\\c&amp;d\end{bmatrix}\) sends the unit square (spanned by \(e_1,e_2\)) to the parallelogram spanned by its two columns, \(v_1=(a,c)\) and \(v_2=(b,d)\). The area of that parallelogram is base times height: \(\|v_1\|\) times the component of \(v_2\) perpendicular to \(v_1\), which trigonometry reduces to \(\|v_1\|\|v_2\|\sin\theta = |ad-bc|\) — exactly \(|\det L|\).</p>
+<div class="katex-display" data-katex="\text{Area of } L(\text{unit square}) = |\det L| = |ad-bc|"></div>
+<p>Because linear maps scale uniformly — a rectangle of dimensions \(\Delta u\times\Delta v\) is just \(\Delta u\) copies of a unit-height strip times \(\Delta v\) copies of a unit-width strip — this same factor \(|\det L|\) rescales the area of <em>any</em> region, not just the unit square. Now bring Panel II back in: near a point \(a\), \(F(a+h)\approx F(a)+J_F(a)h\), so a small square of side \(\Delta\) around \(a\) is carried to a parallelogram of area \(\approx|\det J_F(a)|\,\Delta^2\), to an accuracy that improves as \(\Delta\to0\). That local scaling factor, \(|\det J_F(a)|\), is exactly the quantity that appears in the change-of-variables formula for integrals (Panel VI) — every infinitesimal patch of area has to be paid for, or refunded, by this factor when you switch coordinates.</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>The same argument in \(n\) dimensions replaces "parallelogram area" with "parallelepiped volume," and the base-times-height trigonometric argument generalizes to the standard fact that the volume of the parallelepiped spanned by the columns of an \(n\times n\) matrix is \(|\det L|\). The Jacobian determinant is always, in every dimension, the local volume-scaling factor — never anything looser than that.</p>
+</div>
+
+<h3>Sign, and the moment a map stops being invertible</h3>
+<p>The determinant's sign tracks orientation: \(\det L&gt;0\) means a counterclockwise loop stays counterclockwise (a proper rotation-and-stretch, no mirroring); \(\det L&lt;0\) means the map includes a reflection, flipping handedness. And \(\det L=0\) is the boundary case where the ellipse from the SVD picture above degenerates — at least one singular value \(\sigma_i\) is exactly \(0\), so the map crushes an entire direction to a point, and the image of a full-dimensional region collapses onto something of strictly lower dimension.</p>
 
 <div class="callout warning">
 <span class="callout-label">Warning</span>
-<p>Matrix multiplication doesn't commute, and neither does the multivariable chain rule in general — the order \(J_F(H(a))\cdot J_H(a)\) matters, and the two matrices being multiplied usually have different, only-compatible-in-one-order shapes (\(m\times k\) times \(k\times n\)).</p>
+<p>A point where \(\det J_F(a)=0\) is called a <strong>critical</strong> or <strong>singular</strong> point of \(F\). Nothing computed there is wrong, but the local picture changes qualitatively: the map cannot be, even locally, a bijection near \(a\) — it has just crushed a whole direction of the domain flat. This is exactly the condition that will make the Inverse Function Theorem fail in Panel VI.</p>
 </div>
 
-<h3>Why the composition rule is true: a two-line proof</h3>
-<p>The proof is worth seeing once because it's short and it's the exact same "best linear approximation composes" idea stated as an actual argument. Write \(H\) differentiable at \(a\) and \(F\) differentiable at \(b=H(a)\):</p>
-<div class="katex-display" data-katex="H(a+h) = H(a) + J_H(a)h + o(\|h\|), \qquad F(b+k) = F(b) + J_F(b)k + o(\|k\|)"></div>
-<p>Substitute \(k = H(a+h)-H(a) = J_H(a)h + o(\|h\|)\) — which is itself \(O(\|h\|)\) — into the second expansion:</p>
-<div class="katex-display" data-katex="F(H(a+h)) = F(b) + J_F(b)\big[J_H(a)h + o(\|h\|)\big] + o(\|k\|) = F(b) + \underbrace{J_F(b)J_H(a)}_{\text{linear in }h}h + o(\|h\|)"></div>
-<p>The middle term is linear in \(h\) with matrix \(J_F(b)J_H(a)\); every other term collapses into the error \(o(\|h\|)\), using that \(J_F(b)\) applied to an \(o(\|h\|)\) term is still \(o(\|h\|)\), and that \(o(\|k\|)=o(\|h\|)\) since \(\|k\|=O(\|h\|)\). By the uniqueness argument from Panel I, this identifies \(J_{F\circ H}(a)\) as exactly \(J_F(b)J_H(a)\) — no additional assumption required beyond differentiability of each piece.</p>
+<h2>A catalog of named transformations</h2>
+<p>Four archetypes cover most of what you'll encounter, and the interactive lab in Panel V lets you handle three of them directly:</p>
+
+<div class="ascii">   ROTATION                SCALING                  SHEAR                    REFLECTION
+   det = 1                 det = σ₁σ₂               det = 1                  det = −1
+   preserves shape          stretches axes           tilts shape,             flips handedness,
+   and area                 independently,           preserves area          preserves area
+                            changes area
+   ┌──┐    ⟋──⟍           ┌──┐    ┌────┐           ┌──┐    ⟋──⟍            ┌──┐    ┌──┐
+   │  │ →  │  │           │  │ →  │    │           │  │ →   ╱  ╱            │  │ →  │  │  (mirrored)
+   └──┘    ⟍──⟋           └──┘    └────┘           └──┘   ╱──╱             └──┘    └──┘</div>
+
+<p>Shear is worth a second look, because it's the one archetype whose effect on <em>shape</em> is dramatic while its effect on <em>area</em> is nothing at all:</p>
+<div class="katex-display" data-katex="\begin{bmatrix}1 &amp; k\\ 0 &amp; 1\end{bmatrix}, \qquad \det = 1\cdot1 - k\cdot0 = 1 \quad\text{for every value of } k"></div>
+<p>Every square becomes a differently-tilted parallelogram, but every one of those parallelograms has exactly the same area as the square it came from — a clean illustration that the determinant reports the net area change and nothing about how that area got rearranged.</p>
+
+<h3>A singular value decomposition, computed by hand</h3>
+<p>Panel III's SVD claim is worth seeing on an actual matrix, and the shear above is an unusually clean choice: it has determinant \(1\), so its two singular values must multiply to \(1\) — but there's no reason to expect them to equal \(1\) individually, and they don't. The singular values of \(L\) are the square roots of the eigenvalues of \(L^{\mathsf T}L\):</p>
+<div class="katex-display" data-katex="L=\begin{bmatrix}1 &amp; 1\\ 0 &amp; 1\end{bmatrix}, \qquad L^{\mathsf T}L = \begin{bmatrix}1 &amp; 0\\ 1 &amp; 1\end{bmatrix}\begin{bmatrix}1 &amp; 1\\ 0 &amp; 1\end{bmatrix} = \begin{bmatrix}1 &amp; 1\\ 1 &amp; 2\end{bmatrix}"></div>
+<p>with trace \(3\) and determinant \(1\), so its eigenvalues solve \(\lambda^2-3\lambda+1=0\):</p>
+<div class="katex-display" data-katex="\lambda = \frac{3\pm\sqrt5}{2} \quad\implies\quad \sigma_1=\sqrt{\frac{3+\sqrt5}{2}} = \varphi \approx 1.618, \qquad \sigma_2=\sqrt{\frac{3-\sqrt5}{2}} = \frac1\varphi \approx 0.618"></div>
+<p>where \(\varphi=\frac{1+\sqrt5}{2}\) is the golden ratio — a genuinely unexpected place for it to turn up. A unit shear stretches the unit circle into an ellipse whose long axis is \(\varphi\) times its short axis, and \(\sigma_1\sigma_2=\varphi\cdot\frac1\varphi=1\) reproduces \(|\det L|=1\) exactly, by a completely independent computation from the one earlier in this panel.</p>
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>The principal stretch directions — the eigenvectors of \(L^{\mathsf T}L\) — are <em>not</em> the horizontal and vertical axes, even though the shear itself only ever moves points horizontally. It's a common and understandable mistake to assume a shear's "stretch direction" is the direction it visibly slides things in; the SVD says otherwise — the true axes of maximal and minimal stretch sit at an angle, tilted well away from the shearing direction itself.</p>
+</div>
 
 </section>
 
 <!-- ============ PANEL 4 ============ -->
 <section class="panel" id="t4">
-<h1>Geometric Meaning</h1>
-<div class="subtitle">what the Jacobian does to shapes, area, and volume</div>
+<h1>How &amp; Why Maps Arise</h1>
+<div class="subtitle">a proof that the linear stand-in is forced to exist, and a tour of where these transformations come from</div>
 
-<h2>A linear map bends grids into parallelograms</h2>
-<p>Picture the input space tiled by a fine square grid. Apply a smooth map \(F\). Far from any particular point, the grid lines become curved. But zoom into a small neighborhood of a point \(a\), and — because \(F(a+h)\approx F(a) + J_F(a)h\) — the tiny square around \(a\) gets mapped, to excellent approximation, onto a small <strong>parallelogram</strong>: the image of a square under the linear map \(J_F(a)\).</p>
-
-<div class="ascii">   DOMAIN (near a)              IMAGE UNDER F (near F(a))
-
-   ┌─┬─┬─┬─┐                     ⟋‾‾‾⟍___
-   ├─┼─┼─┼─┤        F           ⟋  <span class="hl">╱╱╱</span>  ⟍___     curved globally,
-   ├─┼─┼─┼─┤   ────────▶       ⟋  <span class="hl">╱╱╱</span>      ⟍__   but locally...
-   ├─┼─┼─┼─┤                   ╲__<span class="hl">╱╱╱</span>__________⟍
-   └─┴─┴─┴─┘                     
-    small square                zoom in near F(a):
-    around a                    <span class="hl2">▱</span>  ← a clean parallelogram,
-                                    exactly J_F(a) · (the square)</div>
-
-<h2>The determinant measures the local scaling of area</h2>
-<p>When \(n=m\), the Jacobian is a square matrix, and its determinant has a precise geometric meaning: \(|\det J_F(a)|\) is the factor by which \(F\) scales area (in 2D) or volume (in higher dimensions) right at \(a\).</p>
-
-<div class="katex-display" data-katex="\text{(area of image)} \approx |\det J_F(a)| \times \text{(area of a small region around } a)"></div>
+<h2>Why smooth maps are forced to look linear up close</h2>
+<p>Panel II <em>defined</em> differentiability and stated, without proof, that continuous partials are enough to guarantee it. Here is the proof — worth seeing once, because it explains mechanically <em>why</em> zooming in produces a flat parallelogram, rather than merely asserting that it does.</p>
+<p>Suppose every partial of \(F\) is continuous near \(a\). For a component \(f_i\) and a fixed displacement \(h\), define \(g(t)=f_i(a+th)\) for \(t\in[0,1]\) — a single-variable function riding along the straight segment from \(a\) to \(a+h\). The single-variable chain rule gives \(g'(t)=\nabla f_i(a+th)\cdot h\), so the Fundamental Theorem of Calculus yields</p>
+<div class="katex-display" data-katex="f_i(a+h)-f_i(a) = g(1)-g(0) = \int_0^1 \nabla f_i(a+th)\cdot h \; dt"></div>
+<p>Stacking this over every component \(i\) gives the vector identity \(F(a+h)-F(a) = \int_0^1 J_F(a+th)\,h\;dt\) — an <em>exact</em> equation, no approximation yet. Now subtract off the candidate linear term \(J_F(a)h\):</p>
+<div class="katex-display" data-katex="F(a+h)-F(a)-J_F(a)h = \int_0^1 \big[J_F(a+th)-J_F(a)\big]h\;dt"></div>
+<p>Bound the right side using the operator norm: its length is at most \(\|h\|\cdot\sup_{t\in[0,1]}\|J_F(a+th)-J_F(a)\|\). As \(h\to0\), the points \(a+th\) all converge to \(a\) uniformly in \(t\), and continuity of \(J_F\) at \(a\) forces that supremum to \(0\). So the error is \(\|h\|\) times something going to zero — exactly \(o(\|h\|)\), which is the definition of differentiability with derivative \(J_F(a)\).</p>
 
 <div class="callout insight">
 <span class="callout-label">Insight</span>
-<p>This is exactly why the Jacobian determinant appears in the change-of-variables formula for multivariable integrals: \(\displaystyle\int_{F(D)} g\, dV = \int_D (g\circ F)\,|\det J_F|\,dV\). Integrating means summing up little pieces of area/volume, and when you change coordinates, every little piece gets rescaled locally by \(|\det J_F|\) — so that factor has to appear to keep the total honest.</p>
+<p>This is the honest "why": a smooth map looks linear up close because its exact change, \(F(a+h)-F(a)\), is an <em>average</em> of the Jacobian sampled along the segment from \(a\) to \(a+h\) — that's what the integral says — and continuity guarantees every sample in that average sits arbitrarily close to \(J_F(a)\) once \(h\) is small. Zooming in doesn't approximately flatten the map by luck; it flattens it because the only Jacobians involved in computing the true change are all clustered arbitrarily close to the one at \(a\).</p>
 </div>
 
-<p>The <em>sign</em> of the determinant also carries meaning: positive means \(F\) preserves orientation (a counterclockwise loop stays counterclockwise); negative means it flips orientation, like a reflection. And where \(\det J_F(a)=0\), the map crushes a whole neighborhood into something of lower dimension — a fold, a crease, a singular point — which is precisely why these are the points where the Inverse Function Theorem fails.</p>
-
-<div class="callout definition">
-<span class="callout-label">Definition</span>
-<p><strong>Inverse Function Theorem (informally):</strong> if \(J_F(a)\) is invertible, then \(F\) itself is locally invertible near \(a\), and \(J_{F^{-1}}(F(a)) = J_F(a)^{-1}\). Local linear invertibility upgrades to local invertibility of the true function — another payoff of taking "best linear approximation" seriously.</p>
+<h2>Composing transformations: why the chain rule is matrix multiplication</h2>
+<p>Space is rarely transformed in a single step. A robot arm's tip position is a function of joint angles, which are themselves a function of motor commands; a 3D point's location on your screen is the composition of a world-to-camera transformation and a camera-to-image projection. Whenever transformations chain together, so do their linear stand-ins — and because composing two linear maps is exactly matrix multiplication, so must composing two Jacobians be:</p>
+<div class="katex-display" data-katex="G = F\circ H \implies J_G(a) = J_F\big(H(a)\big)\cdot J_H(a)"></div>
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>Order matters, and so do shapes: for \(\mathbb{R}^n\xrightarrow{H}\mathbb{R}^k\xrightarrow{F}\mathbb{R}^m\), \(J_F(H(a))\) is \(m\times k\) and \(J_H(a)\) is \(k\times n\) — they're only compatible for multiplication in the order written, matching function composition read right-to-left.</p>
 </div>
+<p>The proof is a two-line echo of the argument above: substitute the linear expansion of \(H\) at \(a\) into the linear expansion of \(F\) at \(H(a)\), and the \(o(\|h\|)\) terms absorb into each other while the term linear in \(h\) is forced, by uniqueness (Panel II), to be exactly the product \(J_F(H(a))J_H(a)\). This one fact — composing warps of space means multiplying their local matrices — is the entire mechanism behind training a neural network (each layer is a transformation; backpropagation is this chain rule, run right-to-left through dozens of layers) as much as it's behind the single-variable rule \((f\circ g)'=f'(g(x))g'(x)\), which is just this statement for \(1\times1\) matrices.</p>
 
-<h2>A concrete determinant: polar coordinates</h2>
-<p>The change-of-variables formula from the insight box above has a famous special case worth computing directly. Let \(F(r,\theta) = (r\cos\theta,\ r\sin\theta)\), converting polar to Cartesian coordinates. Then</p>
-<div class="katex-display" data-katex="J_F(r,\theta) = \begin{bmatrix}\cos\theta &amp; -r\sin\theta \\ \sin\theta &amp; r\cos\theta\end{bmatrix}, \qquad \det J_F = r\cos^2\theta + r\sin^2\theta = r"></div>
-<p>That lone factor of \(r\) is the entire reason \(dx\,dy\) becomes \(r\,dr\,d\theta\) in every polar-coordinates integral you've ever computed — it is not a separate geometric fact to memorize, it's this determinant, computed once. It also explains <em>why</em> the scaling isn't uniform: near \(r=0\) a small patch of \((r,\theta)\)-space gets crushed toward a point (area scaling \(\to0\)), while far from the origin the same-sized patch gets stretched into a much larger wedge — exactly matching the visual fact that polar grid cells are tiny near the pole and huge far away.</p>
+<h3>Worked example: a two-link arm, and the moment it locks up</h3>
+<p>Make the robot-arm example above concrete. A two-link planar arm with link lengths \(L_1,L_2\) and joint angles \(\theta_1,\theta_2\) places its tip at</p>
+<div class="katex-display" data-katex="P(\theta_1,\theta_2) = \big(L_1\cos\theta_1+L_2\cos(\theta_1+\theta_2),\ \ L_1\sin\theta_1+L_2\sin(\theta_1+\theta_2)\big)"></div>
+<p>a composition of "place the elbow" with "swing the forearm from wherever the elbow ended up," folding \(\theta_2\) in on top of \(\theta_1\). Differentiating \(P\) directly gives</p>
+<div class="katex-display" data-katex="J_P(\theta_1,\theta_2) = \begin{bmatrix}-L_1\sin\theta_1-L_2\sin(\theta_1+\theta_2) &amp; -L_2\sin(\theta_1+\theta_2)\\ L_1\cos\theta_1+L_2\cos(\theta_1+\theta_2) &amp; L_2\cos(\theta_1+\theta_2)\end{bmatrix}"></div>
+<p>With \(L_1=L_2=1\) and both joints at \(\theta_1=\theta_2=\frac{\pi}{2}\) (the arm folded into a right angle), \(J_P\) evaluates to \(\begin{bmatrix}-1 &amp; 0\\ -1 &amp; -1\end{bmatrix}\), determinant \(1\) — nonzero, so by the Inverse Function Theorem (Panel VI), small target-point adjustments near this configuration translate back into well-defined small joint-angle adjustments, exactly what a control system needs to track a moving target smoothly. Fold the arm straight out instead (\(\theta_2=0\)) and \(\det J_P\) drops to \(0\): a fully extended arm can't push its tip any further outward by wiggling either joint — the textbook robotics example of a <strong>kinematic singularity</strong>, and precisely Panel III's "critical point" idea showing up inside a machine.</p>
 
-<h2>Beyond a single number: principal stretches (SVD)</h2>
-<p>The determinant tells you the <em>net</em> area-scaling factor, but it can't tell you the whole shape story — a matrix with determinant \(1\) could be doing nothing at all, or it could be stretching space by a factor of \(100\) in one direction and squashing it by \(1/100\) in a perpendicular direction. The finer-grained tool is the singular value decomposition of \(J_F(a)\):</p>
-<div class="katex-display" data-katex="J_F(a) = U\Sigma V^{\mathsf T}"></div>
-<div class="callout insight">
-<span class="callout-label">Insight</span>
-<p>\(V^{\mathsf T}\) rotates the input square into an axis-aligned position, \(\Sigma=\text{diag}(\sigma_1,\dots,\sigma_n)\) stretches it independently along each axis by the <em>singular values</em> \(\sigma_i\ge0\), and \(U\) rotates the result into its final orientation. So every local linearization, however it looks, decomposes into: rotate, stretch along perpendicular axes, rotate again. The determinant is just \(\det J_F = \pm\sigma_1\sigma_2\cdots\sigma_n\) — the product of all the individual stretch factors — which is exactly why a single number can report net area/volume scaling while still discarding the directional information the \(\sigma_i\) carry individually.</p>
-</div>
-<p>This is precisely what the little square becomes an ellipse under a linear map: circle through \(\Sigma\) and it becomes an axis-aligned ellipse with semi-axes \(\sigma_1,\dots,\sigma_n\); the two rotations just reposition that ellipse without changing its shape. Watch for this in the interactive lab — the parallelogram the small square becomes is always consistent with some pair of perpendicular stretch directions, even though a general linear map doesn't preserve right angles everywhere.</p>
+<h2>Where these mappings actually come from</h2>
+<p>It's worth naming the recurring reasons a transformation of space shows up in the first place, since "how and why" is really a question about origin, not just mechanism.</p>
 
-<h2>Linearization and stability: eigenvalues of the Jacobian</h2>
-<p>When \(F:\mathbb{R}^n\to\mathbb{R}^n\) describes the velocity field of a dynamical system, \(\dot x = F(x)\), and \(x^*\) is an equilibrium (\(F(x^*)=0\)), the Jacobian \(J_F(x^*)\) governs the system's behavior in a small neighborhood of \(x^*\), because to first order \(\dot h \approx J_F(x^*)\,h\) for \(h=x-x^*\) — a linear ODE, whose solutions are fully determined by the eigenvalues of \(J_F(x^*)\).</p>
+<h3>Choosing better coordinates</h3>
+<p>Polar, cylindrical, and spherical coordinates are maps \(T:(r,\theta)\mapsto(x,y)\) constructed <em>on purpose</em>, purely to make some region or integral easier to describe. The transformation exists because Cartesian coordinates are the wrong native language for anything with rotational symmetry — a disk is an ugly nest of square roots in \(x,y\) and a plain rectangle in \(r,\theta\). The Jacobian of the coordinate change is exactly what tracks the area price of having made that swap — a thread picked back up in Panel VI.</p>
+
+<h3>Describing an actual physical deformation</h3>
+<p>In continuum mechanics, if a solid body gets stretched, sheared, or twisted under load, the map from an original material point to its displaced position is a genuine transformation of physical space, and its Jacobian — called there the <strong>deformation gradient</strong> — literally measures how much a small piece of material has stretched and rotated at that point. This is not an analogy; it's the same mathematical object, applied to a rubber sheet instead of a coordinate grid.</p>
+
+<h3>Parametrizing a curve or surface</h3>
+<p>A map \(\Phi:\mathbb{R}^2\to\mathbb{R}^3\) that traces out a surface — say, \(\Phi(\phi,\theta)=(\sin\phi\cos\theta,\ \sin\phi\sin\theta,\ \cos\phi)\), a sphere — transforms a flat rectangle of parameters into a curved surface sitting in 3D. Its Jacobian's columns are tangent vectors to that surface, and the area-scaling idea from Panel III, now measuring how a flat parameter patch stretches into a curved surface patch, is exactly the machinery behind computing surface area.</p>
+
+<h3>Tracking motion or evolution</h3>
+<p>If \(\dot x = V(x)\) describes a flow — a fluid, a population, a dynamical system — the map \(\Phi_t\) that advances every point \(t\) units forward in time is itself a transformation of the whole space, one for every value of \(t\). Its Jacobian tells you whether nearby trajectories are converging (mixing, stable) or diverging (chaotic, unstable) — a question that only makes sense because \(\Phi_t\) is a genuine space-warping map.</p>
+
 <div class="callout note">
 <span class="callout-label">Note</span>
-<p>If every eigenvalue of \(J_F(x^*)\) has negative real part, nearby trajectories are pulled in and \(x^*\) is (locally) stable; if any eigenvalue has positive real part, nearby trajectories are pushed away and \(x^*\) is unstable. This is the Hartman–Grobman circle of ideas, and it's the single most consequential use of the Jacobian outside of pure calculus — the entire local qualitative behavior of a nonlinear system, near an equilibrium, is read off from one linear-algebra computation on the Jacobian.</p>
+<p>All four of these are the identical mathematical object wearing different clothes: a smooth map between spaces, locally approximable by a matrix. What differs is only the story behind <em>why</em> the map was written down — convenience, physics, geometry, or time. Panel VI returns to two of these threads, coordinates and flows, with their standard theorems attached.</p>
 </div>
 
 </section>
@@ -425,9 +432,9 @@ code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; b
 <!-- ============ PANEL 5 ============ -->
 <section class="panel" id="t5">
 <h1>Interactive Lab</h1>
-<div class="subtitle">watch a curved map become a parallelogram as you zoom in</div>
+<div class="subtitle">drag a point, shrink the neighborhood, and watch the parallelogram prediction lock in</div>
 
-<p>Drag the point <strong>P</strong> in the left canvas to move where you're linearizing. Shrink the neighborhood with the slider and watch the actual curved image (right, in <span style="color:var(--red)">rust</span>) converge onto the flat parallelogram predicted by the Jacobian (right, in <span style="color:var(--blue)">blue</span>) — this convergence <em>is</em> the definition of differentiability made visible.</p>
+<p>Drag the point <strong>P</strong> in the left canvas to relocate where you're linearizing. The right canvas shows the true, curved image of a small square around P (in <span style="color:var(--red)">rust</span>) next to the flat parallelogram the Jacobian alone predicts (in <span style="color:var(--blue)">blue</span>). Shrink the neighborhood with the slider and watch the two converge — that convergence <em>is</em> the \(o(\|h\|)\) error from Panel II, made visible instead of left as an abstract limit.</p>
 
 <div class="lab">
   <div class="lab-canvases">
@@ -448,6 +455,7 @@ code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; b
         <option value="square">(u² − v², 2uv)  — complex squaring</option>
         <option value="polar">(u·cos v, u·sin v)  — polar-like</option>
         <option value="saddle">(u + v, u·v)  — saddle</option>
+        <option value="shear">(u + 0.6v, v)  — shear</option>
       </select>
     </div>
     <div class="control-row">
@@ -467,7 +475,7 @@ code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; b
       <div class="v" id="jacReadout">[ 2.00  −2.00 ]<br>[ 2.00   2.00 ]</div>
     </div>
     <div class="block">
-      <div class="k">det J(P)</div>
+      <div class="k">|det J(P)|</div>
       <div class="v" id="detReadout">8.00</div>
     </div>
   </div>
@@ -484,44 +492,311 @@ code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; b
 <p>At a large neighborhood size, the red (actual) and blue (predicted) shapes visibly diverge — the linear approximation is a rough sketch. Drag the slider down and they snap together: below a certain scale they become visually identical, no matter how curvy \(F\) is globally. That convergence rate is exactly the \(o(\|h\|)\) from Panel II — the error shrinks faster than the neighborhood itself.</p>
 </div>
 
-<p>Try moving P near \((0,0)\) with the <code>saddle</code> map — the Jacobian there is singular in one special sense worth noticing (its determinant vanishes along a certain configuration), and you'll see the parallelogram flatten toward a line, mirroring the "crushing" behavior described in Panel IV.</p>
+<p>Try each of Panel III's archetypes directly: <code>shear</code> keeps <code>|det J(P)|</code> pinned at \(1.00\) no matter where you drag P — area exactly preserved, shape visibly not. <code>polar</code> makes the parallelogram shrink toward a sliver as P approaches \(u=0\), the visual signature of the map crushing a whole neighborhood toward a single point. And <code>saddle</code>, dragged near the origin, briefly flattens the parallelogram into something close to a line — a near-singular point, in the sense of Panel III.</p>
 
 </section>
 
 <!-- ============ PANEL 6 ============ -->
 <section class="panel" id="t6">
-<h1>Extensions</h1>
-<div class="subtitle">where the Jacobian goes to work — numerics, implicit equations, infinite dimensions</div>
+<h1>Consequences</h1>
+<div class="subtitle">what falls out once "locally linear" is taken seriously</div>
 
-<h2>Newton's method in several variables</h2>
-<p>The single-variable Newton iteration \(x_{n+1} = x_n - f(x_n)/f'(x_n)\) solves \(f(x)=0\) by repeatedly replacing \(f\) with its best linear approximation and solving <em>that</em> exactly. The multivariable version does the identical thing, with the Jacobian standing in for \(f'\):</p>
-<div class="katex-display" data-katex="x_{n+1} = x_n - J_F(x_n)^{-1} F(x_n)"></div>
+<h2>Undoing a transformation: the Inverse Function Theorem</h2>
+<div class="callout definition">
+<span class="callout-label">Theorem — Inverse Function Theorem</span>
+<p>If \(F\) is \(C^1\) near \(a\) and \(J_F(a)\) is invertible, then \(F\) is locally invertible near \(a\): there are neighborhoods \(U\ni a\), \(V\ni F(a)\) such that \(F:U\to V\) is a bijection with \(C^1\) inverse, and \(J_{F^{-1}}(F(a)) = J_F(a)^{-1}\).</p>
+</div>
+<p>The mechanism is worth sketching, not just citing. Rescale so that \(J_F(a)=I\) (multiply throughout by \(J_F(a)^{-1}\), legal precisely because it's invertible). Then \(F(x) = x + R(x)\) where \(R\) has \(J_R(a)=0\), so — by continuity of the Jacobian — \(R\) is a contraction (its Lipschitz constant is arbitrarily small) on a small enough ball around \(a\). Solving \(F(x)=y\) for \(x\) is the same as solving the fixed-point equation \(x = y-R(x)\), and the Contraction Mapping (Banach fixed-point) Theorem solves that uniquely for every \(y\) close enough to \(F(a)\) — producing the local inverse directly. Differentiating the identity \(F(F^{-1}(y))=y\) with Panel IV's chain rule then forces \(J_{F^{-1}}(y) = \big[J_F(F^{-1}(y))\big]^{-1}\).</p>
+
 <div class="callout insight">
 <span class="callout-label">Insight</span>
-<p>At each step, solve the <em>linear</em> system \(J_F(x_n)\,\Delta = -F(x_n)\) for \(\Delta\) and set \(x_{n+1}=x_n+\Delta\) — never actually inverting the matrix in practice. This is the workhorse behind root-finding for nonlinear systems, and it's also, underneath the hood, what training a neural network with second-order optimization methods leans on: the Jacobian (of the residuals, or the gradient, depending on context) turns an intractable nonlinear problem into a sequence of tractable linear ones.</p>
+<p>This is why Panel III flagged \(\det J_F(a)=0\) as the boundary of invertibility: the theorem's hypothesis is exactly "the local linear stand-in is invertible," and a singular Jacobian is precisely a linear map with no inverse. The theorem's content is that this purely linear-algebra condition, checked at a single point, is enough to guarantee the true nonlinear map is genuinely, locally undoable — not just its flat approximation.</p>
 </div>
 
-<h2>The Implicit Function Theorem</h2>
-<p>Given an equation \(G(x,y)=0\) with \(G:\mathbb{R}^n\times\mathbb{R}^m\to\mathbb{R}^m\), when can you solve for \(y\) as a function of \(x\) near a solution point \((a,b)\)? The answer is again a Jacobian invertibility condition — specifically, invertibility of the <em>partial</em> Jacobian with respect to the \(y\)-block:</p>
-<div class="katex-display" data-katex="\text{if } D_yG(a,b) \text{ is invertible, then } y=\phi(x) \text{ exists locally, and } D\phi(a) = -\big[D_yG(a,b)\big]^{-1}D_xG(a,b)"></div>
-<p>That formula for \(D\phi\) is worth staring at: it's obtained by implicitly differentiating \(G(x,\phi(x))=0\) with the chain rule from Panel III (\(D_xG + D_yG\cdot D\phi = 0\)) and solving the resulting linear equation for \(D\phi\) — the Implicit Function Theorem is a direct corollary of "the chain rule is matrix multiplication," not an independent piece of machinery.</p>
+<h2>Paying for a change of coordinates: the integral transformation formula</h2>
+<p>The area-scaling fact from Panel III has an immediate payoff for integration: if \(g\) is integrated over the image \(F(D)\) of a region \(D\), you can integrate over \(D\) instead, provided every infinitesimal patch of area is corrected by the local scaling factor:</p>
+<div class="katex-display" data-katex="\int_{F(D)} g\, dV = \int_D (g\circ F)\,\left|\det J_F\right|\,dV"></div>
+<div class="callout note">
+<span class="callout-label">Note — companion essay</span>
+<p>The full derivation and payoff of this formula — including the polar-coordinates case, worked linear substitutions, and the Gaussian-integral computation it unlocks — lives in the double integral essay's "Warping the Grid" panel, which in turn cites this essay for the Inverse Function Theorem above. The two pieces were written to lean on each other.</p>
+</div>
 
-<h2>The Fréchet derivative: Jacobians in infinite dimensions</h2>
-<p>Panel I ended by noting that the derivative, at any given point, lives in a vector space of linear maps. Nothing in that sentence required the domain or codomain to be finite-dimensional. Let \(X,Y\) be Banach spaces (complete normed vector spaces — think function spaces, like \(L^2\) or \(C[0,1]\)) and \(F:X\to Y\). Then \(F\) is Fréchet differentiable at \(a\in X\) if there is a <strong>bounded linear operator</strong> \(DF(a):X\to Y\) with</p>
-<div class="katex-display" data-katex="\|F(a+h) - F(a) - DF(a)h\|_Y = o(\|h\|_X) \quad \text{as } h\to 0"></div>
+<h2>Stability of a flow: eigenvalues of the Jacobian</h2>
+<p>Panel IV's fourth thread — a map \(\Phi_t\) that advances a dynamical system forward in time — has its stability governed entirely by the Jacobian at an equilibrium. If \(\dot x=V(x)\) and \(x^*\) is an equilibrium (\(V(x^*)=0\)), then for \(h=x-x^*\) small, \(\dot h \approx J_V(x^*)\,h\) — a linear system, whose solutions are fully determined by the eigenvalues of \(J_V(x^*)\).</p>
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>If every eigenvalue of \(J_V(x^*)\) has negative real part, nearby trajectories are pulled in and \(x^*\) is locally stable; if any eigenvalue has positive real part, nearby trajectories are pushed away and \(x^*\) is unstable. This is the single most consequential use of the Jacobian outside of pure calculus — the entire local qualitative behavior of a nonlinear system, near an equilibrium, read off from one linear-algebra computation.</p>
+</div>
+
+<h2>Beyond finite dimensions: the Fréchet derivative</h2>
+<p>Nothing about "the derivative is whatever linear object best approximates \(F\) at a point" requires \(\mathbb{R}^n\) and \(\mathbb{R}^m\) specifically. Let \(X,Y\) be Banach spaces and \(F:X\to Y\); then \(F\) is Fréchet differentiable at \(a\) if there's a bounded linear operator \(DF(a):X\to Y\) with \(\|F(a+h)-F(a)-DF(a)h\|_Y=o(\|h\|_X)\) — symbol for symbol, Panel II's definition, with a Banach-space norm in place of the Euclidean one. When \(X=\mathbb{R}^n,\ Y=\mathbb{R}^m\), every bounded linear operator <em>is</em> a matrix, and \(DF(a)\) reduces exactly to the Jacobian. The Jacobian is the shadow the Fréchet derivative casts onto finite-dimensional coordinates — the same idea, one level more general, used wherever the domain is a space of functions rather than a space of vectors.</p>
+
+<h2>One line to carry away</h2>
+<p>Every idea in this essay is one sentence, restated at increasing levels of generality: <em>a transformation of space, however wildly it curves globally, looks exactly like a matrix once you zoom in far enough — that matrix is the Jacobian, its determinant is the local price of area or volume, its invertibility decides whether the transformation can be undone, and its chain rule is just what happens when you stack several such transformations end to end.</em></p>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>Worked Problems</h1>
+<div class="subtitle">five fully worked problems that run the whole machinery from setup to number</div>
+
+<p>Every idea so far has been justified in general. This panel runs the same machinery on five concrete problems, each chosen to put a different piece of the essay to work: a genuine three-dimensional coordinate transformation, the surface-area payoff that Panel IV's "parametrizing a surface" thread promised, a numerical check of the \(o(\|h\|)\) claim from Panel IV, Newton's method solving an honest nonlinear system, and a real ecological model whose stability is read straight off its Jacobian's eigenvalues.</p>
+
+<h2>Spherical coordinates: a transformation of space in three dimensions</h2>
+<p>Panel IV named "choosing better coordinates" as one of the standard reasons a transformation gets written down in the first place. Spherical coordinates are the cleanest three-dimensional instance, and computing their Jacobian in full is the natural way to watch Panel III's "the determinant is the local volume-scaling factor" claim survive the jump from area to volume.</p>
+<p>Let \(T(\rho,\varphi,\theta) = (\rho\sin\varphi\cos\theta,\ \rho\sin\varphi\sin\theta,\ \rho\cos\varphi)\), sending radius \(\rho\), colatitude \(\varphi\), and longitude \(\theta\) to Cartesian \((x,y,z)\). Differentiating each of the three components with respect to each of the three inputs assembles the full \(3\times3\) Jacobian:</p>
+<div class="katex-display" data-katex="J_T(\rho,\varphi,\theta) = \begin{bmatrix}\sin\varphi\cos\theta &amp; \rho\cos\varphi\cos\theta &amp; -\rho\sin\varphi\sin\theta \\ \sin\varphi\sin\theta &amp; \rho\cos\varphi\sin\theta &amp; \rho\sin\varphi\cos\theta \\ \cos\varphi &amp; -\rho\sin\varphi &amp; 0\end{bmatrix}"></div>
+<p>Expanding the determinant along the bottom row — where the zero entry removes one of the three cofactors outright — collapses everything to one term once the identity \(\sin^2+\cos^2=1\) fires twice:</p>
+<div class="katex-display" data-katex="\det J_T = \rho^2\sin\varphi\cos^2\varphi + \rho^2\sin^3\varphi = \rho^2\sin\varphi\big(\cos^2\varphi+\sin^2\varphi\big) = \rho^2\sin\varphi"></div>
+
+<h3>Why \(\rho^2\sin\varphi\) is exactly right, without expanding a single determinant</h3>
+<p>The algebra above is honest but opaque — it's worth re-deriving the same factor by pure geometry, the same move Panel III made for polar coordinates. A small box \([\rho,\rho+d\rho]\times[\varphi,\varphi+d\varphi]\times[\theta,\theta+d\theta]\) has three edges that are, to excellent local approximation, mutually perpendicular once mapped into \((x,y,z)\)-space:</p>
+<div class="ascii">   radial edge:      length dρ                (straight out from the origin)
+   colatitude edge:  length ρ dφ               (arc of a great circle, radius ρ)
+   longitude edge:   length ρ sinφ dθ          (arc of a small circle of latitude,
+                                                 radius ρ sinφ — the distance from
+                                                 the axis at colatitude φ)
+
+           ╭──────────╮
+          ╱ ρsinφ·dθ  ╱│
+         ╱──────────╱  │ ρ·dφ
+         │          │  ╱
+         │          │ ╱  dρ
+         ╰──────────╯
+
+     volume ≈ dρ · (ρ dφ) · (ρ sinφ dθ) = ρ² sinφ dρ dφ dθ</div>
+<p>Three mutually perpendicular edges multiply — base times height times depth — exactly like the plain rectangular box the determinant argument in Panel III started from. The only difference is that two of the three edge lengths, \(\rho\,d\varphi\) and \(\rho\sin\varphi\,d\theta\), depend on where in the box you are, because a small angular step sweeps out more physical distance far from the axis than close to it. This is the same phenomenon as the lone \(r\) in polar coordinates, now showing up twice: once for "distance from the origin," \(\rho\), and again for "distance from the polar axis," \(\sin\varphi\).</p>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Near the poles (\(\varphi\to0\) or \(\varphi\to\pi\)), \(\sin\varphi\to0\) and the volume element collapses toward zero — geometrically, circles of longitude shrink to a point at the poles, so sweeping through a full range of \(\theta\) there sweeps out almost no volume at all. This is exactly Panel III's "\(\det J=0\) is a dimensional collapse" idea, now visible as a plain fact about the globe: every line of longitude really does meet at the poles.</p>
+</div>
+
+<h2>A parametrized surface, cashed in: the area of a sphere</h2>
+<p>Panel IV promised that a parametrized surface's Jacobian columns are tangent vectors, and that the area-scaling idea from Panel III turns directly into a surface-area formula. Here is that payoff, reusing the same sphere as above but now holding \(\rho=R\) fixed and letting only \((\varphi,\theta)\) vary — a map from a flat rectangle of parameters straight onto a curved surface.</p>
+<p>Let \(\Phi(\varphi,\theta) = (R\sin\varphi\cos\theta,\ R\sin\varphi\sin\theta,\ R\cos\varphi)\). Its two columns — the two tangent vectors spanning the image of a small coordinate rectangle — are</p>
+<div class="katex-display" data-katex="\Phi_\varphi = (R\cos\varphi\cos\theta,\ R\cos\varphi\sin\theta,\ -R\sin\varphi), \qquad \Phi_\theta = (-R\sin\varphi\sin\theta,\ R\sin\varphi\cos\theta,\ 0)"></div>
+<p>Since the target is three-dimensional and the source is only two, there's no square Jacobian here and no determinant — but Panel III's parallelogram-area formula survives in exactly the form it needs to: the area of the parallelogram spanned by two vectors in \(\mathbb{R}^3\) is the magnitude of their cross product. Computing \(\Phi_\varphi\times\Phi_\theta\) and simplifying with \(\sin^2+\cos^2=1\) gives</p>
+<div class="katex-display" data-katex="\|\Phi_\varphi\times\Phi_\theta\| = R^2\sin\varphi"></div>
+<p>the exact same factor as the volume element derived above, evaluated at \(\rho=R\) — no coincidence, since sweeping the same \((\varphi,\theta)\) rectangle at one fixed radius is precisely what the volume computation was doing at every radius along the way. Integrating this local area-scaling factor over the whole parameter rectangle recovers the sphere's total surface area:</p>
+<div class="katex-display" data-katex="\text{Area} = \int_0^\pi\!\!\int_0^{2\pi} R^2\sin\varphi\;d\theta\,d\varphi = R^2\cdot2\pi\cdot\big[-\cos\varphi\big]_0^\pi = 4\pi R^2"></div>
+<p>— the familiar formula, arrived at without a single geometric fact about spheres beyond the parametrization itself. Everything else was Panel III's area-scaling idea, applied completely literally.</p>
+
+<h2>Checking the \(o(\|h\|)\) claim with real numbers</h2>
+<p>Panel IV proved that the linear approximation's error shrinks strictly faster than \(\|h\|\) itself. That's a claim about a limit, but it has a concrete, checkable fingerprint: halve \(h\), and if the true error is \(O(\|h\|^2)\) — which it is, for any twice-differentiable \(F\), one Taylor order past the claim actually proved — the error should drop by a factor of about four, not merely two.</p>
+<p>Let \(F(x,y) = (e^x\cos y,\ e^x\sin y)\) — the real and imaginary parts of \(e^{x+iy}\) — and linearize at \(a=(0,\tfrac{\pi}{2})\), where \(F(a)=(0,1)\) and</p>
+<div class="katex-display" data-katex="J_F(a) = \begin{bmatrix}\cos\frac{\pi}{2} &amp; -\sin\frac{\pi}{2}\\ \sin\frac{\pi}{2} &amp; \cos\frac{\pi}{2}\end{bmatrix} = \begin{bmatrix}0 &amp; -1\\ 1 &amp; 0\end{bmatrix}"></div>
+<p>a clean \(90°\) rotation with no scaling — a convenient point to work with by hand. Take \(h=(0.1,0.1)\), compute \(F(a+h)\) directly, and compare it against the linear prediction \(F(a)+J_F(a)h\); then repeat with \(h\) cut in half:</p>
+<div class="ascii">   h = (0.1, 0.1)                              h = (0.05, 0.05)
+
+   actual F(a+h)   = (-0.110355, 1.099652)      actual F(a+h)   = (-0.052549, 1.049958)
+   predicted       = (-0.100000, 1.100000)      predicted       = (-0.050000, 1.050000)
+   error (norm)    =  0.010360                  error (norm)    =  0.002549
+   ‖h‖             =  0.141421                  ‖h‖             =  0.070711
+   error / ‖h‖     =  0.0733                    error / ‖h‖     =  0.0360</div>
+<p>Halving \(h\) cut the raw error from \(0.010360\) to \(0.002549\) — a factor of about \(4.06\), not \(2\) — while the ratio \(\text{error}/\|h\|\) fell by roughly half, exactly as it must if the error itself is quadratic in \(\|h\|\). This is Panel IV's Fundamental-Theorem-of-Calculus proof, made numeric: the gap between the curved \(F\) and its flat stand-in isn't just shrinking, it's shrinking at a specific, predictable rate, and that rate is visible in two lines of arithmetic without ever invoking a limit.</p>
+
+<h2>Newton's method: solving a nonlinear system by repeatedly trusting the linear stand-in</h2>
+<p>Panel IV's Newton's-method thread deserves to be seen converging, not just described. Solve the system \(x^2+y^2=4\) (a circle) and \(xy=1\) (a hyperbola) simultaneously — find their intersection in the first quadrant — by writing it as \(F(x,y)=(x^2+y^2-4,\ xy-1)=(0,0)\) and iterating</p>
+<div class="katex-display" data-katex="x_{n+1} = x_n - J_F(x_n)^{-1}F(x_n), \qquad J_F(x,y) = \begin{bmatrix}2x &amp; 2y\\ y &amp; x\end{bmatrix}"></div>
+<p>Starting from the rough guess \(x_0=(2,\,0.5)\):</p>
+<div class="ascii">   n     xₙ                    F(xₙ)                     ‖F(xₙ)‖
+
+   0     (2.000000, 0.500000)   (0.250000, 0.000000)      0.250000
+   1     (1.933333, 0.516667)   (0.004722, -0.001111)     0.004851
+   2     (1.931853, 0.517637)   (0.000002, -0.000001)     0.000002
+
+   true root: x* = √(2+√3) = 1.931852...,  y* = 1/x* = 0.517638...</div>
+<p>Two steps take the residual from \(0.25\) to essentially machine zero — the number of correct digits roughly doubles each iteration, the signature of Newton's method's quadratic convergence, now playing out in two dimensions exactly the way it does in one. Every step solves the linear system \(J_F(x_n)\Delta=-F(x_n)\) for \(\Delta\) rather than actually inverting a matrix, precisely the practical advice from Panel IV.</p>
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>The method is only well-posed while \(J_F(x_n)\) stays invertible — at the root, \(\det J_F=2x^2-2y^2\), nonzero here since \(x\ne y\) at the solution. That's the Inverse Function Theorem from Panel VI, doing quiet load-bearing work: it's exactly what guarantees each linear system in the iteration has a unique solution to compute in the first place.</p>
+</div>
+
+<h2>Predator and prey: reading real dynamics off eigenvalues</h2>
+<p>Panel VI turned the Jacobian's eigenvalues into a stability test; here is an equilibrium worth actually computing. The Lotka–Volterra equations model a predator population \(y\) and prey population \(x\):</p>
+<div class="katex-display" data-katex="\dot x = x(a-by), \qquad \dot y = y(cx-d), \qquad a,b,c,d&gt;0"></div>
+<p>Besides the trivial equilibrium at the origin, there's a genuinely interesting one where both populations coexist: setting both right-hand sides to zero with \(x,y\ne0\) gives \((x^*,y^*)=(d/c,\ a/b)\). The Jacobian of the vector field is</p>
+<div class="katex-display" data-katex="J(x,y) = \begin{bmatrix}a-by &amp; -bx\\ cy &amp; cx-d\end{bmatrix}"></div>
+<p>and evaluating at \((x^*,y^*)\) makes both diagonal entries vanish — \(a-b(a/b)=0\) and \(c(d/c)-d=0\) — leaving</p>
+<div class="katex-display" data-katex="J(x^*,y^*) = \begin{bmatrix}0 &amp; -bd/c\\ ca/b &amp; 0\end{bmatrix}"></div>
+<p>with trace \(0\) and determinant \((bd/c)(ca/b)=ad\). The characteristic equation \(\lambda^2-(\text{trace})\lambda+\det=0\) reduces to \(\lambda^2+ad=0\), so</p>
+<div class="katex-display" data-katex="\lambda = \pm i\sqrt{ad}"></div>
+<p>purely imaginary eigenvalues, since \(a,d&gt;0\). By Panel VI's criterion, this is precisely the borderline case that criterion doesn't fully settle: no eigenvalue has positive real part (so nothing is pushed away), but none has negative real part either (so nothing is pulled in). The linearization predicts a <strong>center</strong> — nearby trajectories neither spiral in nor spiral out, just orbit \((x^*,y^*)\) with angular frequency \(\sqrt{ad}\) — exactly the textbook picture of predator and prey populations cycling indefinitely rather than settling down.</p>
+<div class="callout warning">
+<span class="callout-label">Warning — the linearization alone doesn't prove this</span>
+<p>Purely imaginary eigenvalues are exactly the case the Hartman–Grobman theorem excludes: it requires a <em>hyperbolic</em> equilibrium (no eigenvalue with zero real part) to guarantee the nonlinear system truly behaves like its linearization nearby. Here the linear picture (perfect closed elliptical orbits) and the true nonlinear picture (closed but non-elliptical orbits, confirmed instead by a separate conserved quantity, \(H(x,y)=cx-d\ln x+by-a\ln y\), that every trajectory keeps constant) happen to agree on the qualitative conclusion — a center, not a spiral — but that agreement needed an extra argument, not just the eigenvalues. It's an honest example of the stability test from Panel VI reaching the edge of what it can settle on its own.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Look back across all five problems and the same object keeps reappearing in a different costume: a matrix of partial derivatives, evaluated at a point, standing in for something genuinely nonlinear — a sphere's curvature, a rotation-and-scale, a nonlinear system's root, a population cycle's frequency. That recurrence is not a coincidence to marvel at; it is the entire thesis of this essay, restated one last time in arithmetic rather than prose.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="t8">
+<h1>Second-Order: The Hessian</h1>
+<div class="subtitle">what happens when the Jacobian is itself differentiated — curvature, and classifying critical points</div>
+
+<h2>The gradient is already a Jacobian in disguise</h2>
+<p>Recall Panel II's Jacobian matrix has one row per output coordinate. When there's only one output — a scalar-valued function \(f:\mathbb{R}^n\to\mathbb{R}\) — the Jacobian collapses to a single row, and that row already has a name:</p>
+<div class="katex-display" data-katex="J_f(a) = \begin{bmatrix}\dfrac{\partial f}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f}{\partial x_n}\end{bmatrix} = \nabla f(a)^{\mathsf T}"></div>
+<p>The gradient, usually introduced separately as "the vector of partials, pointing uphill," is nothing but the \(m=1\) special case of everything already built in this essay. As a transformation of space, \(f\) doesn't warp \(\mathbb{R}^n\) into another copy of \(\mathbb{R}^n\) — it flattens it onto the real line, collapsing every level set \(f=c\) down to a single output value. Panel IX returns to exactly what those flattened level sets look like; this panel asks a different question: what happens if you differentiate \(\nabla f\) itself?</p>
+
+<h2>The Hessian: the Jacobian of the gradient</h2>
+<p>\(\nabla f\) is itself a map \(\mathbb{R}^n\to\mathbb{R}^n\) — at every point it outputs a vector — so it has its own Jacobian, an \(n\times n\) matrix of second partial derivatives called the <strong>Hessian</strong>:</p>
+<div class="katex-display" data-katex="H_f(a) = J_{\nabla f}(a) = \begin{bmatrix}\dfrac{\partial^2f}{\partial x_1^2} &amp; \cdots &amp; \dfrac{\partial^2f}{\partial x_1\partial x_n}\\ \vdots &amp; \ddots &amp; \vdots\\ \dfrac{\partial^2f}{\partial x_n\partial x_1} &amp; \cdots &amp; \dfrac{\partial^2f}{\partial x_n^2}\end{bmatrix}"></div>
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>Nothing new had to be invented to define this — it's Panel II's machinery, applied one derivative further up, to a map that happens to be built out of \(f\)'s own first partials. When the mixed partials are continuous (Clairaut's theorem), \(\partial^2f/\partial x_i\partial x_j=\partial^2f/\partial x_j\partial x_i\), so \(H_f(a)\) is always symmetric — a fact that matters in a moment.</p>
+</div>
+
+<h2>Quadratic approximation, and a transformation worth decomposing in its own right</h2>
+<p>Panel II approximated \(F\) near \(a\) by an affine function; carrying the same Taylor expansion one term further approximates a scalar \(f\) by a <em>quadratic</em>:</p>
+<div class="katex-display" data-katex="f(a+h) \approx f(a) + \nabla f(a)\cdot h + \tfrac12\, h^{\mathsf T} H_f(a)\, h"></div>
+<p>Near a <strong>critical point</strong> — a point where \(\nabla f(a)=0\), so the linear term vanishes entirely — this quadratic term is the whole story to leading order, and \(h^{\mathsf T}H_f(a)h\) is exactly the kind of object Panel III spent an entire panel decomposing: a quadratic form, diagonalized by the eigenvectors of the symmetric matrix \(H_f(a)\), with the eigenvalues reporting the curvature along each of those perpendicular directions.</p>
+
+<h3>Classifying a critical point from the sign of the curvature</h3>
+<p>Because \(H_f(a)\) is symmetric, its eigenvalues are real and its eigenvectors are perpendicular — Panel III's general SVD collapses to a plain eigendecomposition, \(H_f(a)=Q\Lambda Q^{\mathsf T}\) with \(Q\) orthogonal. Substituting into the quadratic form and writing \(u=Q^{\mathsf T}h\) turns it into a sum of independent squares, \(h^{\mathsf T}H_fh=\sum_i\lambda_iu_i^2\) — so the sign of the quadratic term in every direction is controlled entirely by the eigenvalues \(\lambda_i\):</p>
+<div class="ascii">   all λᵢ &gt; 0                 all λᵢ &lt; 0                 mixed signs
+   bowl curves up              bowl curves down            saddle: up in some
+   in every direction          in every direction           directions, down
+   → LOCAL MINIMUM             → LOCAL MAXIMUM               in others
+                                                             → SADDLE POINT
+
+        ╲   ╱                     ╲___╱                       ╲    ╱
+         ╲ ╱                           ‾‾‾                     ╲  ╱
+          ●                                                 ‾‾‾●‾‾‾
+         ╱ ╲                      ___                            ╱  ╲
+        ╱   ╲                    ╱   ╲                          ╱    ╲</div>
+<p>This is Panel VI's stability test, verbatim, with one difference in what's being asked: there, the eigenvalues of a Jacobian decided whether nearby <em>trajectories</em> converge or diverge in time; here, the eigenvalues of a Hessian decide whether nearby <em>function values</em> rise or fall in space. Same linear-algebra machine, two different questions.</p>
+
+<h3>Worked example: telling a saddle from a minimum</h3>
+<p>Let \(f(x,y)=x^2-y^2\). Its gradient, \(\nabla f=(2x,-2y)\), vanishes only at the origin, and the Hessian there is constant:</p>
+<div class="katex-display" data-katex="H_f(0,0) = \begin{bmatrix}2 &amp; 0\\ 0 &amp; -2\end{bmatrix}"></div>
+<p>with eigenvalues \(2\) and \(-2\) — one positive, one negative — so the origin is a saddle point, exactly matching the shape of \(z=x^2-y^2\) (curving up along the \(x\)-axis, down along the \(y\)-axis). Contrast \(g(x,y)=x^2+y^2\), whose Hessian is \(\begin{bmatrix}2&amp;0\\0&amp;2\end{bmatrix}\) everywhere — both eigenvalues positive, so its one critical point, at the origin, is a genuine local minimum: a plain bowl, with no saddle direction anywhere.</p>
+
+<h2>Newton's method for optimization: using the Hessian instead of the Jacobian</h2>
+<p>Panel VII solved \(F(x)=0\) by repeatedly trusting the linear approximation. Finding a critical point of \(f\) means solving \(\nabla f(x)=0\) instead — a root-finding problem for the vector field \(\nabla f\), whose own Jacobian is exactly the Hessian. Substituting into Panel VII's iteration verbatim:</p>
+<div class="katex-display" data-katex="x_{n+1} = x_n - H_f(x_n)^{-1}\nabla f(x_n)"></div>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is Newton's method for optimization, and it isn't a different algorithm from Panel VII's root-finder — it's the exact same algorithm, applied to \(\nabla f\) instead of to a generic \(F\). Every idea carries over unchanged: quadratic convergence near the answer, and a well-posedness guarantee — via the Inverse Function Theorem from Panel VI — precisely when \(H_f(x_n)\) stays invertible, which is to say, away from points where the quadratic approximation itself degenerates.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 9 ============ -->
+<section class="panel" id="t9">
+<h1>Rank, Implicit Surfaces, and Constraints</h1>
+<div class="subtitle">what a Jacobian's rank says about the shape of what it produces</div>
+
+<h2>Rank: how many dimensions actually survive the map</h2>
+<p>Every linear map \(L:\mathbb{R}^n\to\mathbb{R}^m\) has a <strong>rank</strong> — the dimension of its image, \(L(\mathbb{R}^n)\subseteq\mathbb{R}^m\) — and Panel III's "\(\det=0\) means a direction gets crushed" observation is really a statement about rank in disguise: a square matrix with \(\det=0\) has rank strictly less than \(n\), meaning its image is a lower-dimensional subspace rather than all of \(\mathbb{R}^n\). Rank is the more fundamental of the two ideas; the determinant is just the special \(n=m\) test for whether the rank is as large as it possibly could be — "full rank."</p>
+<p>For \(J_F(a)\), rank keeps an equally concrete meaning even when \(F\) isn't square: it's the number of genuinely independent directions the map actually moves things in, right at \(a\), out of the \(n\) directions available in the input. A rank-deficient Jacobian means some combination of input directions gets locally flattened to nothing — precisely Panel III's "critical point" idea, restated for maps that aren't square at all.</p>
+
+<h2>Level sets: the shape a scalar-valued map leaves behind</h2>
+<p>Return to a scalar field \(f:\mathbb{R}^n\to\mathbb{R}\) (rank at most \(1\), since the output space is one-dimensional). Its <strong>level set</strong> \(\{x:f(x)=c\}\) is whatever gets flattened onto the single value \(c\) — a curve in \(\mathbb{R}^2\), a surface in \(\mathbb{R}^3\). The gradient's geometric meaning falls directly out of the local-linearity picture from Panel I:</p>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Moving along a level set, by definition, doesn't change \(f\)'s value — so to first order, \(\nabla f(a)\cdot h\approx0\) for any displacement \(h\) tangent to the level set through \(a\). That's exactly the statement that \(\nabla f(a)\) is <em>perpendicular</em> to the level set at \(a\). The gradient doesn't just point uphill in some vague sense — it points in the one direction guaranteed <em>not</em> tangent to the flattened set the map leaves behind, which is precisely why it's the steepest-ascent direction: every tangent direction is, to first order, flat.</p>
+</div>
+
+<h2>The Implicit Function Theorem: when a level set is honestly a graph</h2>
+<p>A level set can be a well-behaved curve, or it can cross itself, pinch to a point, or do worse — and the question of which is, once again, a Jacobian-rank question. Consider \(G(x,y)=0\) for \(G:\mathbb{R}^n\times\mathbb{R}^m\to\mathbb{R}^m\), and ask whether the last \(m\) coordinates can be solved for in terms of the first \(n\), at least near a known solution \((a,b)\).</p>
 <div class="callout definition">
-<span class="callout-label">Definition</span>
-<p>This is, symbol for symbol, the exact same definition as Panel II's \(F(a+h)=F(a)+DF(a)h+o(\|h\|)\) — only now \(\|\cdot\|\) denotes a Banach-space norm rather than the Euclidean one, and \(DF(a)\) is an operator rather than a matrix. When \(X=\mathbb{R}^n\), \(Y=\mathbb{R}^m\), every bounded linear operator <em>is</em> a matrix (boundedness is automatic in finite dimensions), and \(DF(a)\) reduces exactly to the Jacobian. The Jacobian is the shadow the Fréchet derivative casts onto finite-dimensional coordinates.</p>
+<span class="callout-label">Theorem — Implicit Function Theorem</span>
+<p>If \(G(a,b)=0\) and the partial Jacobian with respect to the \(y\)-block, \(D_yG(a,b)\), is invertible, then near \((a,b)\) the equation \(G(x,y)=0\) determines \(y\) as a genuine, \(C^1\) function \(y=\phi(x)\), with</p>
+<div class="katex-display" data-katex="D\phi(a) = -\big[D_yG(a,b)\big]^{-1}D_xG(a,b)"></div>
 </div>
-<p>This is where the machinery becomes genuinely necessary rather than a convenient bookkeeping device: functionals on function spaces — energy functionals in the calculus of variations, loss functionals over function-valued hypothesis spaces, solution operators of differential equations — are functions between infinite-dimensional spaces, where there is no matrix of partial derivatives to fall back on, only the operator \(DF(a)\) itself, characterized abstractly by the same approximation property that opened this essay.</p>
+<p>This is not independent machinery — it's Panel VI's Inverse Function Theorem, applied to the augmented map \(\widetilde G(x,y)=(x,\,G(x,y))\), whose Jacobian is block-triangular with \(D_yG\) sitting in exactly the corner that has to be invertible. And the formula for \(D\phi\) is nothing but implicit differentiation, dressed in Jacobian notation: differentiate \(G(x,\phi(x))=0\) with Panel IV's chain rule to get \(D_xG+D_yG\cdot D\phi=0\), then solve the resulting linear equation for \(D\phi\).</p>
+
+<h3>Worked example: the rank test in action</h3>
+<p>Let \(G(x,y)=x^2+y^2-1\) — the unit circle. \(D_yG=\partial G/\partial y=2y\), invertible (nonzero) everywhere except \(y=0\), i.e. everywhere except the two points \((\pm1,0)\). Away from those two points, the theorem guarantees the circle really is locally a graph \(y=\phi(x)\) — which matches the picture exactly: near \((\pm1,0)\) the circle's tangent line is vertical, so no function \(y=\phi(x)\) can trace it there (it would need two \(y\)-values for one \(x\)), while everywhere else it's a perfectly good graph, either \(y=\sqrt{1-x^2}\) or \(y=-\sqrt{1-x^2}\). The theorem's hypothesis failing at exactly those two points isn't a technical gap — it correctly flags the only two points where the geometric claim actually breaks down.</p>
+
+<h2>Lagrange multipliers: optimizing subject to a constraint</h2>
+<p>The level-set picture pays off directly in constrained optimization: maximize \(f(x)\) subject to \(g(x)=0\). At an optimal point on the constraint surface, moving along the surface can't increase \(f\) — so, exactly as in the level-set discussion above, \(\nabla f\) can have no component tangent to the surface \(g=0\) at that point. But "no tangential component" means \(\nabla f\) must be perpendicular to the constraint surface — and \(\nabla g\) is already known to be perpendicular to it. Two vectors both perpendicular to the same surface (assuming it's a genuine, one-dimension-lower surface, which is exactly the Implicit Function Theorem's rank hypothesis on \(g\)) must be parallel:</p>
+<div class="katex-display" data-katex="\nabla f(x^*) = \lambda\,\nabla g(x^*) \quad\text{for some scalar } \lambda"></div>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The Lagrange multiplier condition is often presented as a trick — build the Lagrangian \(f-\lambda g\) and set its gradient to zero — but the derivation above shows it's a direct corollary of two ideas already fully established: gradients are perpendicular to level sets, and the Implicit Function Theorem is what guarantees the constraint set \(g=0\) is an honest surface with a well-defined perpendicular direction in the first place. Constrained optimization is level-set geometry, not a separate technique bolted onto ordinary calculus.</p>
+</div>
 
 <div class="callout warning">
 <span class="callout-label">Warning</span>
-<p>In infinite dimensions, the distinction from Panel II between "all directional derivatives exist" (called Gâteaux differentiability) and "the Fréchet derivative exists" becomes sharper and more consequential than the finite-dimensional pathology you saw earlier — Gâteaux differentiability doesn't even imply continuity in general, let alone the stronger Fréchet condition. The \(C^1\) sufficiency theorem from Panel II also has infinite-dimensional analogues, but they require more care about which topology "continuous" refers to.</p>
+<p>The Lagrange condition needs \(\nabla g(x^*)\ne0\) — precisely the Implicit Function Theorem's rank hypothesis, applied to \(g\). Where \(\nabla g=0\), the constraint surface itself can fail to be smooth (a cusp, a self-intersection), the "perpendicular direction" isn't well-defined, and the multiplier equation can miss a genuine constrained optimum entirely. Checking this hypothesis is not a formality; it's the same rank condition that has done load-bearing work everywhere else in this essay.</p>
 </div>
 
-<h2>One line to carry away</h2>
-<p>Every idea in this essay is a single sentence, restated at increasing levels of generality: <em>the derivative is whatever linear object best mimics a function near a point, and everything else — the chain rule, area scaling, stability, Newton's method, even the calculus of variations — is linear algebra applied to that one linear object.</em></p>
+</section>
+
+<!-- ============ PANEL 10 ============ -->
+<section class="panel" id="t10">
+<h1>Non-Square Jacobians</h1>
+<div class="subtitle">what to do when there's no exact solution to trust the linear stand-in for</div>
+
+<h2>When rows and columns disagree</h2>
+<p>Every worked problem in Panel VII assumed \(F:\mathbb{R}^n\to\mathbb{R}^n\) — as many equations as unknowns, so \(J_F\) is square and Newton's method solves a well-posed linear system at every step. Most real fitting and estimation problems aren't so tidy. Panel III's transformation-of-space picture never actually required a square matrix — it's only the determinant and its "local volume factor" reading that needed \(m=n\) to make sense. Whenever \(m\ne n\), \(J_F\) still transforms space perfectly well; it's just transforming between spaces of different dimension, and it has no determinant and no ordinary inverse to fall back on.</p>
+
+<h2>Overdetermined systems: more equations than unknowns</h2>
+<p>If \(m&gt;n\) — more conditions to satisfy than free parameters — \(F(x)=0\) generally has no exact solution at all: the image of \(F\) is an \(n\)-dimensional (or smaller) sliver sitting inside \(\mathbb{R}^m\), by Panel IX's rank argument, and the origin usually isn't on it. The sensible substitute is to minimize the residual instead of solving for it exactly:</p>
+<div class="katex-display" data-katex="\min_x \ \tfrac12\|F(x)\|^2"></div>
+<p>Linearize \(F\) at the current guess, \(F(x+\Delta)\approx F(x)+J_F(x)\Delta\), and minimize the resulting quadratic in \(\Delta\) exactly — ordinary calculus on a quadratic, setting its gradient with respect to \(\Delta\) to zero, gives the <strong>normal equations</strong>:</p>
+<div class="katex-display" data-katex="J_F(x)^{\mathsf T}J_F(x)\,\Delta = -J_F(x)^{\mathsf T}F(x)"></div>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the <strong>Gauss–Newton method</strong>, and it's Panel VII's Newton iteration with one substitution: where a square system solves \(J_F\Delta=-F(x)\) directly, an overdetermined one can't, so it solves the closest thing possible — the square, invertible system \(J_F^{\mathsf T}J_F\Delta=-J_F^{\mathsf T}F(x)\), built entirely out of the rectangular \(J_F\). The matrix \(J_F^{\mathsf T}J_F\) is the same construction as Panel III's \(L^{\mathsf T}L\), used there to extract singular values — here it converts a rectangular problem into a square one without discarding any information the rectangular Jacobian carried.</p>
+</div>
+
+<h3>Worked example: fitting a line by least squares</h3>
+<p>Fit \(y=mx+b\) through the three points \((0,1),(1,2),(2,2)\) — three conditions, two unknowns, so \(m=3,n=2\): overdetermined. Each point demands \(mx_i+b=y_i\), giving the linear system \(J\theta=y\) for \(\theta=(m,b)\):</p>
+<div class="katex-display" data-katex="J=\begin{bmatrix}0 &amp; 1\\ 1 &amp; 1\\ 2 &amp; 1\end{bmatrix}, \qquad y=\begin{bmatrix}1\\2\\2\end{bmatrix}"></div>
+<p>Since \(F(\theta)=J\theta-y\) is already linear, its own Jacobian is just \(J\) itself, and a single Gauss–Newton step lands exactly on the least-squares answer — no iteration needed, because there's no curvature left to linearize away:</p>
+<div class="katex-display" data-katex="J^{\mathsf T}J = \begin{bmatrix}5 &amp; 3\\ 3 &amp; 3\end{bmatrix}, \qquad J^{\mathsf T}y=\begin{bmatrix}6\\5\end{bmatrix} \implies \theta = (J^{\mathsf T}J)^{-1}J^{\mathsf T}y = \begin{bmatrix}0.5\\[2pt] 1.1\overline6\end{bmatrix}"></div>
+<p>so the best-fit line is \(y=0.5x+1.1\overline6\) — passing near, but through none of, the three points, exactly as expected of a genuine overdetermined fit.</p>
+
+<h2>Underdetermined systems: more unknowns than equations</h2>
+<p>The opposite imbalance, \(m&lt;n\), is the flip side: too few conditions to pin down a unique answer, so \(F(x)=0\) typically has an entire \((n-m)\)-dimensional family of solutions. A redundant robot arm — more joints than the \(2\) or \(3\) numbers needed to place its endpoint — faces exactly this problem at every instant: infinitely many joint configurations reach the same target point, the mirror image of Panel IV's two-link arm example, now with a third joint added and nothing left to pin it down.</p>
+<div class="callout note">
+<span class="callout-label">Note — the pseudoinverse</span>
+<p>Among all solutions to an underdetermined \(J\Delta=v\), the <strong>Moore–Penrose pseudoinverse</strong> \(J^+=J^{\mathsf T}(JJ^{\mathsf T})^{-1}\) picks out the one with smallest norm — the "laziest" adjustment consistent with the constraint. Both pseudoinverse formulas, \(J^+=(J^{\mathsf T}J)^{-1}J^{\mathsf T}\) for the overdetermined case above and \(J^+=J^{\mathsf T}(JJ^{\mathsf T})^{-1}\) for the underdetermined one, agree with the ordinary matrix inverse whenever \(J\) happens to be square and invertible — one object that specializes correctly in every case Panels VI through IX have already covered.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Zoom out across Panels VIII, IX, and X and a pattern emerges: every one of them takes the single square-and-invertible case this essay started with (Panel II) and asks what survives when that convenient assumption fails — a second derivative when the first vanishes, a rank below full, a shape that's rectangular rather than square. In every case, nothing about the transformation-of-space picture from Panel I broke; the machinery just had to be generalized to keep describing it honestly.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 11 ============ -->
+<section class="panel" id="t11">
+<h1>The Metric Tensor</h1>
+<div class="subtitle">what happens to lengths, not just areas, when coordinates change</div>
+
+<h2>Jacobian columns as a new, moving set of basis vectors</h2>
+<p>Every worked coordinate change in this essay — polar, spherical — has quietly been doing something worth naming outright: at each point, the Jacobian's columns, \(\partial T/\partial r\) and \(\partial T/\partial \theta\) for instance, form a genuine basis for the tangent directions at that point, exactly the way \(e_1,e_2\) form a basis for the plane. The difference is that these <strong>curvilinear basis vectors</strong> aren't fixed — they rotate, stretch, and shrink from point to point, precisely because \(J_T\) itself is a function of position rather than a single constant matrix. Panel I's "one linear map per point" idea is, from this angle, the statement that every point of a curved coordinate system carries its own private set of basis vectors.</p>
+
+<h2>How lengths distort: building the metric tensor</h2>
+<p>Panel III asked how a map distorts area; ask the more basic question of how it distorts <em>length</em>. A small displacement \(du\) in parameter space corresponds, by the local-linearity approximation from Panel II, to an actual physical displacement \(J\,du\) — so its actual physical squared length is</p>
+<div class="katex-display" data-katex="ds^2 = (J\,du)\cdot(J\,du) = du^{\mathsf T}J^{\mathsf T}J\,du = du^{\mathsf T}g\,du, \qquad g := J^{\mathsf T}J"></div>
+<p>The matrix \(g\), called the <strong>metric tensor</strong>, is the single object that converts a displacement measured in parameter coordinates into an actual physical length — and it is, entry for entry, the identical construction as Panel III's \(L^{\mathsf T}L\) (there, extracting singular values) and Panel X's normal-equation matrix \(J_F^{\mathsf T}J_F\) (there, converting a rectangular problem into a square one). Three different questions in this essay, one recurring matrix.</p>
+
+<h3>Worked example: the polar metric, derived rather than quoted</h3>
+<p>For \(T(r,\theta)=(r\cos\theta,r\sin\theta)\), Panel IV's Jacobian was \(J=\begin{bmatrix}\cos\theta &amp; -r\sin\theta\\ \sin\theta &amp; r\cos\theta\end{bmatrix}\). Computing \(g=J^{\mathsf T}J\) directly:</p>
+<div class="katex-display" data-katex="g = \begin{bmatrix}\cos\theta &amp; \sin\theta\\ -r\sin\theta &amp; r\cos\theta\end{bmatrix}\begin{bmatrix}\cos\theta &amp; -r\sin\theta\\ \sin\theta &amp; r\cos\theta\end{bmatrix} = \begin{bmatrix}1 &amp; 0\\ 0 &amp; r^2\end{bmatrix}"></div>
+<p>so \(ds^2 = dr^2 + r^2\,d\theta^2\) — the familiar polar arc-length formula, now derived directly from the Jacobian rather than pulled from memory. The metric being <em>diagonal</em> is itself informative: it means the curvilinear basis vectors \(\partial T/\partial r\) and \(\partial T/\partial\theta\) are perpendicular at every point (polar coordinates are an <strong>orthogonal</strong> coordinate system), the \(1\) in the corner says moving in \(r\) doesn't distort length at all, and the \(r^2\) says a unit step in \(\theta\) corresponds to physical arc length \(r\) — exactly the "distance from the axis" fact used to derive \(dA=r\,dr\,d\theta\) all the way back in the double integral essay.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The metric tensor and Panel III's area-scaling factor are not two separate facts to remember — one is derived from the other. For a square \(J\), \(\det g = \det(J^{\mathsf T}J) = \det(J^{\mathsf T})\det(J)=(\det J)^2\), so \(\sqrt{\det g}=|\det J|\) exactly. Every local-volume-scaling claim in this essay was already latent in the metric tensor; the determinant is just the one number you get by asking "how much does \(g\) inflate volume," while \(g\) itself answers the strictly more detailed question of how it inflates length, in every direction, individually.</p>
+</div>
+
+<h3>Closing the loop: the spherical metric</h3>
+<p>Panel VII computed \(\det J_T=\rho^2\sin\varphi\) for spherical coordinates by brute-force cofactor expansion, then re-derived the same factor geometrically from three edge lengths. The metric tensor makes that geometric argument exact rather than heuristic. Computing \(g=J_T^{\mathsf T}J_T\) for \(T(\rho,\varphi,\theta)=(\rho\sin\varphi\cos\theta,\rho\sin\varphi\sin\theta,\rho\cos\varphi)\) — a longer computation, but every off-diagonal entry cancels via \(\sin^2+\cos^2=1\), exactly as the determinant did — gives</p>
+<div class="katex-display" data-katex="g = \begin{bmatrix}1 &amp; 0 &amp; 0\\ 0 &amp; \rho^2 &amp; 0\\ 0 &amp; 0 &amp; \rho^2\sin^2\varphi\end{bmatrix} \implies ds^2 = d\rho^2 + \rho^2\,d\varphi^2 + \rho^2\sin^2\varphi\,d\theta^2"></div>
+<p>Diagonal again — spherical coordinates are orthogonal too — and the three diagonal entries are precisely the squares of the three edge lengths from Panel VII's spherical-wedge diagram: \(1\) for the radial edge \(d\rho\), \(\rho^2\) for the colatitude edge \(\rho\,d\varphi\), and \(\rho^2\sin^2\varphi\) for the longitude edge \(\rho\sin\varphi\,d\theta\). And \(\sqrt{\det g}=\sqrt{\rho^2\cdot\rho^2\sin^2\varphi}=\rho^2\sin\varphi\) reproduces Panel VII's volume-element factor exactly, this time as a two-line corollary of the metric rather than a determinant expansion or a geometric argument built from scratch. The metric tensor was quietly the object underneath both derivations the whole time.</p>
 
 </section>
 
@@ -534,7 +809,7 @@ code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; b
 
 <script>
 // ---------- Tabs ----------
-const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabs = ['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11'];
 const tabBtns = document.querySelectorAll('.tab-btn');
 const panels = document.querySelectorAll('.panel');
 let currentTab = 0;
@@ -561,12 +836,9 @@ themeBtn.addEventListener('click', ()=>{
 });
 
 // ---------- KaTeX render ----------
-// Render the display-math blocks (built from data-katex attributes)
 document.querySelectorAll('[data-katex]').forEach(el=>{
   katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
 });
-// Render all inline \( ... \) math scattered through the prose.
-// (Already-rendered data-katex divs contain no raw "\(" text anymore, so this is safe to run over the whole body.)
 renderMathInElement(document.body, {
   delimiters: [
     {left: '\\(', right: '\\)', display: false},
@@ -593,15 +865,23 @@ let dragging = false;
 const maps = {
   square: {
     F: (u,v)=>[u*u - v*v, 2*u*v],
-    J: (u,v)=>[[2*u,-2*v],[2*v,2*u]]
+    J: (u,v)=>[[2*u,-2*v],[2*v,2*u]],
+    maxAbs: 8
   },
   polar: {
     F: (u,v)=>[u*Math.cos(v), u*Math.sin(v)],
-    J: (u,v)=>[[Math.cos(v), -u*Math.sin(v)],[Math.sin(v), u*Math.cos(v)]]
+    J: (u,v)=>[[Math.cos(v), -u*Math.sin(v)],[Math.sin(v), u*Math.cos(v)]],
+    maxAbs: 2.5
   },
   saddle: {
     F: (u,v)=>[u+v, u*v],
-    J: (u,v)=>[[1,1],[v,u]]
+    J: (u,v)=>[[1,1],[v,u]],
+    maxAbs: 6
+  },
+  shear: {
+    F: (u,v)=>[u+0.6*v, v],
+    J: ()=>[[1,0.6],[0,1]],
+    maxAbs: 4
   }
 };
 
@@ -665,13 +945,7 @@ function drawImage(){
   ictx.fillRect(0,0,300,300);
 
   const map = maps[mapSelect.value];
-
-  // determine scale by sampling range roughly
-  let maxAbs = 6;
-  if(mapSelect.value==='square') maxAbs = 8;
-  if(mapSelect.value==='polar') maxAbs = 2.5;
-  if(mapSelect.value==='saddle') maxAbs = 6;
-  const scale = 300/(2*maxAbs);
+  const scale = 300/(2*map.maxAbs);
   const w2s = (x,y)=>[150+x*scale, 150-y*scale];
 
   // faint global grid image
@@ -740,7 +1014,7 @@ function updateReadouts(){
   const J = map.J(P.u,P.v);
   pointReadout.textContent = `(${P.u.toFixed(2)}, ${P.v.toFixed(2)})`;
   jacReadout.innerHTML = `[ ${J[0][0].toFixed(2).padStart(6)}  ${J[0][1].toFixed(2).padStart(6)} ]<br>[ ${J[1][0].toFixed(2).padStart(6)}  ${J[1][1].toFixed(2).padStart(6)} ]`;
-  const det = J[0][0]*J[1][1] - J[0][1]*J[1][0];
+  const det = Math.abs(J[0][0]*J[1][1] - J[0][1]*J[1][0]);
   detReadout.textContent = det.toFixed(3);
   sizeReadout.textContent = (sizeSlider.value/100).toFixed(2);
 }
