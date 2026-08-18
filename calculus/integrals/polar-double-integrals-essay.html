@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Double Integrals Over Polar Regions — Finding the Bounds and Why They Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre-wrap; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">POLAR DOUBLE INTEGRALS</div>
+  <button class="tab-btn active" data-tab="t1">I · Why Bounds Work Differently</button>
+  <button class="tab-btn" data-tab="t2">II · The Area Element, Revisited</button>
+  <button class="tab-btn" data-tab="t3">III · The Radial Sweep Method</button>
+  <button class="tab-btn" data-tab="t4">IV · Reading Off Common Shapes</button>
+  <button class="tab-btn" data-tab="t5">V · Worked Examples, and a Trap</button>
+  <button class="tab-btn" data-tab="t6">VI · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t7">VII · Pitfalls &amp; Where This Leads</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Polar Regions</h1>
+<div class="subtitle">why a rotating ray finds bounds that a sliding line never could</div>
+
+<h2>The scanning-line trick, and where it breaks down</h2>
+<p>The companion Double Integral essay's answer to "how do I find the bounds of an iterated integral" was geometric: sketch the region \(D\), slide a scanning line across it, and read the entrance and exit curves straight off the picture. That trick is excellent for regions built out of lines and parabolas. It gets ugly fast for regions built out of circles. Integrate over the unit disk in Cartesian Type I form and the bounds are already unpleasant —</p>
+<div class="katex-display" data-katex="D = \{(x,y): -1\le x\le 1,\ -\sqrt{1-x^2}\le y\le \sqrt{1-x^2}\}"></div>
+<p>— and that's the <em>easy</em> circular region, one centered right at the origin. A circle sitting off-center, a cardioid, a rose — for these, forcing a Type I or Type II description isn't just inconvenient, it can require solving for \(y\) as multiple disconnected branches of a square root, or fail to produce a closed form at all.</p>
+
+<h2>A different kind of line: the ray from the pole</h2>
+<p>The fix is not a new piece of calculus — it's a different sweeping motion. Instead of sliding a straight line across \(D\), anchor one endpoint of a ray at the origin (the <strong>pole</strong>) and let it rotate through every angle \(D\) occupies. For circular, cardioid-shaped, or rose-shaped boundaries, this works cleanly for a structural reason: those curves are almost always <em>defined</em> by an equation of the form \(r=f(\theta)\) in the first place. A ray at angle \(\theta\) doesn't need to solve anything to find where it crosses such a curve — the curve's own equation hands back the crossing radius directly.</p>
+
+<div class="ascii">   CARTESIAN Type I (vertical scan)          POLAR (ray from the pole)
+
+   fix x, slide the scan line                 fix θ, swing the ray
+   entrance:  y = <span class="hl2">−√(a²−x²)</span>                    entrance:  r = <span class="hl">g₁(θ)</span>
+   exit:      y = <span class="hl2">+√(a²−x²)</span>                    exit:      r = <span class="hl">g₂(θ)</span>
+   (for a disk of radius a — already                (for a disk of radius a — this is
+    a square root, before D gets any harder)          literally just g₁=0, g₂=a)</div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — a polar-type region</span>
+<p>A region \(D\) is <strong>polar-type</strong> if it can be written as</p>
+<div class="katex-display" data-katex="D = \{(r,\theta):\ \alpha\le\theta\le\beta,\ \ g_1(\theta)\le r\le g_2(\theta)\}"></div>
+<p>for continuous functions \(g_1\le g_2\) and constants \(\alpha,\beta\). This is the exact polar counterpart of a Cartesian Type I region — the roles of "the swept variable" and "the bounded variable" are just reassigned from \((x,y)\) to \((\theta,r)\).</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The reason the ray is so much cleaner than the scanning line isn't mysterious once stated plainly: a circle, a cardioid, a rose petal — every shape this essay cares about — is a curve whose <em>natural</em> equation already gives \(r\) as an explicit function of \(\theta\). A Cartesian scanning line has to invert that relationship, algebraically, into \(y\) as a function of \(x\), which is exactly the step that produces square roots and case splits. A polar ray never inverts anything; it reads the curve's own defining formula and stops.</p>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — when to reach for this</span>
+<p>The signal is usually one of two things: the <em>integrand</em> contains a bare combination like \(x^2+y^2\) or \(\arctan(y/x)\) that simplifies the moment \(x=r\cos\theta,\ y=r\sin\theta\) is substituted in — or the <em>region</em> itself is a disk, a sector, an annulus, or is bounded by a curve most naturally written as \(r=f(\theta)\). Either signal alone is often enough reason to switch; both together make the choice automatic.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>The Area Element, Revisited</h1>
+<div class="subtitle">the annular sector that replaces the rectangle, and the factor of r it leaves behind</div>
+
+<h2>Why the natural cell isn't a square</h2>
+<p>Partitioning \(D\) by a grid of angles and radii doesn't chop it into little rectangles — it chops it into little <strong>annular sectors</strong>: the piece swept out between angles \(\theta\) and \(\theta+\Delta\theta\), and between radii \(r\) and \(r+\Delta r\). That piece is a thin ring-segment, not a square, and its area has to be computed as the outer sector minus the inner sector:</p>
+<div class="katex-display" data-katex="\Delta A = \tfrac12(r+\Delta r)^2\Delta\theta - \tfrac12 r^2\Delta\theta = \Big(r\,\Delta r+\tfrac12(\Delta r)^2\Big)\Delta\theta"></div>
+<p>As \(\Delta r\to0\), the \(\tfrac12(\Delta r)^2\) term vanishes faster than the \(r\,\Delta r\) term (it's second-order small against first-order small), leaving the differential area element the rest of this essay is built on:</p>
+<div class="katex-display" data-katex="dA = r\,dr\,d\theta"></div>
+
+<div class="callout note">
+<span class="callout-label">Note — this is the change-of-variables formula, specialized</span>
+<p>The companion Double Integral essay derives \(dA=r\,dr\,d\theta\) a second way, as the Jacobian determinant of \(T(r,\theta)=(r\cos\theta,r\sin\theta)\): \(\det J_T = r\cos^2\theta+r\sin^2\theta=r\). The annular-sector argument above and the Jacobian computation are the same fact, reached geometrically instead of algebraically — worth having both, since the geometric version is what makes the "why" of the extra \(r\) actually visible.</p>
+</div>
+
+<p>Summing \(f\) times this cell area over every sector, then taking the limit as both \(\Delta r\) and \(\Delta\theta\) shrink to zero, gives the working formula for converting <em>any</em> double integral over a polar-type region into an ordinary iterated integral:</p>
+<div class="callout definition">
+<span class="callout-label">Definition — double integral in polar coordinates</span>
+<div class="katex-display" data-katex="\iint_D f(x,y)\,dA = \int_\alpha^\beta\!\int_{g_1(\theta)}^{g_2(\theta)} f(r\cos\theta,\,r\sin\theta)\ r\,dr\,d\theta"></div>
+</div>
+
+<h3>Why the pole never causes trouble</h3>
+<p>Because \(dA=r\,dr\,d\theta\) carries an explicit factor of \(r\), a cell sitting right at \(r=0\) contributes essentially zero area no matter how wide an angular slice \(\Delta\theta\) it spans — infinitely many rays converge at the pole, but they converge onto a single point of zero area. This is exactly why every region in Panel IV that touches the origin is allowed to set \(g_1(\theta)=0\) with no special handling: the pole isn't a singularity to work around, it's just the ordinary case \(r=0\) inside a formula that already vanishes there.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the single most common setup error</span>
+<p>Dropping the factor of \(r\) is the polar equivalent of forgetting \(dx\,dy\) altogether — it silently computes the wrong quantity while still returning a plausible-looking number. Integrate \(1\) over the unit disk both ways:</p>
+<div class="katex-display" data-katex="\underbrace{\int_0^{2\pi}\!\!\int_0^1 dr\,d\theta}_{\text{missing } r} = 2\pi \qquad\qquad \underbrace{\int_0^{2\pi}\!\!\int_0^1 r\,dr\,d\theta}_{\text{correct}} = \pi"></div>
+<p>The version without \(r\) returns exactly double the true area of the unit disk — not a subtle error, but one that's easy to miss because \(2\pi\) still looks like a reasonable answer for a problem involving a circle.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Radial Sweep Method</h1>
+<div class="subtitle">a five-question recipe for α, β, g₁(θ), g₂(θ) — and the reason it's guaranteed to work</div>
+
+<h2>Reading the bounds off the picture</h2>
+<p>The most reliable way to set up a polar-type region is geometric, exactly as it was for Cartesian Type I and Type II regions: sketch \(D\), then instead of sliding a straight scanning line across it, anchor one end of a ray at the pole and let it sweep through every angle the region touches. For a fixed angle \(\theta\), that ray is a straight line through the origin; walking outward along it, the first boundary curve it crosses is the inner limit \(g_1(\theta)\) — or the pole itself, \(r=0\), if the ray already starts inside \(D\) — and the last boundary curve it crosses before finally leaving \(D\) is the outer limit \(g_2(\theta)\). Once \(g_1\) and \(g_2\) are pinned down as functions of \(\theta\), ask a second, entirely separate question: over what range of angles does the ray intersect \(D\) at all? That range is two plain numbers, \(\alpha\) and \(\beta\) — and exactly as the companion Double Integral essay warned for Cartesian bounds, if a \(\theta\) survives into what should be a constant outer limit, the bounds were read off backwards.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — this recipe is Type I bounds in disguise</span>
+<p>Nothing here is a new piece of mathematics bolted onto Fubini's theorem — it's Fubini's theorem, run inside the \((\theta,r)\)-plane instead of the \(xy\)-plane, then carried back through the coordinate change \(T(r,\theta)=(r\cos\theta,\,r\sin\theta)\). In the \((\theta,r)\)-plane,</p>
+<div class="katex-display" data-katex="D' = \{(\theta,r):\ \alpha\le\theta\le\beta,\ \ g_1(\theta)\le r\le g_2(\theta)\}"></div>
+<p>is an entirely ordinary Cartesian Type I region — \(\theta\) plays the role of \(x\), \(r\) plays the role of \(y\), and the same vertical-scanning-line logic from Panel III of the companion essay applies without a single modification. What makes the result look unfamiliar is only the map \(T\) that warps that plain, rectangle-ish \(D'\) into the curved \(D\) sitting in the \(xy\)-plane — and the lone factor of \(r\) riding along in \(dA=r\,dr\,d\theta\) is exactly \(|\det J_T|\), the local area price of that warp.</p>
+</div>
+
+<div class="ascii">   (θ,r)-PLANE — plain Type I region          xy-PLANE, under T(r,θ) = (r cosθ, r sinθ)
+
+   α ≤ θ ≤ β                                   the same D', warped into a curved D
+   <span class="hl">g₁(θ)</span> ≤ r ≤ <span class="hl2">g₂(θ)</span>                                <span class="hl">g₁(θ)</span>-curve and <span class="hl2">g₂(θ)</span>-curve, still the same two labels
+        ↓ integrate r first, exactly as usual              ↓
+   ∫∫ f(r cosθ, r sinθ) r dr dθ  ←  that lone r is |det J_T|, paid on the way through T</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the region must be radially simple</span>
+<p>The recipe assumes every ray in \([\alpha,\beta]\) crosses \(\partial D\) exactly twice — once going in, once coming out — so that a single pair \(g_1(\theta),g_2(\theta)\) can describe the whole crossing. A region that isn't <strong>radially simple</strong> in this sense — one where some ray clips the boundary four times, say — can't be written this way as a single piece. The fix is identical to Panel III of the companion essay: split \([\alpha,\beta]\) at the angle where the crossing count changes, treat each piece as its own polar-type region, and add the results.</p>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — the pole is a free lunch, until it isn't</span>
+<p>When \(D\) contains the pole for a given \(\theta\), the ray starts its journey already inside the region, so \(g_1(\theta)=0\) with no extra work — the disk, the cardioid, and every rose petal in Panel IV lean on exactly this. The annulus is the exception that proves the rule: it never contains the pole, so \(g_1(\theta)\) there is a genuine positive constant for every \(\theta\), not zero.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Reading Off Common Shapes</h1>
+<div class="subtitle">six region families, their bounds, and how to convert a Cartesian boundary into a polar one</div>
+
+<h2>A reference table</h2>
+<p>Each row below is the direct output of Panel III's recipe, applied to a shape that shows up constantly in practice. Sketching each one and running the ray-sweep by hand once is worth more than memorizing the table — but the table is what you'll actually reach for afterward.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Reading g₁(θ), g₂(θ), α, β straight off the shape</caption>
+<thead><tr><th>Region</th><th>g₁(θ)</th><th>g₂(θ)</th><th>α</th><th>β</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Disk of radius \(a\) at the pole</td><td>\(0\)</td><td>\(a\)</td><td>\(0\)</td><td>\(2\pi\)</td><td>every ray starts inside; one full turn</td></tr>
+<tr><td>Pie slice, radius \(a\), between two rays</td><td>\(0\)</td><td>\(a\)</td><td>\(\theta_1\)</td><td>\(\theta_2\)</td><td>the straight edges <em>are</em> the θ-bounds</td></tr>
+<tr><td>Annulus, \(a\le r\le b\)</td><td>\(a\)</td><td>\(b\)</td><td>\(0\)</td><td>\(2\pi\)</td><td>never touches the pole — \(g_1\) is a genuine constant</td></tr>
+<tr><td>Circle \(r=2a\cos\theta\) (through the pole, centered at \((a,0)\))</td><td>\(0\)</td><td>\(2a\cos\theta\)</td><td>\(-\pi/2\)</td><td>\(\pi/2\)</td><td>θ restricted to keep \(r=2a\cos\theta\ge0\)</td></tr>
+<tr><td>Cardioid \(r=a(1+\cos\theta)\)</td><td>\(0\)</td><td>\(a(1+\cos\theta)\)</td><td>\(0\)</td><td>\(2\pi\)</td><td>touches the pole once, at \(\theta=\pi\)</td></tr>
+<tr><td>One petal of \(r=a\cos(n\theta)\), \(n\) odd</td><td>\(0\)</td><td>\(a\cos(n\theta)\)</td><td>\(-\tfrac{\pi}{2n}\)</td><td>\(\tfrac{\pi}{2n}\)</td><td>the rest of each rotation makes \(\cos(n\theta)<0\)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Converting a Cartesian boundary curve into polar</h3>
+<p>When a region is given in Cartesian form but the region itself is circular or rotationally natural, the boundary curves usually convert with almost no algebra, since \(x=r\cos\theta,\ y=r\sin\theta,\ x^2+y^2=r^2\):</p>
+<div class="katex-display" data-katex="\begin{aligned} x^2+y^2=a^2 &amp;\;\Longrightarrow\; r=a \\ y=mx &amp;\;\Longrightarrow\; \theta=\arctan m \\ x=a &amp;\;\Longrightarrow\; r=a\sec\theta \\ y=b &amp;\;\Longrightarrow\; r=b\csc\theta \end{aligned}"></div>
+<p>The first line is the entire reason polar coordinates exist for circular regions: a circle centered at the origin, which needs a square root to express as \(y=f(x)\), needs nothing at all to express as \(r=f(\theta)\) — it's simply the constant function \(r=a\).</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — extending θ past where r stays non-negative retraces the curve</span>
+<p>Table row four restricts \(\theta\) to \([-\pi/2,\pi/2]\) for \(r=2a\cos\theta\), and that restriction is load-bearing, not cosmetic. Push \(\theta\) past \(\pi/2\) and \(\cos\theta\) turns negative — under the standard convention that \(r\ge0\), those angles simply aren't part of the curve at all. Under the alternate convention that allows negative \(r\) (plotting the point in the opposite direction), \(\theta=\pi\) gives \(r=-2a\), which is the point \((2a,0)\) — a point already reached at \(\theta=0\). Either way, angles outside \([-\pi/2,\pi/2]\) add nothing new; feeding them into the bounds anyway integrates the same physical region a second time and silently doubles the answer.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Worked Examples, and a Trap</h1>
+<div class="subtitle">a volume, a lens-shaped area, and the intersection points that algebra alone can miss</div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — area in polar coordinates</span>
+<p>Setting \(f\equiv1\) in Panel II's formula gives the polar area formula used throughout this panel:</p>
+<div class="katex-display" data-katex="\text{Area}(D) = \int_\alpha^\beta \tfrac12\big[g_2(\theta)^2-g_1(\theta)^2\big]\,d\theta"></div>
+</div>
+
+<h2>Example A — a volume, where the integrand does the work</h2>
+<p>Find the volume under the paraboloid \(z=x^2+y^2\) over the disk of radius \(a\) centered at the origin. The integrand converts to polar with zero algebra, since \(x^2+y^2=r^2\) is precisely the combination polar coordinates exist to simplify:</p>
+<div class="katex-display" data-katex="\iint_D (x^2+y^2)\,dA = \int_0^{2\pi}\!\!\int_0^a r^2\cdot r\,dr\,d\theta = \int_0^{2\pi}\left[\frac{r^4}{4}\right]_0^a d\theta = 2\pi\cdot\frac{a^4}{4} = \frac{\pi a^4}{2}"></div>
+<p>Every bound here came straight from row one of Panel IV's table; the only new content was letting the integrand's own \(r^2\) merge with the area element's \(r\) into a single power of \(r\) to integrate.</p>
+
+<h2>Example B — a region between two curves</h2>
+<p>Find the area inside the cardioid \(r=1+\cos\theta\) but outside the circle \(r=1\). First, find where the ray-sweep description is even valid: the cardioid sits outside the circle exactly when \(1+\cos\theta\ge1\), i.e. \(\cos\theta\ge0\), i.e. \(\theta\in[-\pi/2,\pi/2]\) — outside that range the cardioid dips <em>inside</em> the circle, and there's no lens there at all. Within that range, \(g_1(\theta)=1\) (the circle, inner) and \(g_2(\theta)=1+\cos\theta\) (the cardioid, outer):</p>
+<div class="katex-display" data-katex="(1+\cos\theta)^2 - 1^2 = 2\cos\theta+\cos^2\theta"></div>
+<div class="katex-display" data-katex="\text{Area} = \int_{-\pi/2}^{\pi/2}\tfrac12\big[(1+\cos\theta)^2-1\big]\,d\theta = \tfrac12\Big[2\sin\theta+\tfrac{\theta}{2}+\tfrac{\sin2\theta}{4}\Big]_{-\pi/2}^{\pi/2} = \tfrac12\Big(4+\tfrac{\pi}{2}\Big) = 2+\frac{\pi}{4}"></div>
+<p>This exact region — the lens between a circle and a cardioid — is one of the presets in Panel VI's lab. Dragging the probe there and watching \(g_1(\theta)\) and \(g_2(\theta)\) converge to the same radius right at \(\theta=\pm\pi/2\) is the geometric picture behind the boundary condition \(\cos\theta\ge0\) used to find \(\alpha\) and \(\beta\) above.</p>
+
+<h2>Example C — the pole trap</h2>
+<p>Solving \(g_1(\theta)=g_2(\theta)\) for a shared \(\theta\) finds every point where two curves have <em>identical</em> polar coordinates — but polar coordinates aren't unique at the origin, where \(r=0\) regardless of what \(\theta\) is. Two curves can pass through the exact same point \((0,0)\) while reaching it at completely different angles, and a shared point like that is invisible to solving \(g_1(\theta)=g_2(\theta)\) as ordinary algebra.</p>
+<p>Take \(r=\sin\theta\) and \(r=\cos\theta\) — two circles of radius \(\tfrac12\), centered at \((0,\tfrac12)\) and \((\tfrac12,0)\) respectively. Solving algebraically:</p>
+<div class="katex-display" data-katex="\sin\theta=\cos\theta \implies \theta=\frac{\pi}{4} \implies (r,\theta) = \Big(\frac{\sqrt2}{2},\,\frac{\pi}{4}\Big)"></div>
+<p>— one intersection point. But check each curve against the pole separately:</p>
+<div class="katex-display" data-katex="r=\sin\theta=0 \text{ at } \theta=0, \qquad\qquad r=\cos\theta=0 \text{ at } \theta=\frac{\pi}{2}"></div>
+<p>Different angles, but both give the identical Cartesian point \((0,0)\). Sketching the two circles confirms it: they cross at <em>two</em> points, not one — the algebraic crossing at \(\theta=\pi/4\), and the pole, reached by each curve on its own schedule. Solving \(g_1(\theta)=g_2(\theta)\) found exactly one of the two.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — always check the pole separately</span>
+<p>Before trusting a list of intersection points found by solving \(g_1(\theta)=g_2(\theta)\), ask a second question that no amount of algebra on that equation will answer: does \(g_1\) reach \(0\) somewhere, and does \(g_2\) reach \(0\) somewhere — possibly at a completely different \(\theta\)? If both do, the pole is a shared point of the two curves and belongs on the list, whether or not the equation \(g_1(\theta)=g_2(\theta)\) ever produced it.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Interactive Lab</h1>
+<div class="subtitle">drag the ray, watch g₁(θ) and g₂(θ) get read off live, and see the sector sum converge on the area</div>
+
+<p>Pick a region, then drag anywhere in the canvas (or use the angle slider) to sweep the <span style="color:var(--accent)">probe ray</span> around. The <span style="color:var(--green)">green</span> dot marks where the ray enters \(D\), at \(r=g_1(\theta)\); the <span style="color:var(--red)">red</span> dot marks where it exits, at \(r=g_2(\theta)\). Raise the sector count \(N\) to watch the midpoint-rule sectors — the polar analogue of the columns from the companion essay's own general-regions lab — tile the true shaded region ever more closely.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">D — DRAG TO SWEEP THE PROBE RAY</div>
+      <canvas id="cvPolar" width="480" height="480" style="width:100%;max-width:480px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Region</label>
+      <select id="regionSelect">
+        <option value="disk">disk, r: 0 → 1.5</option>
+        <option value="offset">circle r = 2cosθ</option>
+        <option value="cardioid">cardioid r = 1+cosθ</option>
+        <option value="rose">one petal, r = cos3θ</option>
+        <option value="annulus">annulus, 1 ≤ r ≤ 2</option>
+        <option value="lens">lens: inside cardioid, outside circle</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Probe angle θ</label>
+      <input type="range" id="probeSlider" min="0" max="360" step="1" value="0">
+      <span class="readout" id="probeReadout">0°</span>
+    </div>
+    <div class="control-row">
+      <label>Sectors N</label>
+      <input type="range" id="nSectorSlider" min="1" max="60" step="1" value="10">
+      <span class="readout" id="nSectorReadout">10</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">θ RANGE [α, β]</div><div class="v" id="rangeOut">…</div></div>
+    <div class="block"><div class="k">BOUND FORMULAS</div><div class="v" id="gOut">…</div></div>
+    <div class="block"><div class="k">PROBE θ</div><div class="v" id="probeValOut">…</div></div>
+    <div class="block"><div class="k">r₁(θ) → r₂(θ) AT PROBE</div><div class="v" id="rAtProbeOut">…</div></div>
+    <div class="block"><div class="k">SECTOR RIEMANN SUM (N)</div><div class="v" id="sumOut">…</div></div>
+    <div class="block"><div class="k">EXACT AREA</div><div class="v" id="exactOut">…</div></div>
+    <div class="block"><div class="k">|ERROR|</div><div class="v" id="errOut">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue); opacity:0.45;"></span> true region D (filled)</span>
+    <span><span class="swatch" style="background:var(--green); opacity:0.55;"></span> midpoint-rule sectors</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> probe ray</span>
+    <span><span class="swatch" style="background:var(--green)"></span> entry, r₁(θ)</span>
+    <span><span class="swatch" style="background:var(--red)"></span> exit, r₂(θ)</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Switch to <code>lens</code> and drag the probe toward either edge of its range. The green and red dots slide toward each other and meet exactly at \(\theta=\pm\pi/2\) — that meeting, \(g_1(\theta)=g_2(\theta)\), is precisely the algebraic condition Example B in Panel V solved to find \(\alpha\) and \(\beta\) in the first place, now visible without solving anything. Switch to <code>rose</code> and drag past \(\theta=\pm30^\circ\): the slider simply won't go there, because outside that range \(\cos(3\theta)\) has already gone negative and the petal has closed — the exact restriction Panel IV's warning described.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>Pitfalls &amp; Where This Leads</h1>
+<div class="subtitle">symmetry shortcuts, sign conventions, and the jump to three dimensions</div>
+
+<h2>Symmetry cuts the work, not the correctness</h2>
+<p>Whenever both \(D\) and the integrand are symmetric under \(\theta\to-\theta\) (reflection across the x-axis), it's legitimate to integrate over half the angular range and double the result — and the same idea stacks for quarter- or eighth-symmetric regions. The disk from Panel IV, for instance, can be computed as four identical quarter-wedges instead of one full turn:</p>
+<div class="katex-display" data-katex="\text{Area} = 4\int_0^{\pi/2}\!\!\int_0^{a} r\,dr\,d\theta"></div>
+<p>This is bookkeeping, not new mathematics — additivity of regions, the same fact the companion essay uses to justify splitting a domain into pieces, run in reverse to merge identical pieces back into one shortcut.</p>
+
+<h2>Two reminders worth keeping close</h2>
+<p>Splitting still applies here exactly as it did in Panel III: if no single pair \(g_1(\theta),g_2(\theta)\) covers the whole angular range because the boundary curve switches partway through, split \([\alpha,\beta]\) at the switch point and add the pieces — the polar mirror of splitting a Cartesian region at a change of boundary curve. And the sign convention matters: by the standard convention used throughout this essay, \(r\) never goes negative in a bounds computation; if a candidate formula for \(r\) would go negative over part of a proposed \(\theta\)-range, that part of the range is simply excluded, exactly as Panel IV's warning did for \(r=2a\cos\theta\). Mixing that convention with the alternate one — where negative \(r\) is allowed and plotted in the opposite direction — inside a single bounds computation is one of the more common sources of a silently doubled or halved answer.</p>
+
+<h3>The occasional reversed order</h3>
+<p>Just as a Cartesian region is occasionally more natural as Type II (fix \(y\), let \(x\) range between two curves) than Type I, a polar region is occasionally more natural with the roles reversed: fix a band of radii and let \(\theta\) range between two curves \(h_1(r),h_2(r)\), integrating \(\theta\) first. This is rare — most curves worth naming are given as \(r=f(\theta)\), not \(\theta=h(r)\) — but a "keyhole" or slotted region can make it the cleaner choice, and the bounds are read off with the identical ray-sweep logic, just holding \(r\) fixed instead of \(\theta\).</p>
+
+<h2>Where this leads</h2>
+<p>Add a third coordinate \(z\) on top of a polar footprint and the result is <strong>cylindrical coordinates</strong>: the exact same \((r,\theta)\) bounds from this entire essay describe the footprint, and \(z\) gets its own pair of Type-I-style bounds layered on top, with volume element</p>
+<div class="katex-display" data-katex="dV = r\,dr\,d\theta\,dz"></div>
+<p>Push further to <strong>spherical coordinates</strong> and the annular sector of Panel II becomes a genuine spherical wedge, with volume element \(dV=\rho^2\sin\varphi\,d\rho\,d\varphi\,d\theta\):</p>
+<div class="katex-display" data-katex="dV = \rho^2\sin\varphi\,d\rho\,d\varphi\,d\theta"></div>
+<p>The bounds for \(\rho\) come from the identical ray-sweep argument that opened this essay — now the ray runs outward from the origin in three dimensions instead of two — and the bound on \(\varphi\), the angle down from the pole, plays exactly the role a cone's half-angle plays in restricting which rays are even in play. The companion Triple Integral essay and the Jacobian essay both pick up this thread in full; nothing about the reasoning changes, only the dimension it's carried out in.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>Finding polar bounds was never a separate skill from finding Cartesian bounds — it's the same ray-sweep-and-read-the-boundary technique from Panel III of the companion essay, run in the \((\theta,r)\)-plane instead of the \(xy\)-plane, with a single factor of \(r\) left behind as the toll for the coordinate change that carries the answer back into the plane the region actually lives in.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6','t7'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderPolarLab();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ---------- shared helpers ----------
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function fmtN(n, d){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+
+// ============ INTERACTIVE LAB: RADIAL SWEEP EXPLORER ============
+const PRESETS = {
+  disk: {
+    label: 'Disk of radius 1.5, centered at the pole',
+    thetaMin: 0, thetaMax: 2*Math.PI, fullLoop: true,
+    g1: th => 0, g2: th => 1.5,
+    g1Text: '0', g2Text: '1.5', alphaText: '0', betaText: '2π',
+    area: 2.25*Math.PI, maxR: 1.7
+  },
+  offset: {
+    label: 'Circle r = 2cosθ (through the pole)',
+    thetaMin: -Math.PI/2, thetaMax: Math.PI/2, fullLoop: false,
+    g1: th => 0, g2: th => 2*Math.cos(th),
+    g1Text: '0', g2Text: '2cosθ', alphaText: '−π/2', betaText: 'π/2',
+    area: Math.PI, maxR: 2.2
+  },
+  cardioid: {
+    label: 'Cardioid r = 1 + cosθ',
+    thetaMin: 0, thetaMax: 2*Math.PI, fullLoop: true,
+    g1: th => 0, g2: th => 1+Math.cos(th),
+    g1Text: '0', g2Text: '1+cosθ', alphaText: '0', betaText: '2π',
+    area: 1.5*Math.PI, maxR: 2.3
+  },
+  rose: {
+    label: 'One petal of r = cos(3θ)',
+    thetaMin: -Math.PI/6, thetaMax: Math.PI/6, fullLoop: false,
+    g1: th => 0, g2: th => Math.cos(3*th),
+    g1Text: '0', g2Text: 'cos3θ', alphaText: '−π/6', betaText: 'π/6',
+    area: Math.PI/12, maxR: 1.15
+  },
+  annulus: {
+    label: 'Annulus, 1 ≤ r ≤ 2',
+    thetaMin: 0, thetaMax: 2*Math.PI, fullLoop: true,
+    g1: th => 1, g2: th => 2,
+    g1Text: '1', g2Text: '2', alphaText: '0', betaText: '2π',
+    area: 3*Math.PI, maxR: 2.3
+  },
+  lens: {
+    label: 'Inside cardioid r=1+cosθ, outside circle r=1',
+    thetaMin: -Math.PI/2, thetaMax: Math.PI/2, fullLoop: false,
+    g1: th => 1, g2: th => 1+Math.cos(th),
+    g1Text: '1', g2Text: '1+cosθ', alphaText: '−π/2', betaText: 'π/2',
+    area: 2 + Math.PI/4, maxR: 2.2
+  }
+};
+
+const cvPolar = document.getElementById('cvPolar');
+const pctx = cvPolar.getContext('2d');
+const regionSelect = document.getElementById('regionSelect');
+const probeSlider = document.getElementById('probeSlider');
+const probeReadout = document.getElementById('probeReadout');
+const nSectorSlider = document.getElementById('nSectorSlider');
+const nSectorReadout = document.getElementById('nSectorReadout');
+const rangeOut = document.getElementById('rangeOut');
+const gOut = document.getElementById('gOut');
+const probeValOut = document.getElementById('probeValOut');
+const rAtProbeOut = document.getElementById('rAtProbeOut');
+const sumOut = document.getElementById('sumOut');
+const exactOut = document.getElementById('exactOut');
+const errOut = document.getElementById('errOut');
+
+let thetaProbe = 0;
+let dragging = false;
+const CX = 240, CY = 240, PAD_RADIUS = 210;
+
+function currentPreset(){ return PRESETS[regionSelect.value]; }
+
+function polarToWorld(r, theta){ return [r*Math.cos(theta), r*Math.sin(theta)]; }
+function worldToScreen(x, y, scale){ return [CX + x*scale, CY - y*scale]; }
+function screenToWorld(px, py, scale){ return [(px-CX)/scale, (CY-py)/scale]; }
+
+function clampTheta(theta, preset){
+  if(preset.fullLoop){
+    let t = theta;
+    while(t < 0) t += 2*Math.PI;
+    while(t >= 2*Math.PI) t -= 2*Math.PI;
+    return t;
+  }
+  return Math.max(preset.thetaMin, Math.min(preset.thetaMax, theta));
+}
+
+function regionPolygon(preset){
+  const steps = 180;
+  const pts = [];
+  for(let i=0;i<=steps;i++){
+    const th = preset.thetaMin + (preset.thetaMax-preset.thetaMin)*i/steps;
+    pts.push(polarToWorld(preset.g2(th), th));
+  }
+  for(let i=steps;i>=0;i--){
+    const th = preset.thetaMin + (preset.thetaMax-preset.thetaMin)*i/steps;
+    pts.push(polarToWorld(preset.g1(th), th));
+  }
+  return pts;
+}
+
+function sectorPolygon(thetaLo, thetaHi, rIn, rOut){
+  const sub = 5;
+  const pts = [];
+  for(let i=0;i<=sub;i++){ const th = thetaLo+(thetaHi-thetaLo)*i/sub; pts.push(polarToWorld(rOut, th)); }
+  for(let i=sub;i>=0;i--){ const th = thetaLo+(thetaHi-thetaLo)*i/sub; pts.push(polarToWorld(rIn, th)); }
+  return pts;
+}
+
+function riemannSum(preset, N){
+  const dth = (preset.thetaMax-preset.thetaMin)/N;
+  let sum = 0;
+  for(let i=0;i<N;i++){
+    const thMid = preset.thetaMin + (i+0.5)*dth;
+    const rIn = preset.g1(thMid), rOut = preset.g2(thMid);
+    sum += 0.5*(rOut*rOut - rIn*rIn)*dth;
+  }
+  return sum;
+}
+
+function drawPath(ctx, pts, scale){
+  ctx.beginPath();
+  pts.forEach(([x,y],i)=>{
+    const [sx,sy] = worldToScreen(x,y,scale);
+    i===0 ? ctx.moveTo(sx,sy) : ctx.lineTo(sx,sy);
+  });
+  ctx.closePath();
+}
+
+function renderPolarLab(){
+  const preset = currentPreset();
+  const scale = PAD_RADIUS / preset.maxR;
+  thetaProbe = clampTheta(thetaProbe, preset);
+
+  pctx.clearRect(0,0,480,480);
+  pctx.fillStyle = cssVar('--bg-elevated');
+  pctx.fillRect(0,0,480,480);
+
+  // polar grid: rings
+  pctx.strokeStyle = cssVar('--border');
+  pctx.lineWidth = 1;
+  const ringCount = 4;
+  for(let k=1;k<=ringCount;k++){
+    const rr = preset.maxR*k/ringCount;
+    pctx.beginPath();
+    pctx.arc(CX, CY, rr*scale, 0, 2*Math.PI);
+    pctx.stroke();
+  }
+  // radial spokes every 30deg
+  for(let d=0; d<360; d+=30){
+    const th = d*Math.PI/180;
+    const [ex,ey] = worldToScreen(preset.maxR*Math.cos(th), preset.maxR*Math.sin(th), scale);
+    pctx.beginPath(); pctx.moveTo(CX,CY); pctx.lineTo(ex,ey); pctx.stroke();
+  }
+  // axes
+  pctx.strokeStyle = cssVar('--ink-faint');
+  pctx.lineWidth = 1.2;
+  pctx.beginPath(); pctx.moveTo(CX-PAD_RADIUS,CY); pctx.lineTo(CX+PAD_RADIUS,CY); pctx.stroke();
+  pctx.beginPath(); pctx.moveTo(CX,CY-PAD_RADIUS); pctx.lineTo(CX,CY+PAD_RADIUS); pctx.stroke();
+
+  // true region, filled
+  const regPts = regionPolygon(preset);
+  drawPath(pctx, regPts, scale);
+  pctx.fillStyle = cssVar('--blue');
+  pctx.globalAlpha = 0.30;
+  pctx.fill();
+  pctx.globalAlpha = 1;
+  pctx.strokeStyle = cssVar('--blue');
+  pctx.lineWidth = 1.6;
+  pctx.stroke();
+
+  // midpoint-rule sectors
+  const N = +nSectorSlider.value;
+  const dth = (preset.thetaMax-preset.thetaMin)/N;
+  pctx.fillStyle = cssVar('--green');
+  pctx.strokeStyle = cssVar('--green');
+  for(let i=0;i<N;i++){
+    const thLo = preset.thetaMin + i*dth;
+    const thHi = thLo + dth;
+    const thMid = thLo + dth/2;
+    const rIn = preset.g1(thMid), rOut = preset.g2(thMid);
+    const secPts = sectorPolygon(thLo, thHi, rIn, rOut);
+    drawPath(pctx, secPts, scale);
+    pctx.globalAlpha = 0.30;
+    pctx.fill();
+    pctx.globalAlpha = 0.8;
+    pctx.lineWidth = 0.8;
+    pctx.stroke();
+    pctx.globalAlpha = 1;
+  }
+
+  // probe ray
+  const rIn = preset.g1(thetaProbe), rOut = preset.g2(thetaProbe);
+  const [ox,oy] = worldToScreen(0,0,scale);
+  const [ex,ey] = worldToScreen(preset.maxR*1.08*Math.cos(thetaProbe), preset.maxR*1.08*Math.sin(thetaProbe), scale);
+  pctx.strokeStyle = cssVar('--ink-faint');
+  pctx.lineWidth = 1;
+  pctx.setLineDash([4,3]);
+  pctx.beginPath(); pctx.moveTo(ox,oy); pctx.lineTo(ex,ey); pctx.stroke();
+  pctx.setLineDash([]);
+
+  const [ix,iy] = polarToWorld(rIn, thetaProbe);
+  const [jx,jy] = polarToWorld(rOut, thetaProbe);
+  const [six,siy] = worldToScreen(ix,iy,scale);
+  const [sjx,sjy] = worldToScreen(jx,jy,scale);
+
+  pctx.strokeStyle = cssVar('--accent');
+  pctx.lineWidth = 3.5;
+  pctx.beginPath(); pctx.moveTo(six,siy); pctx.lineTo(sjx,sjy); pctx.stroke();
+
+  pctx.fillStyle = cssVar('--green');
+  pctx.beginPath(); pctx.arc(six,siy,6,0,7); pctx.fill();
+  pctx.fillStyle = cssVar('--red');
+  pctx.beginPath(); pctx.arc(sjx,sjy,6,0,7); pctx.fill();
+
+  pctx.fillStyle = cssVar('--ink');
+  pctx.beginPath(); pctx.arc(ox,oy,3.5,0,7); pctx.fill();
+
+  updateReadouts(preset, N, rIn, rOut);
+}
+
+function updateReadouts(preset, N, rIn, rOut){
+  rangeOut.textContent = `α = ${preset.alphaText}   β = ${preset.betaText}`;
+  gOut.textContent = `g₁(θ) = ${preset.g1Text}\ng₂(θ) = ${preset.g2Text}`;
+  const deg = thetaProbe*180/Math.PI;
+  probeValOut.textContent = `${deg.toFixed(1)}°  =  ${thetaProbe.toFixed(3)} rad`;
+  rAtProbeOut.textContent = `${fmtN(rIn,3)}  →  ${fmtN(rOut,3)}   (Δr = ${fmtN(rOut-rIn,3)})`;
+  const sum = riemannSum(preset, N);
+  sumOut.textContent = fmtN(sum,5);
+  exactOut.textContent = fmtN(preset.area,5);
+  errOut.textContent = fmtN(Math.abs(sum-preset.area),5);
+}
+
+function setSlidersForPreset(preset){
+  const minDeg = Math.round(preset.thetaMin*180/Math.PI);
+  const maxDeg = Math.round(preset.thetaMax*180/Math.PI);
+  probeSlider.min = minDeg;
+  probeSlider.max = maxDeg;
+  probeSlider.value = Math.round((minDeg+maxDeg)/2);
+  thetaProbe = clampTheta(+probeSlider.value*Math.PI/180, preset);
+  probeReadout.textContent = probeSlider.value + '°';
+}
+
+regionSelect.addEventListener('change', ()=>{
+  setSlidersForPreset(currentPreset());
+  renderPolarLab();
+});
+probeSlider.addEventListener('input', ()=>{
+  thetaProbe = clampTheta(+probeSlider.value*Math.PI/180, currentPreset());
+  probeReadout.textContent = probeSlider.value + '°';
+  renderPolarLab();
+});
+nSectorSlider.addEventListener('input', ()=>{
+  nSectorReadout.textContent = nSectorSlider.value;
+  renderPolarLab();
+});
+
+function angleFromEvent(e){
+  const preset = currentPreset();
+  const scale = PAD_RADIUS / preset.maxR;
+  const rect = cvPolar.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (480/rect.width);
+  const py = (clientY-rect.top) * (480/rect.height);
+  const [wx,wy] = screenToWorld(px,py,scale);
+  return Math.atan2(wy,wx);
+}
+function setProbeFromAngle(theta){
+  const preset = currentPreset();
+  thetaProbe = clampTheta(theta, preset);
+  const deg = Math.round(thetaProbe*180/Math.PI);
+  probeSlider.value = Math.max(+probeSlider.min, Math.min(+probeSlider.max, deg));
+  probeReadout.textContent = probeSlider.value + '°';
+  renderPolarLab();
+}
+cvPolar.addEventListener('mousedown', e=>{ dragging = true; setProbeFromAngle(angleFromEvent(e)); });
+window.addEventListener('mousemove', e=>{ if(dragging) setProbeFromAngle(angleFromEvent(e)); });
+window.addEventListener('mouseup', ()=> dragging=false);
+cvPolar.addEventListener('touchstart', e=>{ dragging = true; setProbeFromAngle(angleFromEvent(e)); }, {passive:true});
+cvPolar.addEventListener('touchmove', e=>{ if(dragging) setProbeFromAngle(angleFromEvent(e)); }, {passive:true});
+window.addEventListener('touchend', ()=> dragging=false);
+
+// ---------- init ----------
+setSlidersForPreset(currentPreset());
+renderPolarLab();
+</script>
+
+</body>
+</html>
