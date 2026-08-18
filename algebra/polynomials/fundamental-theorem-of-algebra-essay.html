@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fundamental Theorem of Algebra — Why Every Polynomial Has a Root</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.lab-btn{
+  font-family:var(--mono); font-size:12px; color:var(--ink-dim); background:var(--bg-elevated);
+  border:1px solid var(--border); border-radius:6px; padding:8px 16px; cursor:pointer;
+  transition:color .2s,border-color .2s;
+}
+.lab-btn:hover{ color:var(--accent); border-color:var(--accent-dim); }
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">FUND. THM. ALGEBRA</div>
+  <button class="tab-btn active" data-tab="t1">I · Why the Reals Aren't Enough</button>
+  <button class="tab-btn" data-tab="t2">II · The Minimum-Modulus Proof</button>
+  <button class="tab-btn" data-tab="t3">III · The Winding-Number Proof</button>
+  <button class="tab-btn" data-tab="t4">IV · Full Factorization</button>
+  <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t6">VI · What It Actually Means</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>The Fundamental Theorem of Algebra</h1>
+<div class="subtitle">why the complex numbers are exactly enough — no more, no less — for every polynomial equation to have a solution</div>
+
+<h2>The one gap the reals never close</h2>
+<p>Every extension of the number system in the history of algebra was forced by the same complaint: some equation you can write down has no solution among the numbers you currently have. \(x+2=0\) has no solution among the naturals — the fix is inventing negative integers. \(2x=1\) has no solution among the integers — the fix is inventing fractions. \(x^2=2\) has no solution among the rationals — the fix is inventing irrational reals. Each fix is <em>minimal</em>: adjoin exactly the numbers needed to solve the offending equation, and stop.</p>
+
+<p>Then \(x^2+1=0\) has no solution among the reals — every real number squares to something \(\ge0\), so \(x^2+1\ge1&gt;0\) for every real \(x\), full stop. The historically reluctant fix was inventing a number \(i\) with \(i^2=-1\), then closing that invention under addition and multiplication to get the complex numbers \(\mathbb{C}=\{a+bi : a,b\in\mathbb{R}\}\).</p>
+
+<p>Here is the question this essay is actually about: was that fix minimal, or did it undershoot? Complex numbers were invented to solve <em>one</em> specific equation, \(x^2=-1\). Nothing about that invention obviously guarantees a solution to, say, \(z^7-3z^4+2z-6=0\), or to any of the infinitely many other polynomial equations you could write down. Maybe \(\mathbb{C}\) has a gap of its own, needing yet another extension.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The Fundamental Theorem of Algebra is the statement that the pattern <em>stops</em>: adjoining \(i\) to solve one equation turns out, for reasons that are genuinely surprising, to be enough to solve every polynomial equation at once. \(\mathbb{C}\) needs no further extension. This is not obvious from the definition of \(\mathbb{C}\) — proving it is the content of the rest of this essay.</p>
+</div>
+
+<h3>The precise claim</h3>
+<div class="callout definition">
+<span class="callout-label">Definition — the Fundamental Theorem of Algebra</span>
+<p>Every non-constant polynomial</p>
+<div class="katex-display" data-katex="p(z) = a_nz^n + a_{n-1}z^{n-1} + \dots + a_1z + a_0, \qquad a_n\ne0,\ n\ge1"></div>
+<p>with complex coefficients has at least one root in \(\mathbb{C}\): some \(z_0\in\mathbb{C}\) with \(p(z_0)=0\).</p>
+</div>
+
+<p>The theorem is deceptively thin on its own — <em>one</em> root, not \(n\) of them — but Panel IV shows that a single root is already enough to force the full picture: every degree-\(n\) polynomial factors completely into \(n\) linear factors over \(\mathbb{C}\), counted with multiplicity. The one-root statement is the load-bearing fact; everything else follows from it by an induction so short it barely counts as new content.</p>
+
+<div class="ascii">   ℕ  --(x+2=0)-->  ℤ  --(2x=1)-->  ℚ  --(x²=2)-->  ℝ  --(x²+1=0)-->  ℂ  --(?)-->  <span class="hl">stops here</span>
+
+   each arrow: adjoin exactly the number(s) needed to solve one stubborn equation
+   the Fundamental Theorem of Algebra is the proof that the last arrow loops back to <span class="hl2">ℂ itself</span></div>
+
+<h3>Why "algebra" alone can't get you there</h3>
+<p>A natural first instinct is to try to prove the theorem by pure algebra — manipulate the coefficients, extract a root formula the way the quadratic formula extracts roots of \(az^2+bz+c\). This instinct runs into two walls at once. First, the Abel–Ruffini theorem: for degree five and higher, no formula built from the coefficients using only \(+,-,\times,\div\) and radicals can express the roots in general, so "solve algebraically" cannot mean "write down a formula." Second, and more fundamentally, no correct proof of the Fundamental Theorem of Algebra can avoid smuggling in some fact equivalent to the <strong>completeness of \(\mathbb{R}\)</strong> — a genuinely analytic fact, not a purely algebraic one (Panel VI makes this precise). Every proof below leans on continuity, compactness, or completeness at an identifiable step; none of that is an accident or a stylistic choice.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Restate the theorem's own name honestly: it belongs to <em>algebra</em> by subject matter — it's a claim about roots of polynomials — but to <em>analysis</em> by proof technique, since every known proof needs some real-analytic input. That mismatch is the single most instructive thing about the theorem, and it's exactly why the two proofs in Panels II and III look nothing like anything from a first algebra course.</p>
+</div>
+
+<h3>Two independent routes, one target</h3>
+<p>Panels II and III give two logically independent proofs of the same one-root statement. Panel II works entirely with the <em>size</em> \(|p(z)|\) of the polynomial's output — it hunts for the point where \(|p|\) is smallest and shows that point must be a root. Panel III works entirely with the <em>direction</em> \(\arg p(z)\) of the polynomial's output — it tracks how many times \(p(z)\) winds around the origin as \(z\) sweeps a large circle, and shows that winding count forces a root to exist somewhere inside. Neither proof needs the other, and neither needs anything beyond single-variable real analysis plus the algebra of \(\mathbb{C}\) itself. Seeing both is worth the extra length: each makes a different piece of \(\mathbb{C}\)'s structure do the work — its completeness in one case, its two-dimensionality in the other.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>The Minimum-Modulus Proof</h1>
+<div class="subtitle">hunt for the smallest output the polynomial ever produces, then show it has to be zero</div>
+
+<h2>Step 1 — polynomials blow up at infinity</h2>
+<p>Fix a non-constant polynomial \(p(z)=a_nz^n+\dots+a_0\), \(a_n\ne0\), \(n\ge1\). For \(z\ne0\), factor out the dominant term:</p>
+<div class="katex-display" data-katex="p(z) = a_n z^n \left(1 + \frac{a_{n-1}}{a_n z} + \dots + \frac{a_0}{a_n z^n}\right)"></div>
+<p>As \(|z|\to\infty\), every term inside the parentheses beyond the leading \(1\) shrinks to \(0\), so the bracket itself tends to \(1\) — meaning \(p(z)\) behaves like \(a_nz^n\) once \(|z|\) is large, and in particular \(|p(z)|\to\infty\).</p>
+
+<div class="callout definition">
+<span class="callout-label">The Growth Lemma</span>
+<p>For any \(M&gt;0\) there is an \(R&gt;0\) such that \(|p(z)|&gt;M\) whenever \(|z|&gt;R\). Proof, via the reverse triangle inequality: for \(|z|\ge1\),</p>
+<div class="katex-display" data-katex="|p(z)| \ge |a_n||z|^n - \big(|a_{n-1}||z|^{n-1}+\dots+|a_0|\big) \ge |a_n||z|^n - C|z|^{n-1}, \qquad C := |a_{n-1}|+\dots+|a_0|"></div>
+<p>which is \(\ge M\) once \(|z|\ge\max\!\big(1,\ \tfrac{C+M}{|a_n|}\big)\), because the \(|a_n||z|^n\) term grows strictly faster in \(|z|\) than the subtracted \(C|z|^{n-1}\) term.</p>
+</div>
+
+<h2>Step 2 — a global minimum must exist</h2>
+<p>The function \(z\mapsto|p(z)|\) is continuous, being built from sums and products of continuous functions composed with the modulus. Apply the Growth Lemma with \(M=|p(0)|\) to get an \(R\) with \(|p(z)|&gt;|p(0)|\) for every \(|z|&gt;R\). The closed disk \(\overline D_R=\{z:|z|\le R\}\) is closed and bounded, hence compact, so the continuous function \(|p|\) attains a minimum somewhere on \(\overline D_R\) — call that point \(z_0\) — by the Extreme Value Theorem. Since \(0\in\overline D_R\), that minimum value satisfies \(|p(z_0)|\le|p(0)|\); and every point outside \(\overline D_R\) has \(|p(z)|&gt;|p(0)|\ge|p(z_0)|\). So \(z_0\) doesn't just minimize \(|p|\) on the disk — it minimizes \(|p|\) over <em>all</em> of \(\mathbb{C}\).</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>This is the same two-ingredient trick that makes optimization over an unbounded domain tractable anywhere in analysis: a growth condition (Step 1) converts a search over all of \(\mathbb{C}\) into a search over one bounded, compact piece of it, and compactness is what then guarantees the search actually terminates in a minimizer rather than merely an infimum that's never attained.</p>
+</div>
+
+<h2>Step 3 — d'Alembert's Lemma: a nonzero minimum can always be beaten</h2>
+<p>Suppose, toward contradiction, that \(w_0:=p(z_0)\ne0\). Re-expand \(p\) as a polynomial in \(h\) centered at \(z_0\) — legitimate for any polynomial, by substituting \(z=z_0+h\) and multiplying out:</p>
+<div class="katex-display" data-katex="p(z_0+h) = c_0 + c_1h + c_2h^2 + \dots + c_nh^n, \qquad c_0 = p(z_0) = w_0"></div>
+<p>Since \(p\) is non-constant, the re-expansion is too (it has the same degree \(n\) and the same leading coefficient \(a_n\)), so not every one of \(c_1,\dots,c_n\) is \(0\). Let \(k\ge1\) be the smallest index with \(c_k\ne0\):</p>
+<div class="katex-display" data-katex="p(z_0+h) = w_0 + c_kh^k + \big(\text{terms of order } h^{k+1} \text{ or higher}\big)"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the step where complex numbers do irreplaceable work</span>
+<p>The whole proof now reduces to one geometric fact: <strong>complex numbers have \(k\)-th roots.</strong> Write \(-w_0/c_k\) in polar form, \(-w_0/c_k = re^{i\theta}\); then \(h_1:=r^{1/k}e^{i\theta/k}\) satisfies \(c_kh_1^{\,k}=-w_0\) exactly — nothing more exotic than de Moivre's formula. No such \(h_1\) generally exists among the reals (a real number's \(k\)-th roots can fail to exist at all when \(k\) is even and the target is negative); a complex one always does. This is the single point in the entire argument that is irreducibly about \(\mathbb{C}\) rather than any ordered field.</p>
+</div>
+
+<p>Set \(h=th_1\) for a small real parameter \(t\in(0,1]\). Then \(c_kh^k = t^kc_kh_1^k = -t^kw_0\), so</p>
+<div class="katex-display" data-katex="p(z_0+h) = w_0 - t^kw_0 + O(t^{k+1}) = (1-t^k)\,w_0 + O(t^{k+1})"></div>
+<p>Taking absolute values and applying the triangle inequality,</p>
+<div class="katex-display" data-katex="|p(z_0+h)| \le (1-t^k)|w_0| + O(t^{k+1})"></div>
+<p>For \(t\) small enough, the \(O(t^{k+1})\) error term is smaller than \(t^k|w_0|\) — it's a strictly higher power of \(t\), so it's eventually dominated — which makes the right-hand side strictly less than \((1-t^k)|w_0|+t^k|w_0|=|w_0|\). That is: \(|p(z_0+h)|&lt;|p(z_0)|\) for all sufficiently small \(t&gt;0\), contradicting the fact that \(z_0\) minimizes \(|p|\) over all of \(\mathbb{C}\).</p>
+
+<p>The contradiction forces the assumption to fail: \(w_0=p(z_0)\) must be \(0\). The point that minimizes \(|p|\) is a root — and it exists, by Steps 1–2. \(\blacksquare\)</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — precisely calibrated to fail over ℝ</span>
+<p>Every ingredient above is elementary — a triangle inequality, the Extreme Value Theorem, the existence of complex \(k\)-th roots — yet nothing analogous is true over \(\mathbb{R}\). Run the identical argument on \(p(x)=x^2+1\) as a function of a real variable: it genuinely has a minimum, at \(x_0=0\), where \(p(0)=1\ne0\), and Step 3 correctly fails to produce a contradiction — solving \(c_2h_1^2=-w_0\) would need a real square root of \(-1\), which doesn't exist. The theorem is calibrated to exactly the one place this argument stops working: real numbers don't have every root; complex numbers do.</p>
+</div>
+
+<h3>Watching d'Alembert's Lemma in a specific case</h3>
+<p>Take \(p(z)=z^2+1\) and start at \(z_0=1\), where \(p(1)=2\ne0\). Expanding, \(p(1+h)=(1+h)^2+1=2+2h+h^2\), so \(c_1=2\ne0\) already — \(k=1\). The lemma's direction is \(h_1=-w_0/c_1=-2/2=-1\), a real number, so a small real step \(t\) genuinely shrinks \(|p|\): \(p(0.9)=1.81&lt;2\), exactly as promised.</p>
+<p>Push that descent all the way along the real axis, though, and it bottoms out at \(z=0\), where \(p(0)=1\) — a local minimum of \(|p|\) restricted to \(\mathbb{R}\), but nowhere near a root. At this new point, \(c_1=p'(0)=0\): the first-order lemma has nothing left to say, and the smallest nonzero coefficient is now \(c_2\), from \(p(h)=1+h^2\). Solving \(c_2h_1^2=-w_0\) means \(h_1^2=-1\), whose only solutions are \(h_1=\pm i\) — <strong>a step the lemma is only able to take by leaving the real axis.</strong> That forced detour into the imaginary direction is not a quirk of this example; it is the mechanism, made visible, and Panel V's lab lets you drive it by hand.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — this proof is secretly an algorithm</span>
+<p>Nothing about Step 3 is purely existential: given any \(z_0\) with \(p(z_0)\ne0\), it computes an explicit direction that strictly decreases \(|p|\). Iterating it — descend, recompute the direction, descend again — is a genuine root-finding procedure, closely related to Newton's method. The proof of existence and a numerical algorithm for actually finding the thing are, here, almost the same object.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Winding-Number Proof</h1>
+<div class="subtitle">track how many times the output circles the origin, and let a discrete invariant do the rest</div>
+
+<h2>A familiar special case first: the Intermediate Value Theorem</h2>
+<p>Before wrapping a whole plane around itself, it's worth noticing that a shadow of this proof is already familiar from single-variable calculus. Let \(p\) be a polynomial with <em>real</em> coefficients and <em>odd</em> degree \(n\). Because \(n\) is odd, the two ends of \(p\)'s graph point in opposite directions: \(p(x)\to+\infty\) as \(x\to+\infty\) and \(p(x)\to-\infty\) as \(x\to-\infty\) (or the reverse, depending on the sign of \(a_n\)). Since \(p\) is continuous, the Intermediate Value Theorem guarantees it crosses \(0\) somewhere in between — <strong>every real polynomial of odd degree has a real root</strong>, no complex numbers required.</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>This is not a separate fact bolted onto the Fundamental Theorem — the winding-number proof below is exactly this argument, generalized from "the sign of a real number is either \(+\) or \(-\), two possibilities, so a continuous path from \(+\) to \(-\) must cross \(0\)" to "the winding number of a loop around the origin is an integer, infinitely many possibilities, so a continuously-varying loop that starts at winding number \(0\) and ends at winding number \(n\ge1\) must, at some point, pass through the origin." IVT is the \(n=1\) shadow of an argument that otherwise needs two real dimensions to state.</p>
+</div>
+
+<h2>Winding number, defined operationally</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — winding number</span>
+<p>For a continuous closed loop \(\gamma:[0,2\pi]\to\mathbb{C}\setminus\{0\}\) that never touches the origin, its <strong>winding number</strong> about \(0\), written \(\mathrm{wind}(\gamma)\), is the total signed number of full \(2\pi\) turns the argument of \(\gamma(\theta)\) makes as \(\theta\) runs from \(0\) to \(2\pi\). It is always an integer — the loop closes up, so any net turning must be a whole number of revolutions — and it stays constant under any continuous deformation of \(\gamma\) that never lets the loop pass through \(0\).</p>
+</div>
+
+<h2>The two limiting cases</h2>
+<p>Fix a non-constant polynomial \(p\) of degree \(n\), and consider the loop traced by \(p\) on a circle of radius \(R\):</p>
+<div class="katex-display" data-katex="\gamma_R(\theta) = p(Re^{i\theta}), \qquad \theta\in[0,2\pi]"></div>
+
+<h3>Large R: the winding number is n</h3>
+<p>For \(|z|=R\) large, split off the leading term exactly as in Panel II:</p>
+<div class="katex-display" data-katex="p(z) = a_nz^n + \underbrace{(a_{n-1}z^{n-1}+\dots+a_0)}_{q(z)}"></div>
+<p>By the Growth Lemma, once \(R\) is large enough, \(|a_nz^n|&gt;|q(z)|\) for every \(z\) on that circle — the leading term dominates every lower-order term combined. This lets \(p(z)\) be deformed continuously into \(a_nz^n\) along the straight-line homotopy \(p_s(z)=a_nz^n+s\,q(z)\), \(s\in[0,1]\), without the path ever crossing \(0\), since \(|a_nz^n|&gt;|q(z)|\ge|s\,q(z)|\) throughout. Winding number is invariant under such a deformation, so \(\mathrm{wind}(\gamma_R)\) equals the winding number of \(\theta\mapsto a_nR^ne^{in\theta}\) — a loop whose argument is literally \(n\theta\) plus a constant, completing exactly \(n\) full turns as \(\theta\) runs once around:</p>
+<div class="katex-display" data-katex="\mathrm{wind}(\gamma_R) = n \qquad \text{for all sufficiently large } R"></div>
+
+<h3>Small R: the winding number is 0, if there's no root to catch</h3>
+<p>Suppose, toward contradiction, that \(p\) has no root at all — \(p(z)\ne0\) for every \(z\in\mathbb{C}\). Then \(\gamma_R\) avoids the origin for every \(R\ge0\), including the degenerate case \(R=0\), where the "circle" collapses to a single point and \(\gamma_0(\theta)\equiv p(0)\) — a loop that never moves at all:</p>
+<div class="katex-display" data-katex="\gamma_0(\theta) \equiv p(0) \implies \mathrm{wind}(\gamma_0) = 0"></div>
+<p>(a stationary point cannot wind around anything).</p>
+
+<h2>Closing the trap</h2>
+<p>Under the no-root assumption, \(\gamma_R\) avoids \(0\) for every \(R\in[0,\infty)\) simultaneously, and \(R\mapsto\gamma_R\) varies continuously in \(R\). A continuous family of loops that never touches \(0\) has a winding number that cannot jump — it is a continuous, integer-valued function of \(R\), hence constant on the connected interval \([0,\infty)\). But we just computed \(\mathrm{wind}(\gamma_0)=0\) and \(\mathrm{wind}(\gamma_R)=n\ge1\) for large \(R\): two different values of a function that was supposed to be constant. Contradiction. The no-root assumption fails: \(p\) has a root. \(\blacksquare\)</p>
+
+<div class="ascii">   R = 0                                R large
+
+   γ₀(θ) ≡ p(0)         <span class="hl">wind = 0</span>       γ_R(θ) ≈ a_n R^n e^{inθ}     <span class="hl2">wind = n</span>
+   (the loop is a single point)              (the loop circles the origin n times)
+
+        a continuous, integer-valued function of R can't jump from 0 to n
+        without landing on every value in between — in particular without
+        ever landing exactly on 0, i.e. without γ_R passing through 0 itself</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>The winding number of a loop is only defined — only makes sense — as long as the loop avoids the origin entirely. The moment \(\gamma_R\) passes through \(0\) for some \(R\), that \(R\) is exactly \(|z_0|\) for a root \(z_0\), and the proof has already found what it was looking for. "The winding number is well-defined and constant" and "the polynomial has no root" stand or fall together — that shared fate is precisely the lever the proof pulls.</p>
+</div>
+
+<h2>The Argument Principle, briefly</h2>
+<p>The proof above only needs winding numbers at \(R=0\) and \(R\to\infty\), but tracking \(\mathrm{wind}(\gamma_R)\) at <em>every</em> \(R\) in between gives something sharper: it counts exactly the number of roots of \(p\) (with multiplicity) lying inside the disk \(|z|&lt;R\), jumping up by a root's multiplicity every time \(R\) crosses that root's modulus. This sharper statement is the <strong>Argument Principle</strong>, ordinarily proved with contour integration,</p>
+<div class="katex-display" data-katex="\frac{1}{2\pi i}\oint_{|z|=R} \frac{p'(z)}{p(z)}\,dz = \#\{\text{roots with } |z|&lt;R\}"></div>
+<p>— the discrete jump-counting argument above is its combinatorial shadow, needing no integrals at all. Panel V's lab makes the jump directly visible: drag the radius past a root and watch the winding-number readout increase by exactly that root's multiplicity.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">z-PLANE — circle |z| = R</div>
+      <canvas id="windDomainCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">w-PLANE — image curve p(z), z on the circle</div>
+      <canvas id="windImageCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Polynomial p(z)</label>
+      <select id="windPolySelect">
+        <option value="p1">z² + 1</option>
+        <option value="p2">z³ − 1</option>
+        <option value="p3" selected>z³ − z + 1</option>
+        <option value="p4">z⁴ − z + 1</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Radius R</label>
+      <input type="range" id="windRSlider" min="0.05" max="3.5" step="0.01" value="0.5">
+      <span class="readout" id="windRReadout">0.50</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">DEGREE n</div><div class="v" id="windDegreeReadout">…</div></div>
+    <div class="block"><div class="k">WINDING NUMBER</div><div class="v" id="windNumberReadout">…</div></div>
+    <div class="block"><div class="k">ROOTS WITH |z| &lt; R</div><div class="v" id="windEnclosedReadout">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue)"></span> start of the loop</span>
+    <span><span class="swatch" style="background:var(--red)"></span> end of the loop (same point — it's closed)</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> roots currently enclosed</span>
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> roots not yet enclosed</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Start with \(R\) tiny: the image curve is a small, unmoving-looking blob far from the origin, winding number \(0\). Drag \(R\) up slowly and watch the winding-number readout jump by exactly \(1\) every time the circle in the left panel sweeps past a root — each jump is the image curve, in the right panel, suddenly looping around the origin one more time. By the time \(R\) comfortably exceeds every root's modulus, the readout has settled at \(n\), matching the degree, and the two readouts — winding number and roots enclosed — agree at every step. That agreement <em>is</em> the Argument Principle, watched rather than proved.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Full Factorization &amp; Consequences</h1>
+<div class="subtitle">one root is enough to force the entire structure — n roots, conjugate pairs, and matrix eigenvalues all fall out by iteration</div>
+
+<h2>From one root to n roots: the Factor Theorem</h2>
+<p>The single root guaranteed by Panels II and III unlocks everything else through one purely algebraic tool: polynomial division. For any polynomials \(p(z)\) and \(q(z)\ne0\), there exist unique polynomials \(Q(z)\) and \(r(z)\) with \(p=Qq+r\) and \(\deg r&lt;\deg q\) — the same long-division algorithm familiar from integers, run on polynomials instead. Apply it with \(q(z)=z-z_0\): the remainder has degree less than \(1\), so it is a constant, and substituting \(z=z_0\) into \(p(z)=Q(z)(z-z_0)+r\) gives \(r=p(z_0)\).</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the Factor Theorem</span>
+<p>\(z_0\) is a root of \(p\) if and only if \((z-z_0)\) divides \(p(z)\) exactly:</p>
+<div class="katex-display" data-katex="p(z_0)=0 \iff p(z) = (z-z_0)\,Q(z) \text{ for some polynomial } Q \text{ of degree } n-1"></div>
+</div>
+
+<h3>Complete factorization by induction</h3>
+<p>\(Q(z)\) is itself a polynomial with complex coefficients (dividing a complex-coefficient polynomial by a complex-coefficient linear factor stays inside \(\mathbb{C}\)), of degree \(n-1\). If \(n-1\ge1\), the Fundamental Theorem applies to \(Q\) as well, handing it a fresh root \(z_1\) and splitting off another factor: \(Q(z)=(z-z_1)Q_1(z)\), with \(\deg Q_1=n-2\). Repeating this \(n\) times in total — the theorem guarantees a fresh root at every stage until the degree hits \(0\) — bottoms out at a constant, which must equal \(a_n\) (comparing leading coefficients at every step, since factoring out a linear term in \(z\) never changes the leading coefficient):</p>
+<div class="katex-display" data-katex="p(z) = a_n(z-z_1)(z-z_2)\cdots(z-z_n), \qquad z_1,\dots,z_n\in\mathbb{C} \text{ (not necessarily distinct)}"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the single induction referenced back in Panel I: "the one-root statement is the load-bearing fact." Everything past this point is bookkeeping. When a root \(z_i\) repeats \(m\) times among \(z_1,\dots,z_n\), it is said to have <strong>multiplicity</strong> \(m\), and the multiplicities of the distinct roots always sum to exactly \(n\) — the more commonly quoted form of the theorem: <em>every degree-\(n\) polynomial has exactly \(n\) complex roots, counted with multiplicity.</em></p>
+</div>
+
+<h3>Real polynomials: roots come in conjugate pairs</h3>
+<p>If \(p\) has real coefficients and \(z_0\) is a non-real root, complex conjugation gives \(\overline{p(z_0)}=p(\overline{z_0})\) — conjugation distributes over sums and products and fixes every real coefficient term by term — so \(p(\overline{z_0})=\overline{0}=0\): \(\overline{z_0}\) is also a root. Non-real roots of a real polynomial therefore occur in conjugate pairs \(z_0,\overline{z_0}\), and multiplying their linear factors together:</p>
+<div class="katex-display" data-katex="(z-z_0)(z-\overline{z_0}) = z^2 - 2\,\mathrm{Re}(z_0)\,z + |z_0|^2"></div>
+<p>produces a quadratic with real coefficients and no real roots (its discriminant is negative, since \(z_0\) is non-real). Corollary: every real polynomial factors, over \(\mathbb{R}\), into a product of real linear factors and real irreducible quadratic factors — the closest thing to a complete factorization available without leaving \(\mathbb{R}\).</p>
+
+<div class="callout note">
+<span class="callout-label">Note — a forward glance to integral calculus</span>
+<p>The partial-fraction decomposition technique from single-variable integral calculus rests entirely on this corollary: every rational function's denominator, being a real polynomial, always breaks into exactly these two kinds of pieces — linear factors and irreducible quadratics — which is precisely why partial fractions never needs a third case.</p>
+</div>
+
+<h3>Worked example: a hand-computed factorization</h3>
+<p>Take \(p(z)=z^3-z^2+z-1\). Grouping terms, \(z^2(z-1)+(z-1)=(z-1)(z^2+1)\); the root \(z=1\) is found by inspection, and the remaining quadratic \(z^2+1\) has roots \(\pm i\). Full factorization:</p>
+<div class="katex-display" data-katex="z^3-z^2+z-1 = (z-1)(z^2+1) = (z-1)(z-i)(z+i)"></div>
+<p>Degree \(3\), three roots: one real, and the other two forming exactly the conjugate pair the corollary above predicts.</p>
+
+<h2>Eigenvalues always exist</h2>
+<p>A square matrix \(A\) has an eigenvalue exactly when its characteristic polynomial, \(\det(A-\lambda I)\) — a degree-\(n\) polynomial in \(\lambda\) — has a root. Since the Fundamental Theorem guarantees every non-constant polynomial has a root over \(\mathbb{C}\), <strong>every square complex matrix has at least one eigenvalue</strong>, with no further hypothesis needed. This single fact underwrites diagonalization, Jordan normal form, and spectral theory across linear algebra: none of it gets off the ground without knowing the characteristic polynomial has somewhere to root itself.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — this is why eigenvalue theory lives over ℂ</span>
+<p>A <em>real</em> matrix's characteristic polynomial has real coefficients, but need not have any real roots. The \(90°\) rotation matrix has characteristic polynomial \(\lambda^2+1\) — real coefficients, and eigenvalues \(\pm i\), neither one real. Passing to \(\mathbb{C}\) isn't a technical convenience here; for many real matrices it is the only setting in which the theorem applies at all, and the only setting in which "eigenvalue" is guaranteed to mean anything.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Interactive Lab</h1>
+<div class="subtitle">watch the two proofs from Panels II and III happen, for a polynomial you choose</div>
+
+<p>Both proofs earlier in this essay are existence arguments — they show a root <em>has</em> to be somewhere without necessarily walking you to it. These two labs make each proof's mechanism tangible: the first lets you run Panel II's descent by hand, dragging a point downhill on the \(|p(z)|\) landscape until it lands on a root; the second turns Panel III's winding-number argument into an exact, explorable graph.</p>
+
+<h2>Lab 1 — Steepest Descent on the Modulus Landscape</h2>
+<p>The background color is \(|p(z)|\) itself, mapped across the complex plane — <span style="color:var(--blue)">blue</span> where it's small, <span style="color:var(--red)">red</span> where it's large, with the true roots (found numerically, the same way this lab searches for them) outlined in black. Drag the dot to relocate \(z_0\); the arrow shows the steepest-descent direction d'Alembert's Lemma constructs at that point — found here by brute-force sampling, not symbolic differentiation, so it works identically whether \(k=1\) or the first-order term happens to vanish. Press <strong>step downhill</strong> repeatedly and watch the point walk itself toward a root, the same way Panel II's proof-by-contradiction guarantees it always can.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">|p(z)| landscape — drag the dot, or press Step</div>
+      <canvas id="descentCanvas" width="420" height="420" style="width:100%;max-width:420px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Polynomial p(z)</label>
+      <select id="panelVPolySelect">
+        <option value="p1">z² + 1</option>
+        <option value="p2">z³ − 1</option>
+        <option value="p3" selected>z³ − z + 1</option>
+        <option value="p4">z⁴ − z + 1</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <button class="lab-btn" id="descStepBtn">step downhill →</button>
+      <button class="lab-btn" id="descResetBtn">reset point</button>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">CURRENT POINT z₀</div><div class="v" id="descZReadout">…</div></div>
+    <div class="block"><div class="k">|p(z₀)|</div><div class="v" id="descValReadout">…</div></div>
+    <div class="block"><div class="k">DISTANCE TO NEAREST ROOT</div><div class="v" id="descDistReadout">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue)"></span> low |p(z)| — near a root</span>
+    <span><span class="swatch" style="background:var(--red)"></span> high |p(z)| — far from every root</span>
+    <span>black-outlined dots — the true roots</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Switch to <code>z³ − z + 1</code> and drop the point near the real axis around \(1.4\): the arrow first points along a shallow blue valley, and a few steps in, it swings <em>off</em> the real axis entirely — the same forced detour into the complex plane worked out by hand for \(z^2+1\) at the end of Panel II, now happening for a polynomial with no tidy closed-form roots at all. That's the proof doing real work, not just illustrating a pre-computed answer.</p>
+</div>
+
+<h2>Lab 2 — Winding Number as a Function of Radius</h2>
+<p>This is the exact, closed-form version of Panel III's argument, built directly from the polynomial's roots rather than from numerically tracing a curve: winding number as a step function of \(R\), starting at \(0\), jumping by a root's multiplicity at each root's modulus, and arriving at the degree \(n\) once \(R\) clears every root. Scrub \(R\) to see exactly which radius the current winding-number value corresponds to.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">winding number of p(z) around a circle of radius R (uses the polynomial selected above)</div>
+      <canvas id="stepCanvas" width="480" height="260" style="width:100%;max-width:480px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Scrub R</label>
+      <input type="range" id="stepRSlider" min="0" max="1000" value="300">
+      <span class="readout" id="stepRReadout">…</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">WINDING NUMBER AT THIS R</div><div class="v" id="stepWindReadout">…</div></div>
+  </div>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>Every jump in this step function sits at a root's exact modulus, and every jump's height is that root's multiplicity — for the four polynomials on offer here, every root is simple, so every jump has height \(1\), but the construction (Panel III's Argument Principle) makes no such assumption in general: a double root jumps the count by \(2\) in one step, indistinguishable on this graph from two simple roots at radii too close to resolve.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>What It Actually Means</h1>
+<div class="subtitle">algebraic closure, the limits of algebra alone, and why the story stops at two real dimensions</div>
+
+<h2>ℂ is algebraically closed</h2>
+<p>A field \(F\) is <strong>algebraically closed</strong> if every non-constant polynomial with coefficients in \(F\) has a root in \(F\). The Fundamental Theorem of Algebra is exactly the statement that \(\mathbb{C}\) is algebraically closed — and by the induction of Panel IV, that property is equivalent to "every degree-\(n\) polynomial splits into \(n\) linear factors over \(F\)." None of \(\mathbb{N},\mathbb{Z},\mathbb{Q},\mathbb{R}\) has this property — each has a non-constant polynomial with no root inside itself, which is precisely what forced every earlier extension in Panel I. \(\mathbb{C}\) is the first algebraically closed field reachable from \(\mathbb{R}\), and — a theorem of field theory going beyond the scope of this essay — the <em>smallest</em> one: its <em>algebraic closure</em>.</p>
+
+<h3>Why the pattern really does stop at ℂ</h3>
+<p>It's worth being precise about why the extension chain from Panel I terminates instead of continuing forever. Every earlier extension (\(\mathbb{Z},\mathbb{Q},\mathbb{R},\mathbb{C}\)) was forced by a specific unsolved equation. You might expect \(\mathbb{C}\) needs a further extension the same way — quaternions, say. The Fundamental Theorem says no: every polynomial equation with complex coefficients already has a complex solution, so there is no unsolved equation left to force anything further. Quaternions do exist, as a genuine four-dimensional extension of \(\mathbb{C}\), but they're forced by demanding something \(\mathbb{C}\) never claimed to provide — closure of a noncommutative division algebra, at the cost of commutativity itself — not by any unsolved polynomial. The specific mechanism driving Panel I's whole extension chain has nothing left to say once it reaches \(\mathbb{C}\).</p>
+
+<h2>The Galois-theoretic proof: isolating exactly how much analysis is needed</h2>
+<p>Modern algebra can pin down exactly how much non-algebraic content the theorem needs, rather than leaving it as a vague "some analysis is necessary." The proof runs, in outline: embed a real polynomial's splitting field inside \(\mathbb{C}\) and examine the Galois group \(G\) of that extension. Two purely analytic facts do all the non-algebraic work required, each used exactly once — every positive real number has a real square root, and every odd-degree real polynomial has a real root (Panel III's Intermediate Value Theorem argument). The second fact strips the odd part off \(|G|\); from there, pure group theory — the Sylow theorems, applied to the resulting \(2\)-group — combined with the first fact (each remaining step is a quadratic, i.e. square-root, extension) finishes the job with zero further appeals to continuity or completeness.</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>This is the cleanest possible confirmation of Panel I's warning: analysis is not avoidable, but it <em>is</em> confinable to exactly these two facts. Every other line of this proof is group theory.</p>
+</div>
+
+<h2>A forward glance: the Liouville's-Theorem proof</h2>
+<p>Complex analysis furnishes a third proof, shorter than either in this essay once its machinery is already built. If \(p\) had no root, \(1/p(z)\) would be defined and holomorphic everywhere on \(\mathbb{C}\) — an <em>entire</em> function — and, by the Growth Lemma of Panel II, bounded, since \(1/p(z)\to0\) as \(|z|\to\infty\) and \(1/p\) is continuous on all of \(\mathbb{C}\):</p>
+<div class="katex-display" data-katex="\tfrac{1}{p} \text{ entire and bounded} \;\xrightarrow{\text{Liouville}}\; \tfrac1p \text{ constant} \implies p \text{ constant} \quad\text{— contradicting } p \text{ non-constant}"></div>
+<p>Liouville's theorem — every bounded entire function is constant — is genuinely short to invoke, but it hides comparable work behind Cauchy's integral formula; the two proofs given in full above were chosen precisely because they need nothing beyond real-variable calculus and the bare algebra of \(\mathbb{C}\).</p>
+
+<h2>Closing insight</h2>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The Fundamental Theorem of Algebra is not really a fact about polynomials — it's a fact about \(\mathbb{C}\): that going from one real dimension to two is exactly enough extra room for continuity and algebra to corner every polynomial into having a root. Panels II and III are two different ways of using that extra room — one measuring size, one measuring direction — to run the same corner.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderWindLab();
+  renderDescentLab();
+  renderStepLab();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ COMPLEX ARITHMETIC ============
+function cAdd(a,b){ return {re:a.re+b.re, im:a.im+b.im}; }
+function cSub(a,b){ return {re:a.re-b.re, im:a.im-b.im}; }
+function cMul(a,b){ return {re:a.re*b.re-a.im*b.im, im:a.re*b.im+a.im*b.re}; }
+function cDiv(a,b){ const d=b.re*b.re+b.im*b.im; return {re:(a.re*b.re+a.im*b.im)/d, im:(a.im*b.re-a.re*b.im)/d}; }
+function cAbs(a){ return Math.hypot(a.re,a.im); }
+
+function evalPoly(coeffs, z){
+  let result = {re:0, im:0};
+  for(let i=coeffs.length-1;i>=0;i--) result = cAdd(cMul(result, z), coeffs[i]);
+  return result;
+}
+
+// Durand–Kerner (Weierstrass) simultaneous root iteration
+function findRoots(coeffs){
+  const n = coeffs.length - 1;
+  const lead = coeffs[n];
+  const monic = coeffs.map(c => cDiv(c, lead));
+  const seed = {re:0.4, im:0.9};
+  let roots = [], cur = {re:1, im:0};
+  for(let k=0;k<n;k++){ cur = cMul(cur, seed); roots.push(cur); }
+  for(let iter=0; iter<300; iter++){
+    roots = roots.map((ri, idx)=>{
+      let denom = {re:1, im:0};
+      for(let j=0;j<n;j++){ if(j===idx) continue; denom = cMul(denom, cSub(ri, roots[j])); }
+      const numer = evalPoly(monic, ri);
+      return cSub(ri, cDiv(numer, denom));
+    });
+  }
+  return roots;
+}
+
+// winding number by numerically unwrapping arg(p(z)) around |z|=R
+function windingNumber(coeffs, R, steps=1440){
+  let total=0, prevArg=null;
+  for(let i=0;i<=steps;i++){
+    const theta = 2*Math.PI*i/steps;
+    const z = {re:R*Math.cos(theta), im:R*Math.sin(theta)};
+    const w = evalPoly(coeffs, z);
+    const arg = Math.atan2(w.im, w.re);
+    if(prevArg!==null){
+      let d = arg-prevArg;
+      while(d>Math.PI) d -= 2*Math.PI;
+      while(d<-Math.PI) d += 2*Math.PI;
+      total += d;
+    }
+    prevArg = arg;
+  }
+  return total/(2*Math.PI);
+}
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function hexToRgb01(hex){
+  const h = hex.trim().replace('#','');
+  const v = h.length===3 ? h.split('').map(c=>c+c).join('') : h;
+  const n = parseInt(v,16);
+  return [((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255];
+}
+function lerp3(t, lo, hi){ return [lo[0]+(hi[0]-lo[0])*t, lo[1]+(hi[1]-lo[1])*t, lo[2]+(hi[2]-lo[2])*t]; }
+function rgbCss(c){ return 'rgb(' + Math.round(c[0]*255) + ',' + Math.round(c[1]*255) + ',' + Math.round(c[2]*255) + ')'; }
+function w2sDomain(x,y,range,size){ const s=size/(2*range); return [size/2+x*s, size/2-y*s]; }
+
+// ============ POLYNOMIAL REGISTRY ============
+const POLYS = {
+  p1: { label:'z² + 1',     coeffs:[{re:1,im:0},{re:0,im:0},{re:1,im:0}], range:1.8 },
+  p2: { label:'z³ − 1',     coeffs:[{re:-1,im:0},{re:0,im:0},{re:0,im:0},{re:1,im:0}], range:1.8 },
+  p3: { label:'z³ − z + 1', coeffs:[{re:1,im:0},{re:-1,im:0},{re:0,im:0},{re:1,im:0}], range:2.0 },
+  p4: { label:'z⁴ − z + 1', coeffs:[{re:1,im:0},{re:-1,im:0},{re:0,im:0},{re:0,im:0},{re:1,im:0}], range:2.0 },
+};
+Object.values(POLYS).forEach(P => { P.degree = P.coeffs.length-1; P.roots = findRoots(P.coeffs); });
+
+// ============ LAB (Panel III): WINDING NUMBER EXPLORER ============
+const windDomainCv = document.getElementById('windDomainCanvas');
+const windImageCv  = document.getElementById('windImageCanvas');
+const wdctx = windDomainCv.getContext('2d');
+const wictx = windImageCv.getContext('2d');
+const windPolySelect = document.getElementById('windPolySelect');
+const windRSlider = document.getElementById('windRSlider');
+const windRReadout = document.getElementById('windRReadout');
+const windDegreeReadout = document.getElementById('windDegreeReadout');
+const windNumberReadout = document.getElementById('windNumberReadout');
+const windEnclosedReadout = document.getElementById('windEnclosedReadout');
+
+function drawGridAxes(ctx, range, size){
+  ctx.strokeStyle = cssVar('--border'); ctx.lineWidth = 1;
+  for(let g=-2; g<=2; g++){
+    let [x1,y1]=w2sDomain(g*range/2,-range,range,size), [x2,y2]=w2sDomain(g*range/2,range,range,size);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    [x1,y1]=w2sDomain(-range,g*range/2,range,size); [x2,y2]=w2sDomain(range,g*range/2,range,size);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  ctx.strokeStyle = cssVar('--ink-faint'); ctx.lineWidth = 1.2;
+  let [ax1,ay1]=w2sDomain(-range,0,range,size), [ax2,ay2]=w2sDomain(range,0,range,size);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+  [ax1,ay1]=w2sDomain(0,-range,range,size); [ax2,ay2]=w2sDomain(0,range,range,size);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+}
+
+function drawWindDomain(){
+  const P = POLYS[windPolySelect.value];
+  const R = parseFloat(windRSlider.value);
+  const range = Math.max(P.range*1.3, R*1.15);
+  const size = windDomainCv.width;
+  wdctx.clearRect(0,0,size,size);
+  wdctx.fillStyle = cssVar('--bg-elevated'); wdctx.fillRect(0,0,size,size);
+  drawGridAxes(wdctx, range, size);
+
+  wdctx.strokeStyle = cssVar('--blue'); wdctx.lineWidth = 2;
+  wdctx.beginPath();
+  for(let i=0;i<=120;i++){
+    const th = 2*Math.PI*i/120;
+    const [sx,sy] = w2sDomain(R*Math.cos(th), R*Math.sin(th), range, size);
+    i===0 ? wdctx.moveTo(sx,sy) : wdctx.lineTo(sx,sy);
+  }
+  wdctx.stroke();
+
+  P.roots.forEach(r=>{
+    const inside = cAbs(r) < R;
+    const [sx,sy] = w2sDomain(r.re, r.im, range, size);
+    wdctx.globalAlpha = inside ? 1 : 0.5;
+    wdctx.beginPath(); wdctx.arc(sx,sy, inside?5:4, 0, 7);
+    wdctx.fillStyle = inside ? cssVar('--accent') : cssVar('--ink-faint');
+    wdctx.fill();
+  });
+  wdctx.globalAlpha = 1;
+}
+
+function drawWindImage(){
+  const P = POLYS[windPolySelect.value];
+  const R = parseFloat(windRSlider.value);
+  const size = windImageCv.width;
+  wictx.clearRect(0,0,size,size);
+  wictx.fillStyle = cssVar('--bg-elevated'); wictx.fillRect(0,0,size,size);
+
+  const steps = 480, pts = [];
+  for(let i=0;i<=steps;i++){
+    const th = 2*Math.PI*i/steps;
+    pts.push(evalPoly(P.coeffs, {re:R*Math.cos(th), im:R*Math.sin(th)}));
+  }
+  let maxAbs = 1e-6;
+  pts.forEach(w=> maxAbs = Math.max(maxAbs, cAbs(w)));
+  const range = maxAbs*1.2;
+
+  drawGridAxes(wictx, range, size);
+
+  const loC = hexToRgb01(cssVar('--blue')), hiC = hexToRgb01(cssVar('--red'));
+  for(let i=1;i<pts.length;i++){
+    const t = i/pts.length;
+    const [sx1,sy1] = w2sDomain(pts[i-1].re, pts[i-1].im, range, size);
+    const [sx2,sy2] = w2sDomain(pts[i].re, pts[i].im, range, size);
+    wictx.strokeStyle = rgbCss(lerp3(t, loC, hiC));
+    wictx.lineWidth = 2;
+    wictx.beginPath(); wictx.moveTo(sx1,sy1); wictx.lineTo(sx2,sy2); wictx.stroke();
+  }
+
+  const [ox,oy] = w2sDomain(0,0,range,size);
+  wictx.beginPath(); wictx.arc(ox,oy,4,0,7);
+  wictx.fillStyle = cssVar('--accent'); wictx.fill();
+  wictx.lineWidth=1.5; wictx.strokeStyle = cssVar('--bg-elevated'); wictx.stroke();
+
+  const [stx,sty] = w2sDomain(pts[0].re, pts[0].im, range, size);
+  wictx.beginPath(); wictx.arc(stx,sty,4,0,7);
+  wictx.fillStyle = cssVar('--blue'); wictx.fill();
+}
+
+function renderWindLab(){
+  const P = POLYS[windPolySelect.value];
+  const R = parseFloat(windRSlider.value);
+  drawWindDomain();
+  drawWindImage();
+  const w = windingNumber(P.coeffs, R);
+  const enclosed = P.roots.filter(r => cAbs(r) < R).length;
+  windRReadout.textContent = R.toFixed(2);
+  windDegreeReadout.textContent = P.degree;
+  windNumberReadout.textContent = Math.abs(w-Math.round(w)) < 0.05 ? Math.round(w) : (w.toFixed(2)+' (near a root)');
+  windEnclosedReadout.textContent = enclosed;
+}
+windPolySelect.addEventListener('change', renderWindLab);
+windRSlider.addEventListener('input', renderWindLab);
+renderWindLab();
+
+// ============ LAB (Panel V, Lab 1): STEEPEST DESCENT ============
+const descCv = document.getElementById('descentCanvas');
+const dctx2 = descCv.getContext('2d');
+const panelVPolySelect = document.getElementById('panelVPolySelect');
+const descStepBtn = document.getElementById('descStepBtn');
+const descResetBtn = document.getElementById('descResetBtn');
+const descZReadout = document.getElementById('descZReadout');
+const descValReadout = document.getElementById('descValReadout');
+const descDistReadout = document.getElementById('descDistReadout');
+
+let Z0 = {re:1.4, im:0.25};
+let heatmapCache = {};
+let descDragging = false;
+
+function computeHeatmap(key){
+  if(heatmapCache[key]) return heatmapCache[key];
+  const P = POLYS[key];
+  const N = 46, range = P.range;
+  const grid = []; let maxLog = 0;
+  for(let i=0;i<N;i++){
+    const row = [];
+    const x = -range + (2*range)*(i+0.5)/N;
+    for(let j=0;j<N;j++){
+      const y = range - (2*range)*(j+0.5)/N;
+      const val = Math.log(cAbs(evalPoly(P.coeffs, {re:x, im:y}))+1);
+      row.push(val);
+      if(val>maxLog) maxLog = val;
+    }
+    grid.push(row);
+  }
+  heatmapCache[key] = {grid, N, maxLog, range};
+  return heatmapCache[key];
+}
+
+function drawHeatmap(){
+  const P = POLYS[panelVPolySelect.value];
+  const {grid, N, maxLog, range} = computeHeatmap(panelVPolySelect.value);
+  const size = descCv.width, cell = size/N;
+  const lo = hexToRgb01(cssVar('--blue')), hi = hexToRgb01(cssVar('--red'));
+  for(let i=0;i<N;i++){
+    for(let j=0;j<N;j++){
+      const t = maxLog>0 ? grid[i][j]/maxLog : 0;
+      dctx2.fillStyle = rgbCss(lerp3(t, lo, hi));
+      dctx2.fillRect(i*cell, j*cell, cell+0.6, cell+0.6);
+    }
+  }
+  P.roots.forEach(r=>{
+    const [sx,sy] = w2sDomain(r.re, r.im, range, size);
+    dctx2.beginPath(); dctx2.arc(sx,sy,5,0,7);
+    dctx2.fillStyle = cssVar('--bg'); dctx2.fill();
+    dctx2.lineWidth = 2; dctx2.strokeStyle = cssVar('--ink'); dctx2.stroke();
+  });
+}
+
+function steepestDirection(P, z0, eps){
+  let bestAngle = 0, bestVal = Infinity;
+  const samples = 48;
+  for(let i=0;i<samples;i++){
+    const th = 2*Math.PI*i/samples;
+    const trial = {re: z0.re+eps*Math.cos(th), im: z0.im+eps*Math.sin(th)};
+    const val = cAbs(evalPoly(P.coeffs, trial));
+    if(val<bestVal){ bestVal=val; bestAngle=th; }
+  }
+  return bestAngle;
+}
+
+function drawDescentOverlay(){
+  const P = POLYS[panelVPolySelect.value];
+  const {range} = computeHeatmap(panelVPolySelect.value);
+  const size = descCv.width;
+  const eps = range*0.045;
+  const angle = steepestDirection(P, Z0, eps);
+  const arrowLen = range*0.22;
+  const tip = {re: Z0.re+arrowLen*Math.cos(angle), im: Z0.im+arrowLen*Math.sin(angle)};
+  const [zx,zy] = w2sDomain(Z0.re, Z0.im, range, size);
+  const [tx,ty] = w2sDomain(tip.re, tip.im, range, size);
+
+  dctx2.strokeStyle = cssVar('--ink'); dctx2.lineWidth = 2.5;
+  dctx2.beginPath(); dctx2.moveTo(zx,zy); dctx2.lineTo(tx,ty); dctx2.stroke();
+  const ah = Math.atan2(ty-zy, tx-zx);
+  dctx2.beginPath();
+  dctx2.moveTo(tx,ty);
+  dctx2.lineTo(tx-9*Math.cos(ah-0.4), ty-9*Math.sin(ah-0.4));
+  dctx2.lineTo(tx-9*Math.cos(ah+0.4), ty-9*Math.sin(ah+0.4));
+  dctx2.closePath(); dctx2.fillStyle = cssVar('--ink'); dctx2.fill();
+
+  dctx2.beginPath(); dctx2.arc(zx,zy,6,0,7);
+  dctx2.fillStyle = cssVar('--accent'); dctx2.fill();
+  dctx2.lineWidth = 2; dctx2.strokeStyle = cssVar('--bg-elevated'); dctx2.stroke();
+  return angle;
+}
+
+function renderDescentLab(){
+  drawHeatmap();
+  drawDescentOverlay();
+  const P = POLYS[panelVPolySelect.value];
+  const w0 = evalPoly(P.coeffs, Z0);
+  let nearest = Infinity;
+  P.roots.forEach(r=> nearest = Math.min(nearest, cAbs(cSub(Z0,r))));
+  descZReadout.textContent = Z0.re.toFixed(3) + (Z0.im>=0?' + ':' − ') + Math.abs(Z0.im).toFixed(3) + 'i';
+  descValReadout.textContent = cAbs(w0).toFixed(4);
+  descDistReadout.textContent = nearest.toFixed(4) + (nearest<0.03 ? '  — essentially a root' : '');
+}
+
+descStepBtn.addEventListener('click', ()=>{
+  const P = POLYS[panelVPolySelect.value];
+  const {range} = computeHeatmap(panelVPolySelect.value);
+  const eps = range*0.045;
+  const angle = steepestDirection(P, Z0, eps);
+  const stepSize = range*0.14;
+  Z0 = {
+    re: Math.max(-range, Math.min(range, Z0.re + stepSize*Math.cos(angle))),
+    im: Math.max(-range, Math.min(range, Z0.im + stepSize*Math.sin(angle)))
+  };
+  renderDescentLab();
+});
+descResetBtn.addEventListener('click', ()=>{
+  const range = POLYS[panelVPolySelect.value].range;
+  Z0 = {re: range*0.75, im: range*0.15};
+  renderDescentLab();
+});
+panelVPolySelect.addEventListener('change', ()=>{
+  descResetBtn.click();
+  renderStepLab();
+});
+
+function descEventToWorld(e){
+  const range = computeHeatmap(panelVPolySelect.value).range;
+  const rect = descCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (descCv.width/rect.width);
+  const py = (clientY-rect.top) * (descCv.height/rect.height);
+  const s = descCv.width/(2*range);
+  return {re: (px-descCv.width/2)/s, im: (descCv.height/2-py)/s};
+}
+descCv.addEventListener('mousedown', e=>{
+  const w = descEventToWorld(e);
+  if(Math.hypot(w.re-Z0.re, w.im-Z0.im) < computeHeatmap(panelVPolySelect.value).range*0.18) descDragging = true;
+});
+window.addEventListener('mousemove', e=>{
+  if(!descDragging) return;
+  const range = computeHeatmap(panelVPolySelect.value).range;
+  const w = descEventToWorld(e);
+  Z0 = {re: Math.max(-range,Math.min(range,w.re)), im: Math.max(-range,Math.min(range,w.im))};
+  renderDescentLab();
+});
+window.addEventListener('mouseup', ()=> descDragging=false);
+descCv.addEventListener('touchstart', e=>{
+  const w = descEventToWorld(e);
+  if(Math.hypot(w.re-Z0.re, w.im-Z0.im) < computeHeatmap(panelVPolySelect.value).range*0.22) descDragging = true;
+}, {passive:true});
+descCv.addEventListener('touchmove', e=>{
+  if(!descDragging) return;
+  const range = computeHeatmap(panelVPolySelect.value).range;
+  const w = descEventToWorld(e);
+  Z0 = {re: Math.max(-range,Math.min(range,w.re)), im: Math.max(-range,Math.min(range,w.im))};
+  renderDescentLab();
+}, {passive:true});
+window.addEventListener('touchend', ()=> descDragging=false);
+
+renderDescentLab();
+
+// ============ LAB (Panel V, Lab 2): WINDING NUMBER STEP FUNCTION ============
+const stepCv = document.getElementById('stepCanvas');
+const sctx = stepCv.getContext('2d');
+const stepRSlider = document.getElementById('stepRSlider');
+const stepRReadout = document.getElementById('stepRReadout');
+const stepWindReadout = document.getElementById('stepWindReadout');
+
+function buildWindingStepData(P){
+  const mods = P.roots.map(r=>cAbs(r)).sort((a,b)=>a-b);
+  const groups = [];
+  mods.forEach(m=>{
+    const last = groups[groups.length-1];
+    if(last && Math.abs(last.mod-m) < 1e-3) last.count++;
+    else groups.push({mod:m, count:1});
+  });
+  return groups;
+}
+
+function drawStepPlot(){
+  const P = POLYS[panelVPolySelect.value];
+  const groups = buildWindingStepData(P);
+  const maxMod = groups[groups.length-1].mod;
+  const Rmax = maxMod*1.6;
+  const n = P.degree;
+  const W = stepCv.width, H = stepCv.height;
+  const padL=44, padR=18, padT=18, padB=34;
+  const plotW = W-padL-padR, plotH = H-padT-padB;
+  function xOf(R){ return padL + Math.min(R,Rmax)/Rmax*plotW; }
+  function yOf(w){ return padT + plotH - (w/n)*plotH; }
+
+  sctx.clearRect(0,0,W,H);
+  sctx.fillStyle = cssVar('--bg-elevated'); sctx.fillRect(0,0,W,H);
+
+  sctx.strokeStyle = cssVar('--border'); sctx.lineWidth = 1;
+  sctx.fillStyle = cssVar('--ink-faint'); sctx.font = '11px "JetBrains Mono", monospace';
+  for(let k=0;k<=n;k++){
+    const y = yOf(k);
+    sctx.beginPath(); sctx.moveTo(padL,y); sctx.lineTo(padL+plotW,y); sctx.stroke();
+    sctx.fillText(String(k), 10, y+4);
+  }
+  sctx.strokeStyle = cssVar('--ink-faint'); sctx.lineWidth = 1.4;
+  sctx.beginPath(); sctx.moveTo(padL,padT); sctx.lineTo(padL,padT+plotH); sctx.lineTo(padL+plotW,padT+plotH); sctx.stroke();
+
+  sctx.strokeStyle = cssVar('--accent'); sctx.lineWidth = 2.5;
+  sctx.beginPath();
+  let cum = 0;
+  sctx.moveTo(xOf(0), yOf(0));
+  groups.forEach(g=>{
+    sctx.lineTo(xOf(g.mod), yOf(cum));
+    cum += g.count;
+    sctx.lineTo(xOf(g.mod), yOf(cum));
+  });
+  sctx.lineTo(xOf(Rmax), yOf(cum));
+  sctx.stroke();
+
+  cum = 0;
+  sctx.font = '10.5px "JetBrains Mono", monospace';
+  groups.forEach(g=>{
+    const x = xOf(g.mod);
+    sctx.beginPath(); sctx.arc(x, yOf(cum), 3, 0, 7);
+    sctx.fillStyle = cssVar('--ink-faint'); sctx.fill();
+    cum += g.count;
+    sctx.beginPath(); sctx.arc(x, yOf(cum), 3, 0, 7);
+    sctx.fillStyle = cssVar('--accent'); sctx.fill();
+    sctx.fillStyle = cssVar('--ink-dim');
+    const label = '|z|=' + g.mod.toFixed(2) + (g.count>1 ? ' (×'+g.count+')' : '');
+    sctx.fillText(label, Math.min(x+6, W-90), yOf(cum)-6);
+  });
+
+  sctx.fillStyle = cssVar('--ink-faint'); sctx.font = '11px "JetBrains Mono", monospace';
+  sctx.fillText('R →', padL+plotW-22, padT+plotH+22);
+  sctx.fillText('wind(R)', 4, padT-6);
+
+  return {groups, Rmax, xOf, yOf};
+}
+
+function renderStepLab(){
+  const {groups, Rmax, xOf, yOf} = drawStepPlot();
+  const R = (parseFloat(stepRSlider.value)/1000) * Rmax;
+  let wind = 0;
+  groups.forEach(g=>{ if(g.mod <= R) wind += g.count; });
+
+  const x = xOf(R);
+  sctx.strokeStyle = cssVar('--blue'); sctx.lineWidth = 1.5;
+  sctx.setLineDash([4,3]);
+  sctx.beginPath(); sctx.moveTo(x, 18); sctx.lineTo(x, stepCv.height-34); sctx.stroke();
+  sctx.setLineDash([]);
+  sctx.beginPath(); sctx.arc(x, yOf(wind), 4.5, 0, 7);
+  sctx.fillStyle = cssVar('--blue'); sctx.fill();
+
+  stepRReadout.textContent = 'R = ' + R.toFixed(3);
+  stepWindReadout.textContent = wind;
+}
+stepRSlider.addEventListener('input', renderStepLab);
+renderStepLab();
+</script>
+
+</body>
+</html>

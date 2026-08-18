@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Functions as Mappings — The Matrix as a Basis Recipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">MATRIX AS MAP</div>
+  <button class="tab-btn active" data-tab="t1">I · Functions as Mappings</button>
+  <button class="tab-btn" data-tab="t2">II · Basis &amp; Linear Combinations</button>
+  <button class="tab-btn" data-tab="t3">III · The Matrix as a Recipe</button>
+  <button class="tab-btn" data-tab="t4">IV · Why It's Forced</button>
+  <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t6">VI · Where This Goes</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Functions as Mappings</h1>
+<div class="subtitle">what it means to send a point somewhere else, and why a small set of restrictions turns that idea into a matrix</div>
+
+<h2>The picture underneath every function</h2>
+<p>Grade-school algebra trains a specific habit: a function is a rule you plug a number into, and a number comes back out. \(f(x)=x^2\) means "take 3, get 9." That habit is correct as far as it goes, but it quietly hides the more general and more useful picture. A function \(f:A\to B\) is a rule that assigns to <em>every</em> element of \(A\) exactly one element of \(B\) — and there is nothing in that definition that requires \(A\) or \(B\) to be numbers at all. They can be points in a plane, arrows in space, or entire other functions. Once you stop insisting on numbers, the right word for what \(f\) does stops being "compute" and becomes <em>map</em>: \(f\) takes each point of \(A\) and relocates it to some point of \(B\).</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — function as mapping</span>
+<p>A <strong>mapping</strong> (or map, or function) \(f:A\to B\) assigns to every element of the <strong>domain</strong> \(A\) a single element of the <strong>codomain</strong> \(B\), written \(f(a)=b\) or \(a\mapsto b\). Nothing here mentions arithmetic — a mapping is just a rule for relocating points, and "compute \(f(x)\)" is only one especially familiar instance of "find where \(f\) sends \(x\)."</p>
+</div>
+
+<p>For \(f:\mathbb R\to\mathbb R\), the relocation picture is thin — points on a line moving to other points on the same line — so it barely earns its keep next to the plug-in-a-number habit. It stops being optional the moment the domain and codomain are richer than \(\mathbb R\), because relocation is a picture with actual geometric content: distances, angles, straight lines, and shapes can all be asked whether \(f\) preserves them, in a way "plug in and compute" never suggests on its own.</p>
+
+<div class="ascii">   PLUG-IN VIEW                              MAPPING VIEW
+
+   f(x) = x²                                 f : plane → plane
+   feed it a number                          take a point P
+   get a number back                         drop it somewhere else, f(P)
+
+        3 ──f──▶ 9                                •P ──f──▶ •f(P)
+
+   fine for ℝ→ℝ, but says nothing            the picture that survives
+   about shape, angle, or direction          once the domain has structure</div>
+
+<h3>Vector-valued mappings: \(f:\mathbb R^n\to\mathbb R^m\)</h3>
+<p>A function \(f(x,y)=(x+y,\;x-y)\) takes a point of the plane and returns another point of the plane. Nothing forces you to compute its two output numbers one at a time and forget about the input point they came from — you can instead watch \(f\) as a single act of relocation: the point \((x,y)\) picks up and moves to \((x+y,x-y)\). Rotations, reflections, projections, and shears are all functions of exactly this shape, \(\mathbb R^n\to\mathbb R^m\), and every one of them is far more legible as "a rule for moving points" than as a pair or triple of separate arithmetic formulas.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The moment a multivariable function is read as "take a point in \(\mathbb R^n\) and move it to a point in \(\mathbb R^m\)" instead of "compute several numbers from several numbers," you gain the ability to ask geometric questions of it — does it preserve length? angle? straight lines? — that a purely arithmetic reading never poses. Everything in this essay is downstream of taking that geometric reading seriously.</p>
+</div>
+
+<h3>The special, enormously restrictive case: linearity</h3>
+<p>Most mappings are wild: they can bend lines into curves, stretch some regions and crush others, and generally do something different at every point. A tiny, exceptionally well-behaved family of mappings does none of that. A map \(T:\mathbb R^n\to\mathbb R^m\) is <strong>linear</strong> if it respects the two operations vectors actually have:</p>
+<div class="katex-display" data-katex="T(\mathbf u+\mathbf v) = T(\mathbf u)+T(\mathbf v) \qquad\text{(additivity)}, \qquad T(c\,\mathbf u) = c\,T(\mathbf u) \qquad\text{(homogeneity)}"></div>
+<p>for every choice of vectors \(\mathbf u,\mathbf v\) and scalar \(c\). Together these say \(T\) commutes with linear combinations: \(T(c_1\mathbf u+c_2\mathbf v) = c_1T(\mathbf u)+c_2T(\mathbf v)\), and by induction the same holds for a combination of any number of vectors. \(f(x)=x^2\) fails homogeneity immediately (\(f(2x)=4x^2\ne2f(x)\)); most everyday functions fail linearity just as fast. Rotations, reflections, scalings, shears, and projections are the everyday examples that actually pass.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — "linear" does not mean "graphs as a straight line"</span>
+<p>The line \(y=2x+3\) is called "linear" in everyday speech, but as a map it fails the technical definition above: \(T(0)=3\ne0\), and homogeneity already breaks at the origin. A genuine linear map is forced to send \(\mathbf 0\mapsto\mathbf 0\) — set \(c=0\) in the homogeneity condition, \(T(0\cdot\mathbf u)=0\cdot T(\mathbf u)=\mathbf 0\). Maps of the form \(T(x)=Ax+b\) with \(b\ne0\) are called <em>affine</em>, a strictly larger and less rigid family that this essay deliberately sets aside.</p>
+</div>
+
+<h3>Why single out linear maps at all?</h3>
+<p>Because linearity is exactly the property that lets a function's behavior on an entire — often infinite — space be pinned down by its behavior on a mere handful of vectors. That handful is called a <strong>basis</strong>, and chasing down exactly how much information a basis captures, and why, is the thread the rest of this essay follows.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Here is the question the rest of this essay chases: what is the absolute minimum amount of information you need to hand someone before they can compute \(T(\mathbf v)\) for <em>any</em> \(\mathbf v\) in the domain, without ever seeing the original formula for \(T\) again? For a linear map the answer turns out to be strikingly small and strikingly concrete — and that answer is the matrix.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Basis Vectors &amp; Linear Combinations</h1>
+<div class="subtitle">the finite ingredient list every vector in a space can be built from — and the promise that the list is unique</div>
+
+<h2>Spanning and independence</h2>
+<p>A <strong>linear combination</strong> of vectors \(\mathbf v_1,\dots,\mathbf v_k\) with scalars \(c_1,\dots,c_k\) is simply the vector \(c_1\mathbf v_1+c_2\mathbf v_2+\cdots+c_k\mathbf v_k\) — scale each vector, then add. A set of vectors <strong>spans</strong> a space if every vector in that space can be written as some linear combination of them; it is <strong>linearly independent</strong> if the only linear combination that produces the zero vector is the trivial one, every \(c_i=0\). Independence is really a promise against redundancy: if some \(\mathbf v_j\) could be written in terms of the others, a nontrivial combination summing to zero would exist by moving \(\mathbf v_j\) to one side.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — basis</span>
+<p>A set of vectors \(\{\mathbf b_1,\dots,\mathbf b_n\}\) is a <strong>basis</strong> for a vector space \(V\) if it (1) spans \(V\) — every vector in \(V\) is some linear combination of the \(\mathbf b_i\) — and (2) is linearly independent — no vector in the set is redundant. A basis is the smallest possible spanning set and the largest possible independent set, simultaneously.</p>
+</div>
+
+<h3>Coordinates are a promise, not just a convenience</h3>
+<p>Spanning alone only guarantees <em>some</em> combination works; independence is what upgrades that into <em>exactly one</em> combination working. If \(\{\mathbf b_1,\dots,\mathbf b_n\}\) is a basis for \(V\), then every \(\mathbf v\in V\) can be written as \(\mathbf v = c_1\mathbf b_1+\cdots+c_n\mathbf b_n\) for one, and only one, choice of scalars \((c_1,\dots,c_n)\).</p>
+
+<div class="callout definition">
+<span class="callout-label">Proof — uniqueness of the coordinates</span>
+<p>Suppose two combinations both produce \(\mathbf v\): \(\mathbf v=\sum c_i\mathbf b_i\) and \(\mathbf v=\sum d_i\mathbf b_i\). Subtracting gives \(\sum(c_i-d_i)\mathbf b_i=\mathbf 0\), a linear combination of the basis equal to zero. Independence forces every coefficient to vanish: \(c_i-d_i=0\) for all \(i\), so \(c_i=d_i\). The two combinations were never different to begin with. \(\blacksquare\)</p>
+</div>
+
+<p>These scalars \((c_1,\dots,c_n)\) are called \(\mathbf v\)'s <strong>coordinates</strong> relative to the basis \(\{\mathbf b_i\}\). The uniqueness proof above is doing more work than it looks — it is the fact that makes "the coordinates of \(\mathbf v\)" a well-defined phrase at all, rather than an arbitrary choice among many that happen to work.</p>
+
+<h3>The standard basis in \(\mathbb R^n\)</h3>
+<p>The most familiar basis is \(\mathbf e_1=(1,0,\dots,0),\ \mathbf e_2=(0,1,0,\dots,0),\ \dots,\ \mathbf e_n=(0,\dots,0,1)\). For any \(\mathbf v=(x_1,\dots,x_n)\),</p>
+<div class="katex-display" data-katex="\mathbf v = (x_1,x_2,\dots,x_n) = x_1\mathbf e_1 + x_2\mathbf e_2 + \cdots + x_n\mathbf e_n"></div>
+<p>which looks almost too obvious to bother stating: of course the components of \(\mathbf v\) are the coordinates of \(\mathbf v\). But that triviality is exactly the point — <em>the components you write down every time you write a vector already are a specific linear combination</em>, with the standard basis vectors as ingredients and the components themselves as the recipe's scalars. Panel III exists because that fact, once you take it seriously, forces the entire structure of matrix-vector multiplication.</p>
+
+<div class="ascii">   e2
+    ↑
+    │
+    │            v = x·e1 + y·e2
+    │          ↗
+    │        ↗
+    │      ↗
+    └────────────→ e1
+
+   walk x steps along e1, then y steps along e2 —
+   arrive at v, every single time, and only that way</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Coordinates are basis-dependent; the vector itself is not. The same geometric arrow \(\mathbf v\) has components \((x,y)\) relative to the standard basis, but would have entirely different numeric coordinates relative to some other basis — a rotated pair of axes, say. What never changes is the arrow. What changes is the recipe you'd read off to rebuild it from whichever set of ingredient-vectors you chose. Panel IV returns to this when it asks what happens to a matrix under a change of basis.</p>
+</div>
+
+<h3>Why this matters for functions</h3>
+<p>Here is the bridge to Panel I. If \(T\) is linear and you happen to know \(T(\mathbf b_1),\dots,T(\mathbf b_n)\) for some basis of the domain, you know \(T(\mathbf v)\) for <em>every</em> \(\mathbf v\) in the domain — because \(\mathbf v\) is forced, by the uniqueness proof above, to decompose in exactly one way as \(\sum c_i\mathbf b_i\), and linearity forces \(T(\mathbf v)\) to decompose the same way, using the transformed vectors \(T(\mathbf b_i)\) in place of the \(\mathbf b_i\). That is the entire content of Panel III, stated in advance.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Matrix as a Recipe</h1>
+<div class="subtitle">why \(Ax\) is nothing but \(x\)'s own coordinates, recombining the columns of \(A\)</div>
+
+<h2>What a linear map does to a decomposed vector</h2>
+<p>Take a linear map \(T:\mathbb R^n\to\mathbb R^m\) and any input \(\mathbf v\). Panel II already forced the decomposition \(\mathbf v = x_1\mathbf e_1+x_2\mathbf e_2+\cdots+x_n\mathbf e_n\) in the standard basis, uniquely. Apply \(T\) to both sides and let linearity do the work — additivity spreads \(T\) across the whole sum, then homogeneity pulls each scalar back out in front:</p>
+<div class="katex-display" data-katex="T(\mathbf v) = T(x_1\mathbf e_1+x_2\mathbf e_2+\cdots+x_n\mathbf e_n) = x_1T(\mathbf e_1) + x_2T(\mathbf e_2) + \cdots + x_nT(\mathbf e_n)"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the central move of this essay</span>
+<p>Read that equation right to left. It says a linear map is completely pinned down by just \(n\) vectors — \(T(\mathbf e_1),\dots,T(\mathbf e_n)\), where the basis vectors land — and nothing else. Once those \(n\) images are known, \(T(\mathbf v)\) for <em>any</em> \(\mathbf v\in\mathbb R^n\) is computable without ever touching the original definition of \(T\) again. Infinitely many inputs; finitely many facts required.</p>
+</div>
+
+<h3>Assembling those images into a matrix</h3>
+<p>Give those \(n\) images a name — \(\mathbf a_i = T(\mathbf e_i)\) — and stack them side by side as the columns of an \(m\times n\) array \(A\). This array is, by definition, the <strong>matrix</strong> of \(T\):</p>
+<div class="katex-display" data-katex="A = \big[\ \mathbf a_1 \ \ \mathbf a_2\ \ \cdots\ \ \mathbf a_n\ \big], \qquad \mathbf a_i = T(\mathbf e_i)"></div>
+<p>and matrix-vector multiplication is <em>defined</em> to reproduce exactly the equation above:</p>
+<div class="katex-display" data-katex="A\mathbf x \;:=\; x_1\mathbf a_1 + x_2\mathbf a_2 + \cdots + x_n\mathbf a_n"></div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the column view of \(Ax\)</span>
+<p>For an \(m\times n\) matrix \(A\) with columns \(\mathbf a_1,\dots,\mathbf a_n\) and a vector \(\mathbf x=(x_1,\dots,x_n)\), the product \(A\mathbf x\) is the linear combination \(x_1\mathbf a_1+\cdots+x_n\mathbf a_n\). This is equivalent to the row-by-row "dot each row of \(A\) with \(\mathbf x\)" mechanical rule usually taught first — expanding each row's dot product and regrouping by column recovers exactly this sum — but the column view is the one that carries the meaning: <em>\(A\) is not defined to multiply vectors correctly by coincidence; matrix-vector multiplication was reverse-engineered from linearity to make \(Ax=T(x)\) come out true.</em></p>
+</div>
+
+<div class="ascii">   INPUT SPACE                        OUTPUT SPACE
+
+   e1 = (1,0)   ── T ──▶   a1 = T(e1)   <span class="hl2">= column 1 of A</span>
+   e2 = (0,1)   ── T ──▶   a2 = T(e2)   <span class="hl2">= column 2 of A</span>
+
+   x = x1·e1 + x2·e2   ── T ──▶   <span class="hl">Ax = x1·a1 + x2·a2</span></div>
+
+<h3>Worked example</h3>
+<p>Let \(A=\begin{bmatrix}2&amp;1\\0&amp;3\end{bmatrix}\), so its columns are \(\mathbf a_1=(2,0)\) and \(\mathbf a_2=(1,3)\). Take \(\mathbf x=(3,-1)\). The column view says: use \(3\) parts of \(\mathbf a_1\) and \(-1\) parts of \(\mathbf a_2\):</p>
+<div class="katex-display" data-katex="A\mathbf x = 3\begin{bmatrix}2\\0\end{bmatrix} + (-1)\begin{bmatrix}1\\3\end{bmatrix} = \begin{bmatrix}6\\0\end{bmatrix}+\begin{bmatrix}-1\\-3\end{bmatrix} = \begin{bmatrix}5\\-3\end{bmatrix}"></div>
+<p>Multiplying it out row-by-row instead — \((2\cdot3+1\cdot(-1),\ 0\cdot3+3\cdot(-1))=(5,-3)\) — lands on the identical answer, as it must; it's the same arithmetic, grouped a different way. The column view is the one that says <em>why</em> the answer is \((5,-3)\), not merely <em>that</em> it is: \(\mathbf x\)'s own components told the matrix exactly how much of each column to use.</p>
+
+<h3>Reading a matrix backwards: what a column <em>is</em></h3>
+<p>Turn the definition around and it becomes a fast, purely geometric way to read a transformation straight off its matrix, or write a matrix straight off a transformation you can picture: column \(i\) is simply "where does \(\mathbf e_i\) go." A rotation by angle \(\theta\) sends \(\mathbf e_1=(1,0)\) to \((\cos\theta,\sin\theta)\) and \(\mathbf e_2=(0,1)\) to \((-\sin\theta,\cos\theta)\) — read those two images straight off the unit circle and you have the matrix, no formula-derivation required:</p>
+<div class="katex-display" data-katex="R(\theta) = \begin{bmatrix}\cos\theta &amp; -\sin\theta \\ \sin\theta &amp; \phantom{-}\cos\theta\end{bmatrix}"></div>
+
+<div class="ascii">   transform      column 1 = T(e1)      column 2 = T(e2)      matrix
+
+   identity          (1, 0)                 (0, 1)         [1 0; 0 1]
+   scale by (a,b)     (a, 0)                 (0, b)         [a 0; 0 b]
+   shear (x-dir)      (1, 0)                 (k, 1)         [1 k; 0 1]
+   reflect x-axis      (1, 0)                (0,-1)         [1 0; 0 -1]
+   project onto x     (1, 0)                 (0, 0)         [1 0; 0 0]</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the answer to the question that closed Panel I: what's the minimum information needed to compute \(T(\mathbf v)\) for any \(\mathbf v\)? Just \(n\) vectors — the columns of \(A\). Everything else in the computation is your input vector doing the work of specifying how much of each column to use. The matrix supplies the ingredients; the input supplies the recipe's proportions.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Why It's Forced</h1>
+<div class="subtitle">linearity leaves no other option — and the same fact explains matrix multiplication and change of basis</div>
+
+<h2>There is no other way to define \(Ax\) consistently</h2>
+<p>The column-combination formula from Panel III is not a convention chosen for convenience — it is the only formula consistent with linearity plus the uniqueness of a basis decomposition (Panel II). Nothing extra is being assumed anywhere in the argument.</p>
+
+<div class="callout definition">
+<span class="callout-label">Claim &amp; proof</span>
+<p><strong>Claim.</strong> If \(T:\mathbb R^n\to\mathbb R^m\) is linear and \(A\) is the matrix whose columns are \(T(\mathbf e_1),\dots,T(\mathbf e_n)\), then \(A\mathbf x=T(\mathbf x)\) for every \(\mathbf x\).</p>
+<p><strong>Proof.</strong> By Panel II's uniqueness theorem, \(\mathbf x=\sum x_i\mathbf e_i\) is the <em>only</em> way to write \(\mathbf x\) in the standard basis. Linearity gives \(T(\mathbf x)=\sum x_iT(\mathbf e_i)=\sum x_i\mathbf a_i\), which is \(A\mathbf x\) by the definition of matrix-vector multiplication. \(\blacksquare\)</p>
+</div>
+
+<h3>Composition of linear maps <em>is</em> matrix multiplication</h3>
+<p>Let \(S:\mathbb R^n\to\mathbb R^m\) and \(T:\mathbb R^m\to\mathbb R^p\) be linear, with matrices \(B\) and \(A\) respectively. Their composite \(T\circ S\) is linear too — additivity and homogeneity pass through unchanged, since \((T\circ S)(\mathbf u+\mathbf v)=T(S\mathbf u+S\mathbf v)=T(S\mathbf u)+T(S\mathbf v)\), and likewise for scaling. So \(T\circ S\) has its own matrix, built the same way as always: record where the composite sends each basis vector.</p>
+<div class="katex-display" data-katex="(T\circ S)(\mathbf e_i) = T\big(S(\mathbf e_i)\big) = T(\text{col}_i(B)) = A\cdot\text{col}_i(B)"></div>
+<p>Column \(i\) of the composite's matrix is \(A\) applied to column \(i\) of \(B\), for every \(i\) — and stacking those columns side by side is exactly the ordinary row-times-column rule for computing the product \(AB\). Matrix multiplication is not an independent piece of machinery bolted on next to matrix-vector multiplication; it is the same "record where the basis vectors land" recipe, applied twice in a row.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The row-times-column mechanical rule for multiplying two matrices, usually memorized as an isolated procedure, is a direct corollary of one sentence: <em>a linear map is completely determined by where it sends a basis.</em> Compose two such maps, and their matrices are forced to combine exactly the way matrix multiplication says they do — there was never a second rule to learn, only the first one applied twice.</p>
+</div>
+
+<h3>Change of basis: same principle, different ingredients</h3>
+<p>Nothing in Panel II's uniqueness theorem required the standard basis specifically — it holds for <em>any</em> basis \(\{\mathbf b_1,\dots,\mathbf b_n\}\). Decompose \(\mathbf x\) that way instead, \(\mathbf x=\sum c_i\mathbf b_i\), and the identical linearity argument gives \(T(\mathbf x)=\sum c_iT(\mathbf b_i)\). The matrix representing \(T\) relative to this new basis has \(T(\mathbf b_i)\) as its columns — a different-looking array of numbers, built by the exact same rule, describing the exact same underlying map. If \(P\) is the matrix whose columns are the \(\mathbf b_i\) written in standard coordinates, the two representations are related by the similarity transform \(A' = P^{-1}AP\).</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>Writing \(\mathbf x=(3,-1)\) silently assumes the standard basis; "the components of a vector" are not meaningful until a basis has been fixed. This is why "the matrix of \(T\)" is really shorthand for "the matrix of \(T\) relative to a chosen basis" — change the basis and every number in the matrix can change, even though \(T\) itself has not moved a single point differently. The arrow is invariant; the recipe describing it is not.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Interactive Lab</h1>
+<div class="subtitle">drag the input vector and watch its own coordinates recombine the transformed basis</div>
+
+<p>The left canvas is the input space, with the standard basis <span style="color:var(--blue)">\(\mathbf e_1\)</span> and <span style="color:var(--green)">\(\mathbf e_2\)</span> fixed. Drag the point to set \(\mathbf v=(x,y)\); the dashed path shows \(\mathbf v\) built exactly as Panel II describes, \(x\cdot\mathbf e_1\) then \(y\cdot\mathbf e_2\), tip to tail. The right canvas is the output space under whichever matrix \(A\) is selected: <span style="color:var(--blue)">\(\mathbf a_1=T(\mathbf e_1)\)</span> and <span style="color:var(--green)">\(\mathbf a_2=T(\mathbf e_2)\)</span> are \(A\)'s columns, and \(A\mathbf v\) is rebuilt using the <em>same two numbers</em> \(x,y\) — only the ingredients being scaled have changed.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">INPUT — v = x·e1 + y·e2 — drag the point</div>
+      <canvas id="domainCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">OUTPUT — Av = x·a1 + y·a2</div>
+      <canvas id="imageCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Matrix T</label>
+      <select id="mapSelect">
+        <option value="identity">identity — [1 0; 0 1]</option>
+        <option value="rotate">rotate 45° — [.71 -.71; .71 .71]</option>
+        <option value="scale">scale — [1.8 0; 0 0.5]</option>
+        <option value="shear" selected>shear — [1 0.8; 0 1]</option>
+        <option value="reflect">reflect x-axis — [1 0; 0 -1]</option>
+        <option value="project">project onto x — [1 0; 0 0]</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">MATRIX A (columns a1, a2)</div>
+      <div class="v" id="matReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">INPUT COORDINATES (x, y)</div>
+      <div class="v" id="ptReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">x·a1 + y·a2</div>
+      <div class="v" id="comboReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">Av VIA ROW·COLUMN</div>
+      <div class="v" id="rowReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">det(A)</div>
+      <div class="v" id="detReadout">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue)"></span> e1 / a1 = T(e1)</span>
+    <span><span class="swatch" style="background:var(--green)"></span> e2 / a2 = T(e2)</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> v / Av</span>
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> dashed guide = tip-to-tail build order</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The two readouts <strong>x·a1 + y·a2</strong> and <strong>Av via row·column</strong> always agree — they are not two different computations that happen to match, they are the same computation, grouped two different ways, exactly as Panel III's worked example showed by hand. Watching them stay locked together while you drag is the whole essay in one running number.</p>
+</div>
+
+<p>Switch to <code>project</code> and drag \(\mathbf v\) straight up or down: \(\mathbf a_2=(0,0)\) for this matrix, so the \(y\)-coordinate is multiplying a column of zeros — it contributes nothing, and \(A\mathbf v\) stops moving vertically no matter how far \(\mathbf v\) travels. That is what it looks like, geometrically, when a column vanishes: an entire direction of input information gets discarded, and <code>det(A)</code> drops to \(0\) to flag it. Switch to <code>reflect</code> instead and watch <code>det(A)</code> read \(-1\): area is preserved (\(|\det A|=1\)), but orientation flips, the same distinction the companion Jacobian essay draws between a signed determinant and its absolute value.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Where This Goes</h1>
+<div class="subtitle">eigenvectors, coordinate systems, and every place a finite recipe stands in for infinite possibilities</div>
+
+<h2>Eigenvectors: choosing a basis the map likes</h2>
+<p>Panel IV showed that changing the input basis changes the matrix's numbers without changing the map itself. Some maps reward a very specific choice of basis: if \(\mathbf b_i\) happens to satisfy \(T(\mathbf b_i)=\lambda_i\mathbf b_i\) — the map sends \(\mathbf b_i\) to a scalar multiple of itself, rather than off in some new direction — then \(\mathbf b_i\) is an <strong>eigenvector</strong> with <strong>eigenvalue</strong> \(\lambda_i\). Decompose any \(\mathbf x\) in a full basis of eigenvectors, \(\mathbf x=\sum c_i\mathbf b_i\), and the exact same machine from Panel III turns over:</p>
+<div class="katex-display" data-katex="T(\mathbf x) = \sum_i c_i\,T(\mathbf b_i) = \sum_i c_i\lambda_i\mathbf b_i"></div>
+<p>— the identical recipe, except every ingredient is now just rescaled by \(\lambda_i\), never redirected. That is the entire appeal of diagonalization: it is not a different idea from the column recipe of Panel III, it is that recipe run in the one basis where the recipe is as simple as it can possibly be.</p>
+
+<h3>Function spaces: the same idea, infinitely many ingredients</h3>
+<p>Nothing in Panel II's definitions required \(V\) to be finite-dimensional. The space of reasonably well-behaved periodic functions has its own basis — sines and cosines of every integer frequency — and writing a function as a Fourier series, \(f(t)=\sum_k c_k\cos(kt)+d_k\sin(kt)\), is exactly the linear-combination picture of Panel II, with the coefficients \(c_k,d_k\) playing the role \(x_1,\dots,x_n\) played for a vector in \(\mathbb R^n\). The chief difference is that the "shopping list" is now infinitely long — a reminder that the finite case worked out in this essay is the simplest instance of a much larger pattern, not a special trick unique to matrices.</p>
+
+<h3>Rank: when the ingredient list is deficient</h3>
+<p>If a matrix's columns are linearly dependent — as in the Panel V projection example, where \(\mathbf a_2=\mathbf 0\) — some direction of input variation produces no change in output at all, and the map's image is thinner than its codomain. This deficiency has a name, <strong>rank</strong> (the number of linearly independent columns), and it is the single number that tells you, at a glance, how much of the codomain a given recipe of columns can actually reach.</p>
+
+<h3>Everywhere a weighted sum of fixed ingredients appears</h3>
+<p>A single layer of a neural network computes \(A\mathbf x+\mathbf b\): the weight columns of \(A\) are fixed ingredient vectors, and the input activations \(\mathbf x\) are literally the scalar recipe combining them, precisely as in Panel III. A pixel's color in a rendered 3D scene is a linear combination of basis colors weighted by light intensities; a mixed audio signal is a combination of fixed waveforms weighted by amplitude. None of these are new mathematical ideas — they are the same fact from Panel III, that an input's own coordinates are the scalars for recombining a fixed set of images, showing up again wherever a system is built to be linear.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>A matrix is not a grid of numbers that happens to multiply vectors correctly. It is a literal parts list — where each basis vector of the input space lands — and the vector you multiply it by is nothing more than a shopping list saying how much of each part to use. Every property in this essay, from the mechanics of matrix multiplication to the payoff of diagonalization, is a consequence of that one sentence.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderLab();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ INTERACTIVE LAB ============
+const domainCv = document.getElementById('domainCanvas');
+const imageCv = document.getElementById('imageCanvas');
+const dctx = domainCv.getContext('2d');
+const ictx = imageCv.getContext('2d');
+const mapSelect = document.getElementById('mapSelect');
+const matReadout = document.getElementById('matReadout');
+const ptReadout = document.getElementById('ptReadout');
+const comboReadout = document.getElementById('comboReadout');
+const rowReadout = document.getElementById('rowReadout');
+const detReadout = document.getElementById('detReadout');
+
+let P = {x:1.3, y:0.9};
+let dragging = false;
+const DOM_RANGE = 2.2;
+
+const maps = {
+  identity: { a1:[1,0], a2:[0,1], imgAbs:2.4 },
+  rotate:   { a1:[Math.SQRT1_2, Math.SQRT1_2], a2:[-Math.SQRT1_2, Math.SQRT1_2], imgAbs:2.4 },
+  scale:    { a1:[1.8,0], a2:[0,0.5], imgAbs:3.6 },
+  shear:    { a1:[1,0], a2:[0.8,1], imgAbs:3.6 },
+  reflect:  { a1:[1,0], a2:[0,-1], imgAbs:2.4 },
+  project:  { a1:[1,0], a2:[0,0], imgAbs:2.4 }
+};
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function worldToScreen(x,y,range){
+  const s = 300 / (2*range);
+  return [150 + x*s, 150 - y*s];
+}
+function screenToWorld(px,py,range){
+  const s = 300 / (2*range);
+  return [(px-150)/s, (150-py)/s];
+}
+
+function drawGrid(ctx, range){
+  ctx.clearRect(0,0,300,300);
+  ctx.fillStyle = cssVar('--bg-elevated');
+  ctx.fillRect(0,0,300,300);
+  ctx.strokeStyle = cssVar('--border');
+  ctx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.5){
+    let [x1,y1] = worldToScreen(g,-range,range);
+    let [x2,y2] = worldToScreen(g,range,range);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    [x1,y1] = worldToScreen(-range,g,range);
+    [x2,y2] = worldToScreen(range,g,range);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  ctx.strokeStyle = cssVar('--ink-faint');
+  ctx.lineWidth = 1.2;
+  let [ax1,ay1] = worldToScreen(-range,0,range), [ax2,ay2] = worldToScreen(range,0,range);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+  [ax1,ay1] = worldToScreen(0,-range,range); [ax2,ay2] = worldToScreen(0,range,range);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+}
+
+function drawArrow(ctx, x1,y1,x2,y2, color, width, range){
+  const [sx1,sy1] = worldToScreen(x1,y1,range);
+  const [sx2,sy2] = worldToScreen(x2,y2,range);
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width;
+  ctx.beginPath(); ctx.moveTo(sx1,sy1); ctx.lineTo(sx2,sy2); ctx.stroke();
+  const ang = Math.atan2(sy2-sy1, sx2-sx1);
+  const head = 7;
+  ctx.beginPath();
+  ctx.moveTo(sx2, sy2);
+  ctx.lineTo(sx2 - head*Math.cos(ang-0.4), sy2 - head*Math.sin(ang-0.4));
+  ctx.lineTo(sx2 - head*Math.cos(ang+0.4), sy2 - head*Math.sin(ang+0.4));
+  ctx.closePath(); ctx.fill();
+}
+
+function drawDashed(ctx, x1,y1,x2,y2, color, range){
+  const [sx1,sy1] = worldToScreen(x1,y1,range);
+  const [sx2,sy2] = worldToScreen(x2,y2,range);
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(sx1,sy1); ctx.lineTo(sx2,sy2); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawDomain(){
+  drawGrid(dctx, DOM_RANGE);
+  drawArrow(dctx, 0,0, 1,0, cssVar('--blue'), 2, DOM_RANGE);
+  drawArrow(dctx, 0,0, 0,1, cssVar('--green'), 2, DOM_RANGE);
+
+  drawDashed(dctx, 0,0, P.x,0, cssVar('--blue'), DOM_RANGE);
+  drawDashed(dctx, P.x,0, P.x,P.y, cssVar('--green'), DOM_RANGE);
+
+  drawArrow(dctx, 0,0, P.x,P.y, cssVar('--accent'), 2.2, DOM_RANGE);
+
+  const [hx,hy] = worldToScreen(P.x,P.y,DOM_RANGE);
+  dctx.fillStyle = cssVar('--accent');
+  dctx.beginPath(); dctx.arc(hx,hy,5,0,7); dctx.fill();
+}
+
+function drawImage(){
+  const map = maps[mapSelect.value];
+  const range = map.imgAbs;
+  const a1 = map.a1, a2 = map.a2;
+  drawGrid(ictx, range);
+
+  // transformed grid lines are straight, since T is linear: image of x=g is the
+  // line through g*a1 - range*a2  to  g*a1 + range*a2 (and similarly for y=g)
+  ictx.strokeStyle = cssVar('--ink-faint');
+  ictx.globalAlpha = 0.4;
+  ictx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.5){
+    let x1 = g*a1[0] - range*a2[0], y1 = g*a1[1] - range*a2[1];
+    let x2 = g*a1[0] + range*a2[0], y2 = g*a1[1] + range*a2[1];
+    let [sx1,sy1] = worldToScreen(x1,y1,range), [sx2,sy2] = worldToScreen(x2,y2,range);
+    ictx.beginPath(); ictx.moveTo(sx1,sy1); ictx.lineTo(sx2,sy2); ictx.stroke();
+
+    x1 = -range*a1[0] + g*a2[0]; y1 = -range*a1[1] + g*a2[1];
+    x2 =  range*a1[0] + g*a2[0]; y2 =  range*a1[1] + g*a2[1];
+    [sx1,sy1] = worldToScreen(x1,y1,range); [sx2,sy2] = worldToScreen(x2,y2,range);
+    ictx.beginPath(); ictx.moveTo(sx1,sy1); ictx.lineTo(sx2,sy2); ictx.stroke();
+  }
+  ictx.globalAlpha = 1;
+
+  drawArrow(ictx, 0,0, a1[0],a1[1], cssVar('--blue'), 2, range);
+  drawArrow(ictx, 0,0, a2[0],a2[1], cssVar('--green'), 2, range);
+
+  const xa1 = [P.x*a1[0], P.x*a1[1]];
+  const Av = [P.x*a1[0]+P.y*a2[0], P.x*a1[1]+P.y*a2[1]];
+
+  drawDashed(ictx, 0,0, xa1[0],xa1[1], cssVar('--blue'), range);
+  drawDashed(ictx, xa1[0],xa1[1], Av[0],Av[1], cssVar('--green'), range);
+
+  drawArrow(ictx, 0,0, Av[0],Av[1], cssVar('--accent'), 2.2, range);
+
+  const [hx,hy] = worldToScreen(Av[0],Av[1],range);
+  ictx.fillStyle = cssVar('--accent');
+  ictx.beginPath(); ictx.arc(hx,hy,5,0,7); ictx.fill();
+
+  return Av;
+}
+
+function updateReadouts(Av){
+  const map = maps[mapSelect.value];
+  const [a,c] = map.a1, [b,d] = map.a2; // A = [a b; c d]
+  matReadout.textContent = `[ ${a.toFixed(2).padStart(6)}  ${b.toFixed(2).padStart(6)} ]\n[ ${c.toFixed(2).padStart(6)}  ${d.toFixed(2).padStart(6)} ]`;
+  ptReadout.textContent = `(${P.x.toFixed(2)}, ${P.y.toFixed(2)})`;
+  comboReadout.textContent = `${P.x.toFixed(2)}·(${a.toFixed(2)},${c.toFixed(2)}) + ${P.y.toFixed(2)}·(${b.toFixed(2)},${d.toFixed(2)})\n= (${Av[0].toFixed(2)}, ${Av[1].toFixed(2)})`;
+  const rowX = a*P.x + b*P.y, rowY = c*P.x + d*P.y;
+  rowReadout.textContent = `(${rowX.toFixed(2)}, ${rowY.toFixed(2)})`;
+  const det = a*d - b*c;
+  detReadout.textContent = det.toFixed(2) + (Math.abs(det) < 0.001 ? '  (singular — columns dependent)' : '');
+}
+
+function renderLab(){
+  drawDomain();
+  const Av = drawImage();
+  updateReadouts(Av);
+}
+
+function domainEventToWorld(e){
+  const rect = domainCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (300/rect.width);
+  const py = (clientY-rect.top) * (300/rect.height);
+  return screenToWorld(px,py,DOM_RANGE);
+}
+domainCv.addEventListener('mousedown', e=>{
+  const [x,y] = domainEventToWorld(e);
+  if(Math.hypot(x-P.x,y-P.y) < 0.6){ dragging = true; }
+});
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const [x,y] = domainEventToWorld(e);
+  P.x = Math.max(-2,Math.min(2,x));
+  P.y = Math.max(-2,Math.min(2,y));
+  renderLab();
+});
+window.addEventListener('mouseup', ()=> dragging=false);
+domainCv.addEventListener('touchstart', e=>{
+  const [x,y] = domainEventToWorld(e);
+  if(Math.hypot(x-P.x,y-P.y) < 0.8){ dragging = true; }
+}, {passive:true});
+domainCv.addEventListener('touchmove', e=>{
+  if(!dragging) return;
+  const [x,y] = domainEventToWorld(e);
+  P.x = Math.max(-2,Math.min(2,x));
+  P.y = Math.max(-2,Math.min(2,y));
+  renderLab();
+}, {passive:true});
+window.addEventListener('touchend', ()=> dragging=false);
+
+mapSelect.addEventListener('change', renderLab);
+
+renderLab();
+</script>
+
+</body>
+</html>

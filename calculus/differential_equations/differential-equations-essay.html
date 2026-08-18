@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Differential Equations — What It Means to Know a Function by Its Rate of Change</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); white-space:nowrap; }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">DIFFERENTIAL EQUATIONS</div>
+  <button class="tab-btn active" data-tab="t1">I · A Slope Determines a Curve</button>
+  <button class="tab-btn" data-tab="t2">II · Existence &amp; Uniqueness</button>
+  <button class="tab-btn" data-tab="t3">III · First-Order Methods</button>
+  <button class="tab-btn" data-tab="t4">IV · Higher-Order Linear</button>
+  <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t6">VI · Systems, Transforms &amp; Beyond</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Differential Equations</h1>
+<div class="subtitle">what it means to know a function only through the rate at which it changes</div>
+
+<h2>An equation that solves for a function, not a number</h2>
+<p>An ordinary algebraic equation like \(x^2-5x+6=0\) asks you to find <em>numbers</em>. A <strong>differential equation</strong> asks for something categorically different: it hands you a relationship between an unknown function and its own derivatives, and asks you to find every function that makes the relationship true. You have already solved the simplest possible example, in first-semester calculus, without calling it that: \(y'=2x\) is a differential equation, and "find an antiderivative" is exactly "solve the differential equation." Everything in this essay is that same idea, generalized in every direction it can be generalized.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition</span>
+<p>A <strong>differential equation</strong> is an equation of the form \(F\big(x,\,y,\,y',\,y'',\,\dots,\,y^{(n)}\big)=0\) relating an independent variable \(x\), an unknown function \(y=y(x)\), and a finite number of its derivatives. The <strong>order</strong> of the equation is the highest derivative that appears. A function \(\varphi\) is a <strong>solution</strong> on an interval \(I\) if it is \(n\) times differentiable on \(I\) and substituting \(\varphi,\varphi',\dots,\varphi^{(n)}\) for \(y,y',\dots,y^{(n)}\) turns the equation into an identity, true for every \(x\in I\).</p>
+</div>
+
+<p>Notice what that definition does <em>not</em> say: it never claims there is exactly one solution. \(y'=2x\) is solved by \(y=x^2\), by \(y=x^2+7\), by \(y=x^2-\pi\) — every antiderivative of \(2x\) at once, an entire one-parameter family \(y=x^2+C\). A differential equation pins down how \(y\) changes at every point; it says nothing about where \(y\) starts. That missing piece of information is exactly the size of a constant of integration, and supplying it — an <strong>initial condition</strong> \(y(x_0)=y_0\) — is what collapses the family down to a single curve. The pairing of the two, equation plus initial condition, is called an <strong>initial value problem</strong> (IVP), and it is the object Panel II will study rigorously.</p>
+
+<h2>The picture underneath everything: direction fields</h2>
+<p>Restrict attention to first-order equations solved for the derivative, \(y'=f(x,y)\). At every point \((x,y)\) of the plane, this equation is a flat, unambiguous instruction: <em>if a solution curve passes through here, its slope at this instant must be \(f(x,y)\)</em>. Nothing else is asserted — not where the curve came from, not where it's going, only the tangent direction it is required to have at this one point. Draw that instruction as a short line segment of slope \(f(x,y)\) at a grid of sample points, and the picture that results is the equation's <strong>direction field</strong> (or <em>slope field</em>).</p>
+
+<div class="ascii">   y                                    A solution curve is a curve that
+   ^                                     is tangent to every segment it
+   |  ╱ ╱ ╱ ╱ ╱                          passes through — it never crosses
+   | ╱ ╱ ╱ <span class="hl">╱</span> ╱ ╱                        a segment at an angle, because
+   |╱ ╱ ╱ <span class="hl">╱</span>─╲ ╲                        the segment IS its required
+   +──────────────&gt; x                    slope at that exact point.
+   | ╲ ╲ <span class="hl">╱</span> ╱ ╱ ╱
+   | ╲ ╲ ╱ ╱ ╱ ╱                         The field is the equation, drawn.
+   | ╲ ╲ ╱ ╱ ╱ ╱                         A solution is a path that never
+                                          disagrees with it.</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>A solution curve does not "choose" a direction as it travels — the equation already chose it, locally, at every single point of the plane, before any curve was drawn. What a solution curve does is thread a path through the plane that agrees with the field's local instruction at <em>every</em> instant along the way. The entire global shape of a solution — where it rises, where it flattens, whether it spirals or escapes to infinity — is nothing but the accumulated consequence of obeying an enormous number of purely local, purely infinitesimal commands. This is the same conceptual move as the derivative itself: local information (a slope, everywhere) determines global structure (a curve), provided you're willing to integrate.</p>
+</div>
+
+<h3>Reading a field without solving anything</h3>
+<p>Direction fields let you extract real, correct qualitative information before doing a single line of algebra. Where the field is horizontal (\(f(x,y)=0\)), any solution passing through is momentarily flat — a candidate for a maximum, a minimum, or an equilibrium. Where the field points steeply, solutions move quickly through that region of the plane. Where segments along a horizontal line all point the same way, solutions can't cross that line except tangentially. None of this required finding a formula for \(y(x)\); it is read directly off \(f(x,y)\) itself. Panel V lets you build and explore these fields directly.</p>
+
+<h3>Why a family, and how an initial condition ends the ambiguity</h3>
+<p>Because \(y'=f(x,y)\) constrains only the slope of a solution and never its actual height, solving it always leaves one degree of freedom unaccounted for — algebraically, this shows up as a constant of integration; geometrically, it shows up as an entire one-parameter <em>family</em> of parallel-in-spirit solution curves, one through each possible starting height. Supplying \(y(x_0)=y_0\) is geometrically the same as asking: <em>of all the curves consistent with this field, which one happens to pass through this one point?</em> Panel II makes precise exactly when that question has an answer, and when it has only one.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — general solution vs. particular solution</span>
+<p>A <strong>general solution</strong> of an \(n\)th-order differential equation is a family of solutions depending on \(n\) arbitrary constants, broad enough to produce every solution of interest by the right choice of constants. Fixing those constants — typically by imposing \(n\) initial conditions — yields a single <strong>particular solution</strong>. The number \(n\) is not incidental: Panel IV will show it is exactly the dimension of the space of solutions, and Panel II will show it is exactly the amount of initial data a well-posed problem needs.</p>
+</div>
+
+<h3>Implicit solutions</h3>
+<p>Not every solution presents itself as an explicit formula \(y=\varphi(x)\). Sometimes the most natural thing to write down is a relation \(G(x,y)=C\) that <em>implicitly</em> determines \(y\) as a function of \(x\), without ever being solved for \(y\) outright. This is not a lesser or informal kind of answer — it is a full solution, and checking it is a full solution requires nothing more than implicit differentiation. Take \(x^2+y^2=C^2\), a family of circles. Differentiating both sides with respect to \(x\), treating \(y\) as a function of \(x\), gives \(2x+2yy'=0\), i.e.</p>
+<div class="katex-display" data-katex="y' = -\frac{x}{y}"></div>
+<p>so the family of circles is an implicit solution of this differential equation — every circle in the family crosses the direction field of \(y'=-x/y\) tangentially at every one of its points, even though no single circle is the graph of one function \(y=\varphi(x)\) over its full domain (solve for \(y\) and a circle splits into two explicit branches, \(y=\pm\sqrt{C^2-x^2}\), each an honest explicit solution on its own restricted interval). Panel III's exact equations are, by design, solved for exactly this kind of implicit answer, \(F(x,y)=C\), and there is nothing to apologize for in leaving them that way — solving for \(y\) explicitly afterward is often algebraically impossible even when the implicit relation is perfectly simple.</p>
+
+<h3>A family that doesn't cover everything: singular solutions</h3>
+<p>The definition of a general solution promised a family broad enough to produce "every solution of interest" — a careful hedge, because for some nonlinear equations a genuine solution exists that no choice of the constant \(C\) ever produces. The cleanest place to see this is <strong>Clairaut's equation</strong>, \(y=xy'+f(y')\). Differentiating the whole equation with respect to \(x\) (treating \(y'=p\) and using the product and chain rules) gives \(p=p+xp'+f'(p)p'\), i.e. \(p'\big(x+f'(p)\big)=0\). One factor gives \(p'=0\), i.e. \(p=C\) constant, which substituted back into the original equation yields the ordinary family of straight lines \(y=Cx+f(C)\) — the general solution. The <em>other</em> factor, \(x+f'(p)=0\), gives a second, entirely different solution obtained by eliminating \(p\) between \(x=-f'(p)\) and \(y=xp+f(p)\), and it is not a line at all, and not a member of the family for any value of \(C\).</p>
+
+<p><strong>Worked example:</strong> \(y=xy'+(y')^2\), so \(f(p)=p^2\). The general solution is the family of lines \(y=Cx+C^2\). The second branch: \(x+f'(p)=x+2p=0\Rightarrow p=-x/2\); substituting into \(y=xp+p^2\) gives \(y=x(-x/2)+(x/2)^2=-x^2/4\). Check it directly — \(y=-x^2/4\) has \(y'=-x/2\), and \(xy'+(y')^2=x(-x/2)+(x/2)^2=-x^2/2+x^2/4=-x^2/4=y\) — a genuine solution. This <strong>singular solution</strong> is the <em>envelope</em> of the family of lines: the parabola \(y=-x^2/4\) is tangent to every single line \(y=Cx+C^2\) in the family, touching each one at exactly one point, and no finite or infinite value of \(C\) makes the line coincide with it.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>A singular solution is not a counterexample to Picard–Lindelöf — it's a signal that uniqueness has failed at every point along it, which is only possible because \(\partial f/\partial y'\) (here playing the role of \(\partial f/\partial y\) once the equation is solved for \(p\)) fails to be Lipschitz exactly on that curve. Through every point of the parabola above, at least two solutions pass: the singular solution itself, and whichever line of the family happens to be tangent there. This is a structurally different flavor of the same nonuniqueness phenomenon Panel II opened with — there, it came from a fractional power; here, from an equation that is genuinely nonlinear in \(y'\) itself.</p>
+</div>
+
+<h3>The skeleton of a direction field: nullclines</h3>
+<p>One curve is worth locating in any field before drawing a single segment: the <strong>nullcline</strong>, the set where \(f(x,y)=0\), because every segment crossing it is exactly horizontal. For \(y'=x-y\) (the equation behind Panel V's Lab 1 default field), the nullcline is the line \(y=x\); above it \(f&lt;0\) and every segment tilts downward, below it \(f&gt;0\) and every segment tilts upward. A solution curve can cross the nullcline only horizontally, which means the nullcline is exactly where every solution passing through it achieves a local extremum in the direction that equation controls — reading this off costs nothing beyond setting \(f(x,y)=0\), and it organizes the entire field into regions of rising and falling behavior before any integration is attempted.</p>
+
+<h2>The two axes that organize the whole subject</h2>
+<p>Two structural questions, asked of any differential equation, predict almost everything about how hard it will be to solve and which techniques apply: <em>what is its order</em>, and <em>is it linear</em>? Order you've already met. Linearity deserves its own definition, because it is the single property responsible for the richest, most complete theory in the entire subject (Panel IV).</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — linear differential equation</span>
+<p>An \(n\)th-order equation is <strong>linear</strong> if it can be written</p>
+<div class="katex-display" data-katex="a_n(x)\,y^{(n)} + a_{n-1}(x)\,y^{(n-1)} + \cdots + a_1(x)\,y' + a_0(x)\,y = g(x)"></div>
+<p>— that is, \(y\) and every one of its derivatives appear to the first power only, with no products between them (no \(yy'\), no \((y')^2\), no \(\sin y\)) and no products with themselves beyond that first power. The coefficients \(a_i(x)\) are allowed to depend on \(x\) freely; what they may never depend on is \(y\) itself. An equation that fails this is <strong>nonlinear</strong>. The equation is <strong>homogeneous</strong> when \(g(x)\equiv0\), and <strong>nonhomogeneous</strong> otherwise.</p>
+</div>
+
+<p>Why fuss over this distinction? Because linear equations satisfy a <strong>superposition principle</strong> — sums and scalar multiples of solutions of the homogeneous equation are again solutions — that nonlinear equations simply do not have. \(y'=y\) is linear: if \(y_1\) and \(y_2\) both solve it, so does \(3y_1-7y_2\). \(y'=y^2\) is not: if \(y_1=1/(1-x)\) solves it, \(2y_1=2/(1-x)\) does not (check it — the algebra doesn't survive the squaring). That single algebraic fact is why Panel IV can build a complete, closed-form theory for linear equations with constant coefficients, while nonlinear equations in general resist closed form entirely and are instead attacked qualitatively (phase portraits, Panel VI) or numerically (Panel V's lab, Panel VI's methods).</p>
+
+<div class="ascii">                     ORDER  →   1st          2nd            n-th
+   LINEARITY  ↓
+   linear,            solved in    solved in      solved in
+   constant coeff.    Panel III    Panel IV       Panel IV
+                       (integrating  (characteristic (same idea,
+                        factor)       equation)       higher n)
+
+   linear,            solved in    variation of   variation of
+   variable coeff.    Panel III    parameters      parameters
+                                    (Panel IV)      (Panel IV)
+
+   nonlinear          <span class="hl">sometimes</span>       generally: <span class="hl2">no closed form</span> —
+                       solvable by    phase portraits (Panel VI),
+                       substitution   numerical methods (Panel V/VI)
+                       (Panel III)</div>
+
+<h3>Autonomous equations: a preview of the phase line</h3>
+<p>An equation is <strong>autonomous</strong> when \(x\) (usually time, and then written \(t\)) doesn't appear explicitly on the right-hand side: \(y'=f(y)\) rather than \(y'=f(x,y)\). Autonomous equations have a special property worth flagging now and developing fully in Panel VI: their direction field is the <em>same</em> along every horizontal line, since the slope depends only on height \(y\), never on where along the \(x\)-axis you are. A direct consequence is that autonomous solution curves can only ever be vertical translates of one another — shift a solution left or right in \(x\) and it's still a solution. The special heights where \(f(y)=0\) are <strong>equilibrium solutions</strong>: constant functions \(y\equiv c\) that solve the equation trivially, and every other solution is forced to approach, retreat from, or sit trapped between them. This single idea — that the entire qualitative behavior of an autonomous equation is legible from the zeros and sign of \(f(y)\) alone, with no formula for \(y(x)\) ever required — is the seed of the phase-line and phase-portrait analysis in Panel VI.</p>
+
+<h2>Where these equations come from</h2>
+<p>None of this is done in a vacuum. Differential equations are, almost without exception, the language a quantitative model speaks the moment it says something about a <em>rate</em> — how fast a population grows, how quickly a temperature equalizes, how a charge accumulates on a capacitor, how a displaced spring pulls itself back. What all of these share structurally is that the modeling step never writes down \(y(x)\) directly; it writes down a physical or biological law about \(y'\) in terms of \(y\) and \(x\), and the differential equation is simply that law transcribed. A handful of the standard ones, all solved explicitly later in this essay, are collected here so the techniques that follow have a concrete destination in mind rather than existing purely as algebra:</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>A few standard models, and where each is solved in this essay</caption>
+<thead><tr><th>Model</th><th>Equation</th><th>Solved in</th></tr></thead>
+<tbody>
+<tr><td>Radioactive decay</td><td>N′ = −kN</td><td>Panel III — separable</td></tr>
+<tr><td>Newton's law of cooling</td><td>T′ = −k(T − T_amb)</td><td>Panel III — linear</td></tr>
+<tr><td>Logistic population growth</td><td>y′ = ky(1 − y/M)</td><td>Panel III — separable</td></tr>
+<tr><td>RC circuit, charging</td><td>Rq′ + q/C = E₀</td><td>Panel III — linear</td></tr>
+<tr><td>Spring–mass–damper</td><td>mx″ + cx′ + kx = 0</td><td>Panel IV &amp; VI</td></tr>
+<tr><td>Predator–prey (nonlinear, coupled)</td><td>x′=x(a−by),  y′=−y(c−dx)</td><td>qualitative only — Panel VI</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Two of these are worth flagging immediately because they will recur by name throughout the essay: radioactive decay and Newton's cooling are both instances of the single pattern "rate of change proportional to a displacement from a target value," and the spring–mass–damper equation is the second-order linear equation Panel IV's entire machinery was built to handle, revisited concretely once that machinery exists in Panel VI.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — a map of what's ahead</span>
+<p>Panel II makes the direction-field picture rigorous: when does a curve through a given point actually exist, and when is it the only one? Panel III collects the hand-solvable first-order patterns — separable, linear, exact, and the substitutions that reduce other equations to those two. Panel IV builds the complete theory of linear equations with constant (and some variable) coefficients, order two and up. Panel V lets you build direction fields and phase portraits with your own hands. Panel VI extends everything to systems of equations, shows how the Laplace transform turns calculus into algebra, and closes with numerical methods and a glance at where the subject goes next.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Existence &amp; Uniqueness</h1>
+<div class="subtitle">when a direction field actually determines one curve through each point — and when it doesn't</div>
+
+<h2>What "being a solution" precisely requires</h2>
+<p>Panel I's definition bears restating with full weight: \(\varphi\) is a solution of \(y'=f(x,y)\) on an interval \(I\) if \(\varphi\) is differentiable on \(I\) and \(\varphi'(x)=f(x,\varphi(x))\) holds for <em>every</em> \(x\in I\) — not approximately, not almost everywhere, exactly, as an identity. The interval \(I\) is not decoration; it is part of the solution's identity. \(y=1/(1-x)\) solves \(y'=y^2\) on \((-\infty,1)\) and, separately, on \((1,\infty)\) — these are two different solutions with the same formula, because a solution's domain is required to be a single interval on which the identity holds throughout, and the formula is undefined right at \(x=1\).</p>
+
+<h2>The initial value problem, stated precisely</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — IVP</span>
+<p>An <strong>initial value problem</strong> consists of a differential equation together with the value of the solution (and, for higher order, enough of its derivatives) at one point:</p>
+<div class="katex-display" data-katex="y' = f(x,y), \qquad y(x_0)=y_0"></div>
+<p>Two questions are logically independent, and a careless reader conflates them: does a solution <strong>exist</strong> at all, and if one exists, is it the <strong>only</strong> one? A direction field can fail either question — this panel exhibits both failures before stating the theorem that rules them out.</p>
+</div>
+
+<h3>A field where uniqueness genuinely fails</h3>
+<p>Consider \(y'=y^{1/3}\), \(y(0)=0\). One solution is visible immediately: \(y\equiv0\) satisfies \(0'=0^{1/3}=0\). But it is not alone. Separating variables (Panel III) on the branch \(y\ne0\) gives \(y^{-1/3}dy=dx\), so \(\tfrac32 y^{2/3}=x+C\), and choosing \(C=0\) to pass through the origin yields \(y=\left(\tfrac23 x\right)^{3/2}\) for \(x\ge0\), extended by \(y=-\left(-\tfrac23x\right)^{3/2}\) for \(x\le0\) so that the pieces join smoothly at the origin. Both this curve and the flat line \(y\equiv0\) pass through \((0,0)\) and satisfy the equation everywhere — and so, in fact, does every curve built by riding along \(y=0\) for a while and only then peeling off along the cubic branch. Infinitely many solutions share this one initial condition.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the classical non-uniqueness example</span>
+<p>The failure above is not a pathology invented for shock value; it is the standard counterexample every treatment of this theorem uses, precisely because it is the cleanest illustration of what goes wrong. The culprit is a vertical tangent in the field's own dependence on \(y\): near \(y=0\), \(f(y)=y^{1/3}\) is continuous but its slope in the \(y\)-direction, \(\tfrac13 y^{-2/3}\), blows up. The direction field is a perfectly good, unbroken picture near the origin — it is the <em>rate at which that field changes as you move vertically</em> that misbehaves, and that's exactly the quantity the theorem below controls.</p>
+</div>
+
+<h2>The Picard–Lindelöf theorem</h2>
+<p>The fix is to demand not just that \(f\) be continuous, but that it not vary too wildly in the \(y\)-direction.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — Lipschitz condition</span>
+<p>\(f(x,y)\) is <strong>Lipschitz in \(y\)</strong> on a region \(R\) if there is a constant \(K\) such that \(|f(x,y_1)-f(x,y_2)|\le K|y_1-y_2|\) for every \((x,y_1)\) and \((x,y_2)\) in \(R\). In practice, the easiest way to certify this is: if \(\partial f/\partial y\) exists and is continuous — hence bounded — on a closed rectangle \(R\), then \(f\) is automatically Lipschitz in \(y\) there, by the Mean Value Theorem applied in the \(y\)-direction with \(K=\max_R|\partial f/\partial y|\).</p>
+</div>
+
+<div class="callout definition">
+<span class="callout-label">Theorem — Picard–Lindelöf (existence &amp; uniqueness)</span>
+<p>Suppose \(f\) and \(\partial f/\partial y\) are both continuous on an open rectangle containing \((x_0,y_0)\). Then the initial value problem \(y'=f(x,y)\), \(y(x_0)=y_0\) has a solution, and that solution is <strong>unique</strong>, on some interval \((x_0-h,x_0+h)\) around \(x_0\).</p>
+</div>
+
+<p>Check the failing example against the hypothesis: \(f(x,y)=y^{1/3}\) is continuous everywhere, but \(\partial f/\partial y=\tfrac13y^{-2/3}\) is undefined at \(y=0\) — the theorem's hypothesis fails exactly at the initial point where uniqueness broke down. This is not a coincidence; it's the theorem working correctly by declining to apply where its own hypothesis is violated.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — a physical instance: Norton's dome</span>
+<p>Non-Lipschitz nonuniqueness is not just a manufactured algebra exercise; it shows up inside ordinary Newtonian mechanics. Consider a point mass resting at the peak of a dome shaped so that the radial distance travelled satisfies \(r(t)\) with \(\ddot r=r^{1/2}\) near \(r=0\) (a shape choosable so that this is exactly Newton's second law under gravity along the surface) — the same \(y^{1/3}\)-style non-Lipschitz right-hand side as this panel's classical example, one derivative up. The mass sitting motionless at the peak forever, \(r\equiv0\), is one solution. But so is \(r(t)=\tfrac{1}{144}t^4\) for any \(t\ge0\): a mass that sits perfectly still for an arbitrary length of time and then spontaneously begins sliding, with no force having changed. Both satisfy Newton's law and the same initial data \(r(0)=0,\dot r(0)=0\); classical mechanics, ordinarily thought of as fully deterministic, offers no way to rule either out once the force law fails to be Lipschitz. This is a standard illustration (due to the physicist John D. Norton) that <em>determinism in classical physics is not automatic</em> — it is exactly as strong as the existence–uniqueness theorem underneath it, and it fails at precisely the same mathematical fault line this panel has been mapping.</p>
+</div>
+
+<h3>Why it's true: Picard iteration and a contraction</h3>
+<p>The proof is worth sketching because the method it uses — iterate toward the answer, then prove the iterates converge — recurs constantly in analysis. First, an algebraic reformulation: \(\varphi\) solves the IVP on an interval containing \(x_0\) if and only if it solves the integral equation</p>
+<div class="katex-display" data-katex="\varphi(x) = y_0 + \int_{x_0}^{x} f\big(t,\varphi(t)\big)\,dt"></div>
+<p>(differentiate this equation using the Fundamental Theorem of Calculus to recover \(\varphi'=f(x,\varphi)\), and plug in \(x=x_0\) to recover \(\varphi(x_0)=y_0\); the two formulations are genuinely equivalent). This reformulation is what makes the construction possible: it turns "solve a differential equation" into "find a fixed point of a map," where the map sends a candidate function \(\psi\) to a new candidate</p>
+<div class="katex-display" data-katex="(T\psi)(x) = y_0 + \int_{x_0}^{x} f\big(t,\psi(t)\big)\,dt"></div>
+<p><strong>Picard iteration</strong> starts from the crudest possible guess, \(\varphi_0(x)=y_0\) (the constant function), and repeatedly applies \(T\): \(\varphi_1=T\varphi_0\), \(\varphi_2=T\varphi_1\), and so on. Each \(\varphi_{n+1}\) is built by feeding the previous guess back through the equation itself — a genuinely self-correcting process.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The Lipschitz condition is exactly what's needed to show these iterates <em>contract</em>: one can show \(|\varphi_{n+1}(x)-\varphi_n(x)|\) is bounded by \(\dfrac{K^n|x-x_0|^n}{n!}\) times a fixed constant, a bound that shrinks factorially fast, faster than any exponential could overtake it. That's precisely the estimate one needs to prove that the sequence \(\varphi_n\) converges uniformly to a limit function \(\varphi\), and that this limit satisfies \(\varphi=T\varphi\) — a fixed point of \(T\), and hence, by the equivalence above, a genuine solution of the IVP. The same contraction estimate, run in reverse, shows that fixed point is unique: two different fixed points would each have to be within \(K\) times the other's distance from itself, forcing their distance to be zero. This is the Banach fixed-point theorem, specialized to the space of continuous functions — one abstract machine, and it manufactures both existence and uniqueness from the same estimate.</p>
+</div>
+
+<h3>"Local" is doing real work: solutions can escape in finite time</h3>
+<p>The theorem promises a solution only on <em>some</em> interval around \(x_0\) — it says nothing about how far that interval extends, and this is not a weakness of the proof technique that a cleverer argument could remove. Consider \(y'=y^2\), \(y(0)=1\): \(f(x,y)=y^2\) and \(\partial f/\partial y=2y\) are continuous absolutely everywhere, no exceptions, so the theorem's hypotheses hold on the entire plane. Separating variables gives \(-1/y=x+C\), and \(y(0)=1\) forces \(C=-1\), so</p>
+<div class="katex-display" data-katex="y(x) = \frac{1}{1-x}"></div>
+<p>This solution is perfectly well-behaved near \(x=0\) — and then races off to \(+\infty\) as \(x\to1^-\). Despite \(f\) being smooth on all of \(\mathbb{R}^2\), the actual solution exists only on \((-\infty,1)\); it cannot be continued past \(x=1\) because there is nothing there for it to continue to. The blow-up is a property of the specific solution's own trajectory, not a defect visible anywhere in \(f\) itself — which is exactly why the theorem cannot promise more than a local guarantee, and why "solve the IVP" always implicitly includes the question "on what interval?"</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning</span>
+<p>Nothing about this blow-up is special to nonlinear equations chosen adversarially — quadratic growth in \(y\) is enough. Contrast this with the linear equations of Panel IV: a linear equation with coefficients continuous on all of \(\mathbb{R}\) always has solutions that exist on all of \(\mathbb{R}\), with no finite-time escape possible. Finite-time blow-up is a genuinely nonlinear phenomenon, and it is one of the main reasons nonlinear equations are qualitatively harder than linear ones, independent of whether either has a closed-form solution.</p>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — the continuation theorem</span>
+<p>Precisely how far a local solution extends is itself governed by a theorem, not left to guesswork: a solution can be continued — uniquely, by re-applying Picard–Lindelöf at each new endpoint — for as long as it stays inside a region where \(f\) and \(\partial f/\partial y\) remain continuous, and the continuation can only fail in one of two ways: the solution's trajectory \((x,y(x))\) runs off to the edge of that region (or to \(x\to\pm\infty\)), or \(|y(x)|\to\infty\) in finite \(x\) — exactly the blow-up just exhibited. There is no third failure mode; a solution bounded and confined to the interior of the region of continuity can always be pushed further. This is why the blow-up example above is the generic obstruction to worry about, not a special pathology: for an \(f\) continuous on all of \(\mathbb{R}^2\), it is the <em>only</em> way a solution's interval of existence can fail to be all of \(\mathbb{R}\).</p>
+</div>
+
+<h2>Well-posedness: a third question beyond existence and uniqueness</h2>
+<p>Existence and uniqueness are necessary for an IVP to be a sensible model of anything, but they are not sufficient on their own. A model is only as trustworthy as its predictions are stable against the inevitable imprecision of real measured initial data — if two initial conditions that are experimentally indistinguishable could produce wildly different solutions, the "unique" solution promised by Picard–Lindelöf would be unique in name only, useless in practice. The mathematician Jacques Hadamard packaged all three requirements into a single standard:</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — well-posed problem (Hadamard)</span>
+<p>An initial value problem is <strong>well-posed</strong> if (1) a solution exists, (2) that solution is unique, and (3) the solution depends <em>continuously</em> on the initial data — small changes in \(y_0\) produce only small changes in the resulting solution, at least over any fixed finite interval. The Picard–Lindelöf hypotheses (continuity of \(f\) and \(\partial f/\partial y\)) turn out to deliver all three simultaneously, not just the first two; continuous dependence falls out of the same contraction estimate that proved uniqueness.</p>
+</div>
+
+<h3>Continuous dependence, illustrated against a blow-up</h3>
+<p>The finite-time blow-up example above is an unusually sharp place to watch continuous dependence at work, because it shows that "continuous dependence" does not mean "solutions stay close forever" — only that they stay close on any interval where <em>both</em> solutions are actually still defined. Compare \(y'=y^2\) started at \(y(0)=1\), whose solution \(y=1/(1-x)\) blows up at \(x=1\), against the same equation started at the barely-different \(y(0)=1.01\): separating variables identically gives \(y=1/(1.01^{-1}-x)=1.01/(1-1.01x)\), which blows up at \(x=1/1.01\approx0.9901\). The two initial conditions differ by only \(0.01\), and on any interval safely inside \((0,\,0.9901)\) the two solutions stay correspondingly close together — continuous dependence, exactly as promised. But the blow-up times themselves, \(1\) versus \(\approx0.9901\), are also forced apart by that same small change in initial data, and no amount of continuity can prevent that: asking "is the solution still close to the other one" stops being a meaningful question once one of the two solutions has already escaped to infinity. Well-posedness guarantees stability of the solution <em>while both solutions exist</em> — it makes no promise about how long that shared interval of existence lasts.</p>
+
+<h3>Gronwall's inequality: the estimate underneath continuous dependence</h3>
+<p>The precise tool that turns the Lipschitz condition into a quantitative continuous-dependence bound — and, along the way, gives a second, more computational route to uniqueness than the contraction argument sketched above — is a comparison estimate.</p>
+<div class="callout note">
+<span class="callout-label">Note — Gronwall's inequality</span>
+<p>If \(u(t)\ge0\) is continuous and satisfies \(u(t)\le C+\displaystyle\int_{t_0}^{t}K\,u(s)\,ds\) for a constant \(K\ge0\), then \(u(t)\le C\,e^{K(t-t_0)}\) for all \(t\ge t_0\). Applied with \(u(t)=|\varphi_1(t)-\varphi_2(t)|\), the difference of two solutions of the same Lipschitz equation with initial values \(y_0^{(1)},y_0^{(2)}\), the integral equation from the Picard–Lindelöf proof sketch gives exactly a bound of this shape with \(C=|y_0^{(1)}-y_0^{(2)}|\), yielding \(|\varphi_1(t)-\varphi_2(t)|\le|y_0^{(1)}-y_0^{(2)}|\,e^{K|t-t_0|}\) — an explicit, quantitative version of continuous dependence. Setting \(y_0^{(1)}=y_0^{(2)}\) collapses the right side to zero for every \(t\), which is uniqueness again, now derived as a corollary of an inequality rather than a fixed-point argument.</p>
+</div>
+
+<h2>Existence without uniqueness: Peano's theorem</h2>
+<p>The Lipschitz condition is what buys uniqueness; it turns out mere continuity is already enough to buy existence, on its own, with no derivative condition at all.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — Peano's existence theorem</span>
+<p>If \(f\) is merely continuous (not necessarily Lipschitz in \(y\)) on a rectangle containing \((x_0,y_0)\), the IVP \(y'=f(x,y)\), \(y(x_0)=y_0\) still has <em>at least one</em> solution on some interval around \(x_0\) — but that solution need not be unique. This cleanly separates the two questions Panel II opened with: continuity alone is the exact hypothesis existence needs; the extra Lipschitz hypothesis is the exact extra ingredient uniqueness needs on top of it. \(y'=y^{1/3}\) illustrates precisely this gap — \(f\) is continuous, so a solution exists (in fact several), but \(f\) is not Lipschitz at \(y=0\), so uniqueness is not guaranteed, and indeed fails.</p>
+</div>
+
+<h3>A structural consequence of uniqueness: solution curves never cross</h3>
+<p>Uniqueness is not merely a technical convenience — it has an immediate geometric payoff that does enormous qualitative work in Panel VI. Suppose two solutions \(\varphi_1\) and \(\varphi_2\) of the same equation \(y'=f(x,y)\), with \(f\) satisfying the Picard–Lindelöf hypotheses, ever agreed at some point: \(\varphi_1(x_1)=\varphi_2(x_1)\). Then both would solve the identical initial value problem with \(x_0=x_1,\,y_0=\varphi_1(x_1)\) — and uniqueness says an IVP has only one solution, so \(\varphi_1\equiv\varphi_2\) everywhere both are defined. Two genuinely different solution curves of a well-posed equation can therefore never touch, let alone cross.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This single fact — distinct solution curves partition the plane into non-overlapping bands they can never leave — is what makes phase-line and phase-portrait analysis (Panel VI) a legitimate qualitative technique rather than a hand-wavy sketch. If an equilibrium solution sits at \(y\equiv c\), every other solution is permanently trapped on one side of it or the other, because crossing would require touching, and touching is exactly what uniqueness forbids. The entire qualitative theory of autonomous equations rests on this consequence of the existence-uniqueness theorem, not on any additional machinery.</p>
+</div>
+
+<h2>Extending the picture: higher order, and systems</h2>
+<p>Nothing above is limited to a single first-order scalar equation. Any \(n\)th-order equation solved for its top derivative, \(y^{(n)}=g\big(x,y,y',\dots,y^{(n-1)}\big)\), can be rewritten as a first-order <em>system</em> by naming each lower derivative as its own variable:</p>
+<div class="katex-display" data-katex="y_1=y,\ \ y_2=y',\ \ \dots,\ \ y_n=y^{(n-1)} \implies \begin{cases}y_1' = y_2\\ y_2' = y_3\\ \ \vdots\\ y_n' = g(x,y_1,\dots,y_n)\end{cases}"></div>
+<p>which is exactly the vector equation \(\mathbf{Y}'=\mathbf{F}(x,\mathbf{Y})\) for \(\mathbf{Y}=(y_1,\dots,y_n)\). The Picard–Lindelöf theorem carries over to this vector setting verbatim, with \(|\cdot|\) reinterpreted as a vector norm and "Lipschitz in \(y\)" reinterpreted as Lipschitz in \(\mathbf{Y}\) — the same contraction argument, the same conclusion: continuity plus a Lipschitz bound on \(\mathbf{F}\) near \((x_0,\mathbf{Y}_0)\) guarantees a unique local solution. This reduction is not a curiosity; it is the standard bridge that lets every numerical method in Panel VI, built for first-order systems, apply automatically to equations of any order, and it is the reason a second-order spring equation and a coupled predator-prey model are, from the solver's point of view, the exact same kind of object.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — how many initial conditions an \(n\)th-order equation needs</span>
+<p>The system form makes it visible why an \(n\)th-order IVP requires exactly \(n\) pieces of initial data — \(y(x_0),\,y'(x_0),\,\dots,\,y^{(n-1)}(x_0)\) — no more, no fewer: the vector system needs one initial value \(\mathbf{Y}(x_0)=\mathbf{Y}_0\) for its \(n\)-dimensional state, and that single vector condition unpacks into exactly those \(n\) scalar values. This is the same count of degrees of freedom that reappears in Panel IV as the dimension of the solution space of a linear \(n\)th-order equation — one thread, running through both panels.</p>
+</div>
+
+<h3>A different kind of problem entirely: boundary value problems</h3>
+<p>Everything in this panel has assumed all the extra data — \(y(x_0),y'(x_0),\dots\) — is supplied at the <em>same</em> point \(x_0\). A <strong>boundary value problem</strong> (BVP) instead supplies conditions at two different points, typically the two endpoints of an interval: \(y''=f(x,y,y')\) with \(y(a)=\alpha,\ y(b)=\beta\), say. This is not a cosmetic change. Picard–Lindelöf simply does not apply — its entire proof, from the integral-equation reformulation onward, is built around data concentrated at one point, propagated forward and backward from there. A BVP can fail to have a solution at all, or can have infinitely many, even when the underlying equation is linear and perfectly smooth; \(y''+y=0\) with \(y(0)=0,\,y(\pi)=0\) is solved by \(y=C\sin x\) for <em>every</em> constant \(C\), while the same equation with \(y(0)=0,\,y(\pi)=1\) has no solution whatsoever, since every solution satisfying the first condition already forces the second to read \(0=1\). Boundary value problems are a genuinely different subject with their own existence theory (Sturm–Liouville theory, for the linear case) — flagged here mainly so that the clean, unconditional guarantees of this panel are not mistakenly assumed to carry over to a problem that only looks superficially similar.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>First-Order Methods</h1>
+<div class="subtitle">turning y′ = f(x,y) into an antiderivative problem, one algebraic trick at a time</div>
+
+<p>None of the patterns below require guessing blindly — each has a recognizable shape, checkable directly from how the equation is written, before any algebra is attempted:</p>
+<div class="tbl-wrap">
+<table>
+<caption>Recognizing which method applies</caption>
+<thead><tr><th>Shape</th><th>Name</th><th>Route</th></tr></thead>
+<tbody>
+<tr><td>y′ = g(x)h(y)</td><td>separable</td><td>divide by h(y), integrate both sides</td></tr>
+<tr><td>y′ + p(x)y = q(x)</td><td>linear</td><td>integrating factor μ = e^∫p dx</td></tr>
+<tr><td>M dx + N dy = 0, M_y = N_x</td><td>exact</td><td>integrate M in x, match against N</td></tr>
+<tr><td>M dx + N dy = 0, M_y ≠ N_x</td><td>inexact</td><td>seek a 1-variable integrating factor</td></tr>
+<tr><td>y′ = F(y/x)</td><td>homogeneous</td><td>substitute v = y/x</td></tr>
+<tr><td>y′ + p(x)y = q(x)yⁿ</td><td>Bernoulli</td><td>substitute v = y^(1−n)</td></tr>
+<tr><td>y′ = q₀+q₁y+q₂y², one solution y₁ known</td><td>Riccati</td><td>substitute y = y₁ + 1/v</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Separable equations</h2>
+<p>The simplest pattern a first-order equation can present is one where the two variables can be physically pulled apart onto opposite sides of the equals sign: \(y'=g(x)h(y)\). Writing \(y'=dy/dx\) and manipulating symbols suggests</p>
+<div class="katex-display" data-katex="\frac{dy}{h(y)} = g(x)\,dx \ \implies\ \int\frac{dy}{h(y)} = \int g(x)\,dx"></div>
+<p>which looks like an act of algebra performed on an infinitesimal that shouldn't, strictly, be split apart like a fraction. It is legitimate — but the justification is the chain rule, not symbol-pushing. Let \(H(y)\) be any antiderivative of \(1/h(y)\). Then, treating \(y\) as a function of \(x\) and differentiating \(H(y(x))\) via the chain rule:</p>
+<div class="katex-display" data-katex="\frac{d}{dx}H\big(y(x)\big) = H'(y)\,y' = \frac{y'}{h(y)} = \frac{g(x)h(y)}{h(y)} = g(x)"></div>
+<p>So \(H(y(x))\) is simply an antiderivative of \(g(x)\): integrating both sides in \(x\) gives \(H(y(x))=G(x)+C\) where \(G'=g\), exactly the equation the "separate and integrate" recipe produces. The shortcut is legitimate; it's just shorthand for an application of the chain rule run in reverse.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — solutions lost in the division</span>
+<p>Dividing by \(h(y)\) silently assumes \(h(y)\ne0\). Any constant \(y=c\) with \(h(c)=0\) is itself a solution of \(y'=g(x)h(y)\) (since then \(y'=0=g(x)\cdot0\) identically) — but it is precisely the solution the separation step divides away and can never recover algebraically. Always check for these <strong>equilibrium solutions</strong> (constant solutions where \(h(y)=0\)) separately, alongside whatever the separation-and-integration produces.</p>
+</div>
+
+<h3>Worked example: exponential growth</h3>
+<p>\(y'=xy\). Separate: \(dy/y = x\,dx\) (having noted \(y\equiv0\) is itself a solution, corresponding to \(h(y)=y=0\)). Integrating, \(\ln|y|=\tfrac{x^2}{2}+C_1\), so \(|y|=e^{C_1}e^{x^2/2}\), and absorbing the sign into an arbitrary constant \(C\) (which is now free to be any real number, including \(0\) — recovering the equilibrium solution as the special case \(C=0\)):</p>
+<div class="katex-display" data-katex="y = Ce^{x^2/2}"></div>
+
+<h3>Worked example: radioactive decay and half-life</h3>
+<p>Table I's very first model, \(N'=-kN\), is separable by inspection: \(dN/N=-k\,dt\), so \(\ln|N|=-kt+C_1\), giving \(N(t)=N_0e^{-kt}\) once \(N(0)=N_0\) is imposed. The single most useful derived quantity is the <strong>half-life</strong> \(t_{1/2}\), the time at which exactly half the original quantity remains: setting \(N(t_{1/2})=N_0/2\) gives \(e^{-kt_{1/2}}=1/2\), so</p>
+<div class="katex-display" data-katex="t_{1/2} = \frac{\ln 2}{k}"></div>
+<p>Notice this is independent of \(N_0\) entirely — a direct consequence of the equation being linear and autonomous: the field looks identical after any vertical rescaling, so "time to halve" cannot depend on where you started. This is the same self-similarity that makes exponential decay a convenient clock (carbon dating, drug elimination half-lives) rather than merely a convenient formula.</p>
+
+<h3>Worked example: the logistic equation</h3>
+<p>The single most important nonlinear separable equation in applications models growth with a carrying capacity \(M\): \(y'=ky\left(1-\dfrac{y}{M}\right)\). Its equilibrium solutions are visible on sight: \(y\equiv0\) and \(y\equiv M\), the two heights where the right-hand side vanishes. Away from those, separate and use partial fractions:</p>
+<div class="katex-display" data-katex="\frac{dy}{y(1-y/M)} = k\,dt, \qquad \frac{1}{y(1-y/M)} = \frac{1}{y} + \frac{1/M}{1-y/M}"></div>
+<div class="katex-display" data-katex="\int\left[\frac{1}{y}+\frac{1/M}{1-y/M}\right]dy = \ln|y| - \ln\left|1-\frac{y}{M}\right| = kt + C_1 \implies \frac{y}{1-y/M} = Ae^{kt}"></div>
+<p>Solving this last equation for \(y\) and writing the arbitrary constant in terms of the initial value \(y(0)=y_0\) produces the closed-form logistic solution:</p>
+<div class="katex-display" data-katex="y(t) = \frac{M}{1 + \left(\dfrac{M-y_0}{y_0}\right)e^{-kt}}"></div>
+<p>Two features of this formula are worth noting on sight, without plugging in a single number: as \(t\to\infty\), the exponential term vanishes and \(y(t)\to M\) — every solution with \(y_0>0\) is drawn toward the carrying capacity, regardless of how far it started from it. And the equilibrium solutions \(y\equiv0,\,y\equiv M\) are exactly the two heights this formula cannot reach for any finite \(t\) and finite \(C\) — consistent with Panel II's fact that distinct solution curves of a well-posed equation can never cross: no solution starting strictly between \(0\) and \(M\) can ever reach \(M\) in finite time, because doing so would mean touching the equilibrium solution sitting there.</p>
+
+<h2>Linear first-order equations: the integrating factor</h2>
+<p>Write a linear first-order equation in <strong>standard form</strong>, coefficient of \(y'\) equal to \(1\):</p>
+<div class="katex-display" data-katex="y' + p(x)\,y = q(x)"></div>
+<p>The left side is <em>almost</em> the derivative of a product — it would be exactly that if only there were some function \(\mu(x)\) multiplying the whole equation such that \(\mu y'+\mu p\,y\) collapsed into \((\mu y)'\). Expanding the target, \((\mu y)'=\mu y'+\mu' y\), and comparing coefficients of \(y\) against \(\mu y'+\mu p y\) forces \(\mu'=\mu p\) — itself a separable equation for \(\mu\), solved by \(\mu(x)=e^{\int p(x)\,dx}\).</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — integrating factor</span>
+<p>For \(y'+p(x)y=q(x)\), the function \(\mu(x)=e^{\int p(x)\,dx}\) is the <strong>integrating factor</strong>. Multiplying through by \(\mu\) turns the left side into an exact derivative:</p>
+<div class="katex-display" data-katex="\big(\mu(x)\,y\big)' = \mu(x)\,q(x) \implies y = \frac{1}{\mu(x)}\int \mu(x)\,q(x)\,dx"></div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The integrating factor is a change of the <em>dependent</em> variable in disguise — set \(u=\mu(x)y\), and the entire linear equation collapses to the trivial \(u'=\mu(x)q(x)\), solvable by one direct integration. This is the same recurring theme found throughout calculus: a hard problem is not attacked head-on, but converted, by a well-chosen change of variable, into a problem a more elementary toolkit already knows how to finish. Panel VI's Laplace transform, met later, performs an even more dramatic version of exactly this move.</p>
+</div>
+
+<h3>Worked example</h3>
+<p>\(y'+2y=e^{-x}\). Here \(p(x)=2\), so \(\mu(x)=e^{2x}\). Then \((e^{2x}y)'=e^{2x}e^{-x}=e^{x}\), so \(e^{2x}y=e^x+C\), giving</p>
+<div class="katex-display" data-katex="y = e^{-x} + Ce^{-2x}"></div>
+
+<h3>Transient and steady-state: an RC circuit</h3>
+<p>Linear first-order equations are the standard model for a resistor–capacitor circuit charged by a constant source voltage \(E_0\): the charge \(q(t)\) on the capacitor obeys \(R\,q'+\dfrac{q}{C}=E_0\), or in standard form \(q'+\dfrac{1}{RC}q=\dfrac{E_0}{R}\). Here \(p=1/(RC)\) is constant, so \(\mu(t)=e^{t/(RC)}\), and</p>
+<div class="katex-display" data-katex="\big(e^{t/RC}q\big)' = \frac{E_0}{R}e^{t/RC} \implies q(t) = E_0C + Ke^{-t/RC}"></div>
+<p>with \(K\) fixed by \(q(0)=q_0\) as \(K=q_0-E_0C\). Split the answer into its two structural pieces and each has a physical name: \(q_p(t)=E_0C\) is the particular solution — a constant, because a constant source eventually charges the capacitor to a constant equilibrium — called the <strong>steady-state</strong> response, while \(K e^{-t/RC}\), the homogeneous piece, is the <strong>transient</strong>: it carries all the memory of the initial condition \(q_0\), and it decays to zero regardless of what \(q_0\) was, at a rate set entirely by the circuit's own time constant \(RC\), never by the source. Every linear equation's general solution \(y=y_h+y_p\) (Panel IV formalizes this split for any order) admits this same reading whenever \(y_h\to0\): \(y_p\) is what the system settles into, and \(y_h\) is the fading trace of where it started.</p>
+
+<h2>Exact equations</h2>
+<p>Write a first-order equation in differential form \(M(x,y)\,dx+N(x,y)\,dy=0\). This equation is <strong>exact</strong> if the left side is literally the total differential of some function \(F(x,y)\) — that is, \(F_x=M\) and \(F_y=N\) — because then the equation reads \(dF=0\), whose solutions are simply the level curves \(F(x,y)=C\).</p>
+
+<div class="callout definition">
+<span class="callout-label">Exactness test</span>
+<p>If \(M\) and \(N\) have continuous partial derivatives, the equation \(M\,dx+N\,dy=0\) is exact on a simply connected region if and only if</p>
+<div class="katex-display" data-katex="\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x}"></div>
+<p>This is nothing but the equality of mixed partial derivatives (Clairaut's theorem) run in reverse: if \(F\) exists with \(F_x=M,\,F_y=N\), then \(M_y=F_{xy}=F_{yx}=N_x\) automatically; the content of the theorem is that this necessary condition is also sufficient, at least on a region with no holes.</p>
+</div>
+
+<h3>Worked example</h3>
+<p>\((2xy+3)\,dx+(x^2-1)\,dy=0\). Here \(M_y=2x\) and \(N_x=2x\) — exact. Integrate \(M\) with respect to \(x\), holding \(y\) fixed, to recover \(F\) up to an unknown function of \(y\) alone:</p>
+<div class="katex-display" data-katex="F(x,y) = \int(2xy+3)\,dx = x^2y+3x+g(y)"></div>
+<p>Differentiate this in \(y\) and match against \(N\): \(F_y=x^2+g'(y)\) must equal \(x^2-1\), forcing \(g'(y)=-1\), so \(g(y)=-y\). The implicit general solution is</p>
+<div class="katex-display" data-katex="x^2y+3x-y=C"></div>
+
+<h3>Repairing an inexact equation with an integrating factor</h3>
+<p>When \(M_y\ne N_x\), the equation as written is not exact — but multiplying through by a well-chosen function \(\mu\) can sometimes make it exact, exactly the same repair strategy the linear case used above.</p>
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>If \(\dfrac{M_y-N_x}{N}\) depends on \(x\) alone, call it \(\rho(x)\); then \(\mu(x)=e^{\int\rho(x)\,dx}\) makes \(\mu M\,dx+\mu N\,dy=0\) exact. Symmetrically, if \(\dfrac{N_x-M_y}{M}\) depends on \(y\) alone, an integrating factor \(\mu(y)\) exists by the same formula with the roles of \(M,N\) swapped. Neither test is guaranteed to succeed — some inexact equations admit no integrating factor of either single-variable form — but when one does apply, it typically supplies the fastest route to a solution.</p>
+</div>
+<p>This is not an unrelated trick: writing the standard linear equation \(y'+p(x)y=q(x)\) in differential form, \(\big(p(x)y-q(x)\big)dx+dy=0\), gives \(M_y=p(x)\) and \(N_x=0\), so \((M_y-N_x)/N=p(x)\) depends on \(x\) alone — and the resulting integrating factor is \(e^{\int p(x)dx}\), exactly the linear-equation formula derived earlier. The linear integrating factor is simply the special case of this general exact-equation repair where \(N\equiv1\).</p>
+
+<p><strong>Worked example:</strong> \((3xy+y^2)\,dx+(x^2+xy)\,dy=0\). Here \(M_y=3x+2y\) and \(N_x=2x+y\), so \(M_y-N_x=x+y\), and the equation is not exact as written. Testing the \(x\)-only route: \(\dfrac{M_y-N_x}{N}=\dfrac{x+y}{x(x+y)}=\dfrac{1}{x}\) — genuinely a function of \(x\) alone, so an integrating factor exists: \(\mu(x)=e^{\int dx/x}=x\). Multiplying through:</p>
+<div class="katex-display" data-katex="\underbrace{(3x^2y+xy^2)}_{\mu M}\,dx + \underbrace{(x^3+x^2y)}_{\mu N}\,dy = 0"></div>
+<p>Check: \(\partial(\mu M)/\partial y=3x^2+2xy\) and \(\partial(\mu N)/\partial x=3x^2+2xy\) — exact, as promised. Integrating \(\mu M\) in \(x\): \(F=x^3y+\tfrac12x^2y^2+g(y)\); differentiating in \(y\) and matching against \(\mu N=x^3+x^2y\) forces \(g'(y)=0\). The solution is</p>
+<div class="katex-display" data-katex="x^3y + \tfrac12x^2y^2 = C"></div>
+
+<h2>Substitutions: reducing the unfamiliar to the familiar</h2>
+<p>Many equations that are neither separable nor linear as given become one or the other after a well-chosen change of the dependent variable. Two patterns are common enough to name.</p>
+
+<h3>Homogeneous equations</h3>
+<p>An equation is (in this specific, first-order sense) <strong>homogeneous</strong> if it can be written \(y'=F(y/x)\) — the right side depends on \(x\) and \(y\) only through their ratio. Substitute \(v=y/x\), so \(y=vx\) and, by the product rule, \(y'=v+xv'\). The equation becomes</p>
+<div class="katex-display" data-katex="v + x\frac{dv}{dx} = F(v) \implies \frac{dv}{F(v)-v} = \frac{dx}{x}"></div>
+<p>separable in \(v\) and \(x\). Solve for \(v(x)\), then substitute back \(y=vx\).</p>
+
+<p><strong>Worked example:</strong> \(y'=\dfrac{x^2+y^2}{xy}=\dfrac{x}{y}+\dfrac{y}{x}\), which is \(F(y/x)\) with \(F(v)=1/v+v\). Substituting \(v+xv'=1/v+v\) leaves \(xv'=1/v\), separable: \(v\,dv=dx/x\), so \(v^2/2=\ln|x|+C_1\), i.e. \(v^2=2\ln|x|+C\). Back-substituting \(v=y/x\):</p>
+<div class="katex-display" data-katex="y^2 = x^2\big(2\ln|x|+C\big)"></div>
+
+<h3>Equations reducible to homogeneous form</h3>
+<p>A close relative, \(y'=F\!\left(\dfrac{ax+by+c}{dx+ey+f}\right)\), isn't homogeneous as written — the constants \(c,f\) break the "depends only on the ratio \(y/x\)" pattern — but a shift of both variables, \(x=X+h,\,y=Y+k\), can remove them. Choosing \(h,k\) to satisfy \(ah+bk+c=0\) and \(dh+ek+f=0\) simultaneously (an ordinary \(2\times2\) linear system) eliminates the constant terms entirely, since \(y'=dy/dx=dY/dX\) is unaffected by a constant shift, and \(ax+by+c=aX+bY\) once \(h,k\) are chosen this way.</p>
+<p><strong>Worked example:</strong> \(y'=\dfrac{x+y-1}{x-y-3}\). Solve \(h+k=1\) and \(h-k=3\) simultaneously: adding the two gives \(2h=4\Rightarrow h=2\), and subtracting gives \(2k=-2\Rightarrow k=-1\) (check: \(h+k-1=2-1-1=0\) and \(h-k-3=2+1-3=0\), both confirmed). With \(x=X+2,\,y=Y-1\), the equation becomes \(Y'=\dfrac{X+Y}{X-Y}\), homogeneous in \(X,Y\) exactly as this section's method requires — solved by \(v=Y/X\) precisely as above, then translated back via \(X=x-2,\,Y=y+1\).</p>
+
+<h3>Bernoulli equations</h3>
+<p>An equation of the form \(y'+p(x)y=q(x)y^n\) (\(n\ne0,1\), else it's already linear) is a <strong>Bernoulli equation</strong>. Dividing through by \(y^n\) gives \(y^{-n}y'+p(x)y^{1-n}=q(x)\), and the substitution \(v=y^{1-n}\) — so that \(v'=(1-n)y^{-n}y'\), i.e. \(y^{-n}y'=v'/(1-n)\) — linearizes it completely:</p>
+<div class="katex-display" data-katex="v' + (1-n)p(x)\,v = (1-n)q(x)"></div>
+<p>a plain linear equation in \(v\), solvable by the integrating factor above.</p>
+
+<p><strong>Worked example:</strong> \(y'+\dfrac{y}{x}=xy^2\) (here \(n=2\)). Divide by \(y^2\): \(y^{-2}y'+\dfrac{1}{x}y^{-1}=x\). With \(v=y^{-1}\), \(v'=-y^{-2}y'\), so \(-v'+\dfrac{v}{x}=x\), i.e. \(v'-\dfrac{v}{x}=-x\) — linear, with \(p(x)=-1/x\), giving \(\mu(x)=e^{-\int dx/x}=1/x\). Then \(\left(\dfrac{v}{x}\right)'=\dfrac{-x}{x}=-1\), so \(v/x=-x+C\), i.e. \(v=Cx-x^2\). Since \(y=1/v\):</p>
+<div class="katex-display" data-katex="y = \frac{1}{Cx-x^2}"></div>
+
+<h3>Riccati equations: a bonus pattern, given one solution for free</h3>
+<p>An equation of the form \(y'=q_0(x)+q_1(x)y+q_2(x)y^2\) — quadratic in \(y\), unlike Bernoulli's pure power — is a <strong>Riccati equation</strong>, and it is not solvable in closed form in general. But if any single particular solution \(y_1(x)\) is already known (found by inspection, or supplied by the problem), the substitution \(y=y_1+\dfrac1v\) reduces it to something solvable. Differentiating, \(y'=y_1'+\big({-v'}/{v^2}\big)\), and substituting into the equation, the \(q_0\) terms and the \(y_1\)-only terms cancel against \(y_1'=q_0+q_1y_1+q_2y_1^2\) (since \(y_1\) itself solves the equation), leaving, after multiplying through by \(-v^2\), a plain <em>linear</em> equation in \(v\):</p>
+<div class="katex-display" data-katex="v' + \big(q_1(x)+2q_2(x)y_1(x)\big)v = -q_2(x)"></div>
+<p>solvable by the integrating factor from earlier in this panel. One known solution is therefore enough to unlock the entire family — the same "one particular piece supplies everything else" idea that reduction of order will exploit again in Panel IV.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Every technique in this panel is the same maneuver wearing a different disguise: recognize a nonlinear or awkward equation as one of two solved shapes — separable, or linear — reachable by an algebraic rearrangement or a change of the dependent variable. There is no third fundamental method here; homogeneous and Bernoulli substitutions are pattern-matching skills that route an unfamiliar equation back to the two genuinely solved cases above, exactly as a trigonometric or algebraic substitution routes an unfamiliar integral back to one already in the table.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Higher-Order Linear Equations</h1>
+<div class="subtitle">superposition, characteristic roots, and rebuilding the particular piece</div>
+
+<h2>The linear structure, made explicit</h2>
+<p>Write the general \(n\)th-order linear equation using a <strong>differential operator</strong> \(L\) that packages the left side as a single symbol:</p>
+<div class="katex-display" data-katex="L[y] \;=\; a_n(x)y^{(n)}+a_{n-1}(x)y^{(n-1)}+\cdots+a_1(x)y'+a_0(x)y, \qquad L[y]=g(x)"></div>
+<p>The equation is homogeneous when \(g\equiv0\), i.e. \(L[y]=0\). Because differentiation is linear — \((\alpha f+\beta h)'=\alpha f'+\beta h'\) — so is \(L\) itself: \(L[\alpha y_1+\beta y_2]=\alpha L[y_1]+\beta L[y_2]\) for any constants \(\alpha,\beta\). This one algebraic fact is the entire engine of this panel.</p>
+
+<div class="callout definition">
+<span class="callout-label">Superposition principle</span>
+<p>If \(y_1,\dots,y_k\) all solve the homogeneous equation \(L[y]=0\), then so does every linear combination \(c_1y_1+\cdots+c_ky_k\), for any constants \(c_i\) — immediate from the linearity of \(L\): \(L[c_1y_1+\cdots+c_ky_k]=c_1L[y_1]+\cdots+c_kL[y_k]=c_1\cdot0+\cdots+c_k\cdot0=0\). The solution set of a homogeneous linear equation is therefore not just a collection of curves — it is a <em>vector space</em>.</p>
+</div>
+
+<p>This is the identical "the sum inherits algebra from being a sum" idea that makes the integral linear: here the operator \(L\) is built from derivatives instead of a limit of Riemann sums, but the mechanism — a linear operation applied to a linear combination distributes over that combination — is exactly the same piece of algebra doing exactly the same job.</p>
+
+<h3>Linear independence and the Wronskian</h3>
+<p>Panel I promised that an \(n\)th-order linear equation's general solution needs exactly \(n\) arbitrary constants, and Panel II's system reduction explained why \(n\) initial conditions are needed. The missing piece is a working test for when \(n\) particular solutions \(y_1,\dots,y_n\) are "different enough" to combine into a genuinely \(n\)-parameter family, rather than secretly collapsing onto a smaller one.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the Wronskian</span>
+<div class="katex-display" data-katex="W(y_1,\dots,y_n)(x) = \det\begin{bmatrix} y_1 &amp; y_2 &amp; \cdots &amp; y_n \\ y_1' &amp; y_2' &amp; \cdots &amp; y_n' \\ \vdots &amp; \vdots &amp; &amp; \vdots \\ y_1^{(n-1)} &amp; y_2^{(n-1)} &amp; \cdots &amp; y_n^{(n-1)} \end{bmatrix}"></div>
+<p>If \(W(x_0)\ne0\) at even one point \(x_0\in I\), then \(y_1,\dots,y_n\) are linearly independent on \(I\). For solutions of a common linear homogeneous equation with continuous coefficients and \(a_n\ne0\) on \(I\) — the case that matters here — the converse also holds: \(W\) is either never zero on \(I\), or identically zero on \(I\). There's no in-between, and this is the sharpest possible test: check \(W\) at one convenient point.</p>
+</div>
+
+<h3>Why the Wronskian can't be sometimes-zero: Abel's formula</h3>
+<p>The dichotomy above is not asserted by fiat — it follows from an explicit formula for how \(W\) itself evolves. For the normalized second-order case \(y''+p(x)y'+q(x)y=0\), differentiating the \(2\times2\) Wronskian \(W=y_1y_2'-y_2y_1'\) and substituting \(y_i''=-py_i'-qy_i\) from the equation itself causes the \(q\)-terms to cancel identically, leaving the first-order linear equation \(W'=-p(x)W\) — itself solved by an integrating factor:</p>
+<div class="katex-display" data-katex="W(x) = W(x_0)\,\exp\left(-\int_{x_0}^{x} p(t)\,dt\right)"></div>
+<p>This is <strong>Abel's formula</strong>, and it makes the dichotomy transparent: an exponential is never zero, so \(W(x)\) has the same sign as \(W(x_0)\) at every point of \(I\) if \(W(x_0)\ne0\), and is identically zero if \(W(x_0)=0\). The Wronskian of genuine solutions can never sneak from nonzero to zero.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — fundamental set of solutions</span>
+<p>A set of \(n\) linearly independent solutions \(y_1,\dots,y_n\) of an \(n\)th-order linear homogeneous equation is called a <strong>fundamental set</strong>. By the existence–uniqueness theorem (Panel II, applied to the system form), the solution space has dimension exactly \(n\), so a fundamental set is a <em>basis</em> of it, and every solution is uniquely \(y=c_1y_1+\cdots+c_ny_n\) for some constants \(c_i\) — the general solution. The \(n\) constants are exactly what's needed to match \(n\) initial conditions \(y(x_0),\dots,y^{(n-1)}(x_0)\), tying this panel's dimension count directly back to Panel II's.</p>
+</div>
+
+<h2>Constant-coefficient homogeneous equations</h2>
+<p>When every \(a_i\) is a constant, a remarkable ansatz works: try \(y=e^{rx}\). Since \(y^{(k)}=r^ke^{rx}\), substituting into \(a_ny^{(n)}+\cdots+a_0y=0\) and factoring out the never-zero \(e^{rx}\) reduces the entire differential equation to a polynomial equation in \(r\):</p>
+<div class="katex-display" data-katex="a_nr^n+a_{n-1}r^{n-1}+\cdots+a_1r+a_0=0"></div>
+<p>the <strong>characteristic equation</strong>. Each root supplies one basis solution, and the algebra of polynomial roots sorts into exactly three cases (illustrated here for order two, then stated in general).</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Second-order constant-coefficient case, ar² + br + c = 0</caption>
+<thead><tr><th>Roots</th><th>General solution</th><th>Worked example</th></tr></thead>
+<tbody>
+<tr><td>real, distinct: r₁ ≠ r₂</td><td>y = c₁e^(r₁x) + c₂e^(r₂x)</td><td>y″−5y′+6y=0 → r=2,3</td></tr>
+<tr><td>real, repeated: r₁=r₂=r</td><td>y = c₁e^(rx) + c₂xe^(rx)</td><td>y″−4y′+4y=0 → r=2 (double)</td></tr>
+<tr><td>complex: r = α ± βi</td><td>y = e^(αx)(c₁cos βx + c₂sin βx)</td><td>y″−2y′+5y=0 → r=1±2i</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The complex case follows from Euler's formula \(e^{(\alpha+i\beta)x}=e^{\alpha x}(\cos\beta x+i\sin\beta x)\): the two complex-valued solutions \(e^{(\alpha\pm i\beta)x}\) are traded for the two real-valued combinations \(e^{\alpha x}\cos\beta x\) and \(e^{\alpha x}\sin\beta x\), which are themselves real linear combinations of the complex pair (by superposition — a real linear combination of solutions of a real linear equation is again a solution), and one checks directly that their Wronskian is nonzero, confirming they form a genuine basis.</p>
+
+<h3>Where the extra factor of x actually comes from</h3>
+<p>The repeated-root rule "multiply by \(x\)" looks like an arbitrary patch, but it falls straight out of a general technique — <strong>reduction of order</strong> — that deserves to be seen once rather than memorized. Given one known solution \(y_1\) of \(y''+py'+qy=0\), seek a second solution of the form \(y_2=v(x)y_1(x)\). Then \(y_2'=v'y_1+vy_1'\) and \(y_2''=v''y_1+2v'y_1'+vy_1''\); substituting into the equation and grouping:</p>
+<div class="katex-display" data-katex="v''y_1+2v'y_1'+vy_1''+p(v'y_1+vy_1')+qvy_1 = v\underbrace{\big(y_1''+py_1'+qy_1\big)}_{=\,0} + v''y_1+v'(2y_1'+py_1) = 0"></div>
+<p>The bracketed term vanishes because \(y_1\) already solves the equation — that cancellation is the whole point of choosing \(y_2\) as a multiple of \(y_1\) rather than something unrelated. What remains, \(v''y_1+v'(2y_1'+py_1)=0\), is a first-order (separable) equation in \(v'\) alone, always solvable. For the repeated-root case \(y_1=e^{rx}\) with \(p=-2r\) (since a repeated root means \(r=-b/2a\), i.e. \(p\) and \(r\) are locked together), this reduction collapses all the way to \(v''=0\), so \(v=C_1x+C_2\) — and the genuinely new solution contributed is \(v=x\), giving \(y_2=xe^{rx}\) exactly. The "multiply by \(x\)" rule isn't a special fact about repeated roots; it's what reduction of order hands you when you carry the computation out.</p>
+
+<h3>Reduction of order on a genuinely variable-coefficient equation</h3>
+<p>The technique is not tied to constant coefficients at all — it only needed one known solution to build the cancellation above, and that solution can come from anywhere, including a lucky guess. Take \(y''-\dfrac{2}{x}y'+\dfrac{2}{x^2}y=0\); inspection reveals \(y_1=x\) works (\(y_1'=1,\,y_1''=0\), and \(0-\tfrac2x(1)+\tfrac{2}{x^2}(x)=-\tfrac2x+\tfrac2x=0\)). Seeking \(y_2=vx\), so \(y_2'=v'x+v\) and \(y_2''=v''x+2v'\), and substituting into the equation:</p>
+<div class="katex-display" data-katex="(v''x+2v') - \frac2x(v'x+v) + \frac{2}{x^2}(vx) = v''x + 2v' - 2v' - \frac{2v}{x} + \frac{2v}{x} = v''x = 0"></div>
+<p>All the \(v\) and \(v'\) terms outside \(v''\) cancel completely, leaving simply \(v''=0\), so \(v=C_1x+C_2\). The \(C_2\) piece just reproduces \(y_1\) again (\(C_2x\) is a multiple of \(y_1\)); the genuinely new contribution is \(v=x\), giving \(y_2=x\cdot x=x^2\). Checking directly: \(y_2'=2x,\,y_2''=2\), and \(2-\tfrac2x(2x)+\tfrac{2}{x^2}(x^2)=2-4+2=0\) — confirmed. The Wronskian \(W=x(2x)-x^2(1)=x^2\ne0\) for \(x\ne0\) confirms \(y_1=x,\,y_2=x^2\) are independent, so \(y=c_1x+c_2x^2\) is the general solution — reached with no ansatz at all beyond the one solution supplied at the start.</p>
+
+<h3>A third-order example</h3>
+<p>Nothing above is limited to order two. For \(y'''-6y''+11y'-6y=0\), the characteristic equation is \(r^3-6r^2+11r-6=0\). Testing small integers, \(r=1\) gives \(1-6+11-6=0\) — a root — so \(r-1\) divides the cubic, and polynomial division leaves \(r^2-5r+6=(r-2)(r-3)\). All three roots, \(r=1,2,3\), are real and distinct, so the same first row of this panel's table applies verbatim with a third term appended:</p>
+<div class="katex-display" data-katex="y = c_1e^x+c_2e^{2x}+c_3e^{3x}"></div>
+<p>Nothing about the method changed going from order two to order three — factor the characteristic polynomial, read off one basis solution per root, superpose. This is exactly why the theory scales to any order \(n\) with no new ideas required, only more roots to track and (for repeated or complex roots) the same case-by-case rules from the table, applied root by root.</p>
+
+<h2>Nonhomogeneous equations</h2>
+<p>Now suppose \(L[y]=g(x)\) with \(g\not\equiv0\). Suppose \(y_p\) is any one particular solution and \(y\) is any solution whatsoever. Then \(L[y-y_p]=L[y]-L[y_p]=g-g=0\) by linearity, so \(y-y_p\) solves the <em>homogeneous</em> equation — meaning \(y-y_p\) is some combination of a fundamental set, and therefore:</p>
+<div class="callout definition">
+<span class="callout-label">Structure theorem</span>
+<div class="katex-display" data-katex="y_{\text{general}} = y_h + y_p, \qquad y_h = c_1y_1+\cdots+c_ny_n \ \text{(homogeneous general solution)}"></div>
+<p>Every solution of the nonhomogeneous equation is the homogeneous general solution plus <em>any single</em> particular solution — it doesn't matter which one you find, since two different particular solutions differ only by a homogeneous solution, which is already absorbed into \(y_h\). This reduces the entire problem to two independent tasks: find \(y_h\) (Panel IV, above), and find just one \(y_p\) by any means available (below).</p>
+</div>
+
+<h3>Method of undetermined coefficients</h3>
+<p>When \(g(x)\) is a polynomial, exponential, sine, cosine, or a product of these, its family of derivatives is finite — differentiating never produces a genuinely new kind of term, only a resizing of the same finite list. That closure is precisely what licenses <em>guessing</em> \(y_p\) as an undetermined combination of the same family and solving for the coefficients algebraically.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Standard guesses (before checking for resonance)</caption>
+<thead><tr><th>g(x)</th><th>Guess for y_p</th></tr></thead>
+<tbody>
+<tr><td>polynomial, degree k</td><td>polynomial, degree k, all coefficients unknown</td></tr>
+<tr><td>Ae^(αx)</td><td>Be^(αx)</td></tr>
+<tr><td>A cos βx or A sin βx</td><td>B cos βx + C sin βx</td></tr>
+<tr><td>e^(αx)(polynomial)</td><td>e^(αx) · (matching-degree polynomial)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — resonance</span>
+<p>If the naive guess already solves the <em>homogeneous</em> equation, it cannot possibly work as a particular solution of the nonhomogeneous one — plugging a homogeneous solution into \(L[y]\) returns \(0\), never \(g(x)\). The fix is to multiply the guess by \(x^s\), where \(s\) is the smallest positive integer making the guess no longer a homogeneous solution. This is not a separate rule to memorize; it is the same reduction-of-order phenomenon from the repeated-root case above, now showing up because the forcing term \(g(x)\) happens to resonate with the system's own natural response.</p>
+</div>
+
+<p><strong>Worked example:</strong> \(y''-3y'+2y=e^x\). The homogeneous equation has characteristic roots \(r=1,2\) (from \(r^2-3r+2=(r-1)(r-2)=0\)), so \(y_h=c_1e^x+c_2e^{2x}\). The naive guess \(y_p=Ae^x\) duplicates the \(r=1\) homogeneous solution — resonance — so try \(y_p=Axe^x\) instead. Computing \(y_p'=Ae^x(1+x)\) and \(y_p''=Ae^x(2+x)\), then substituting:</p>
+<div class="katex-display" data-katex="y_p''-3y_p'+2y_p = Ae^x\big[(2+x)-3(1+x)+2x\big] = Ae^x(-1) \stackrel{!}{=} e^x \implies A=-1"></div>
+<div class="katex-display" data-katex="y = c_1e^x+c_2e^{2x} - xe^x"></div>
+
+<p><strong>Worked example, no resonance this time:</strong> \(y''+y=3\sin2x\). The homogeneous roots are \(r=\pm i\) (frequency \(1\)), and the forcing term oscillates at frequency \(2\) — a different frequency, so no resonance, and the naive guess \(y_p=A\cos2x+B\sin2x\) is safe to use as is. Then \(y_p''=-4A\cos2x-4B\sin2x\), and substituting:</p>
+<div class="katex-display" data-katex="y_p''+y_p = -3A\cos2x-3B\sin2x \stackrel{!}{=} 3\sin2x \implies A=0,\ B=-1"></div>
+<div class="katex-display" data-katex="y = c_1\cos x+c_2\sin x - \sin2x"></div>
+<p>Contrasting the two worked examples side by side is the fastest way to internalize the resonance check: identical solution method, but the first forcing term shared the homogeneous system's own frequency and had to be rescued with an extra factor of \(x\), while this one didn't and needed no rescue at all.</p>
+
+<h3>The annihilator method: the resonance rule, derived rather than patched on</h3>
+<p>The \(x^s\) resonance fix above works, but it can look like an ad hoc patch bolted onto an otherwise clean recipe. The <strong>annihilator method</strong> reaches the identical answer from pure operator algebra, and along the way it explains <em>why</em> the patch has to be an extra power of \(x\) and nothing else. Write the equation using the operator \(D=d/dx\), so \(y''-3y'+2y=e^x\) reads \((D^2-3D+2)y=e^x\), i.e. \((D-1)(D-2)y=e^x\). The right side is itself killed by a simple operator — \((D-1)e^x=e^x-e^x=0\), so \((D-1)\) <strong>annihilates</strong> \(e^x\). Apply \((D-1)\) to both sides of the original equation:</p>
+<div class="katex-display" data-katex="(D-1)(D-1)(D-2)y = (D-1)e^x = 0 \implies (D-1)^2(D-2)\,y=0"></div>
+<p>This is now a genuine <em>homogeneous</em> third-order constant-coefficient equation, solvable by this panel's characteristic-equation table directly: roots \(r=1\) (multiplicity \(2\), from the squared factor) and \(r=2\), giving \(y=c_1e^x+c_2xe^x+c_3e^{2x}\). Every actual solution of the original nonhomogeneous equation must be among these — and comparing against the equation's own homogeneous part, \(y_h=c_1e^x+c_3e^{2x}\) (the roots of \((D-1)(D-2)\) alone), the one genuinely new term contributed by annihilating the forcing is exactly \(c_2xe^x\) — which is precisely the resonance-adjusted guess used above, arrived at with no separate rule to remember: the multiplicity of the shared root in the combined, annihilated characteristic polynomial <em>is</em> the power of \(x\) the guess needs.</p>
+
+<h3>Variation of parameters</h3>
+<p>Undetermined coefficients only works when \(g(x)\) belongs to that closed finite family, and only for constant coefficients. <strong>Variation of parameters</strong> is slower but universal — it works for any continuous \(g(x)\) and any (even variable) coefficients, as long as a fundamental set \(y_1,y_2\) of the homogeneous equation is already known. Seek \(y_p=u_1(x)y_1(x)+u_2(x)y_2(x)\), where the constants of the homogeneous solution have been allowed to <em>vary</em> — hence the name. Differentiating and imposing the auxiliary condition \(u_1'y_1+u_2'y_2=0\) (chosen specifically to kill the messy second-derivative cross terms that would otherwise appear) leaves a clean \(2\times2\) linear system for \(u_1',u_2'\), for the normalized equation \(y''+py'+qy=g\):</p>
+<div class="katex-display" data-katex="u_1'y_1+u_2'y_2=0, \qquad u_1'y_1'+u_2'y_2'=g(x)"></div>
+<p>Solving this system by Cramer's rule brings back exactly the Wronskian defined earlier in this panel:</p>
+<div class="katex-display" data-katex="u_1' = \frac{-y_2\,g(x)}{W(y_1,y_2)}, \qquad u_2' = \frac{y_1\,g(x)}{W(y_1,y_2)}"></div>
+<p>then integrate each to find \(u_1,u_2\), and assemble \(y_p=u_1y_1+u_2y_2\).</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The Wronskian's reappearance here is not a coincidence — it is exactly the determinant of the coefficient matrix of the \(2\times2\) linear system above, and it is nonzero precisely because \(y_1,y_2\) form a fundamental set (this panel's earlier dichotomy). Every thread in this panel — superposition, the Wronskian's role as an independence test, and its later role as a solvability guarantee for variation of parameters — turns out to be the same underlying linear-algebra fact viewed from three different angles.</p>
+</div>
+
+<p><strong>Worked example:</strong> \(y''+y=\tan x\) — the forcing term is not in the undetermined-coefficients family at all (its derivatives never close into a finite list), so variation of parameters is the only route available. The homogeneous solutions are \(y_1=\cos x,\,y_2=\sin x\), with \(W=\cos x\cdot\cos x-\sin x\cdot(-\sin x)=1\). Then:</p>
+<div class="katex-display" data-katex="u_1' = -\sin x\tan x = -\frac{\sin^2x}{\cos x} = \cos x - \sec x, \qquad u_2' = \cos x\tan x = \sin x"></div>
+<p>Integrating: \(u_1=\sin x-\ln|\sec x+\tan x|\), and \(u_2=-\cos x\). Assembling \(y_p=u_1\cos x+u_2\sin x\), the \(\sin x\cos x\) terms cancel exactly, leaving</p>
+<div class="katex-display" data-katex="y_p = -\cos x\,\ln|\sec x+\tan x|, \qquad y = c_1\cos x+c_2\sin x-\cos x\,\ln|\sec x+\tan x|"></div>
+
+<h3>A bonus pattern: Cauchy–Euler equations</h3>
+<p>Constant coefficients are not the only case with a closed-form characteristic equation. The <strong>Cauchy–Euler</strong> (equidimensional) equation \(x^2y''+bxy'+cy=0\) responds to the ansatz \(y=x^r\) exactly the way constant-coefficient equations respond to \(y=e^{rx}\): substituting \(y'=rx^{r-1},\,y''=r(r-1)x^{r-2}\) and factoring out \(x^r\) leaves the algebraic <strong>indicial equation</strong></p>
+<div class="katex-display" data-katex="r(r-1)+br+c=0"></div>
+<p>with the identical three-case structure (distinct real, repeated, complex roots) as before — repeated roots contribute a factor of \(\ln x\) rather than \(x\) (i.e. \(x^r\) and \(x^r\ln x\)), and complex roots \(r=\alpha\pm i\beta\) contribute \(x^\alpha\cos(\beta\ln x)\) and \(x^\alpha\sin(\beta\ln x)\). The substitution \(x=e^t\) converts a Cauchy–Euler equation into a genuine constant-coefficient equation in \(t\), which is exactly why the same three cases resurface — it is the constant-coefficient theory, viewed through a logarithmic change of the independent variable.</p>
+
+<p><strong>Worked example, the complex-root case:</strong> \(x^2y''+xy'+y=0\), so \(b=1,\,c=1\). The indicial equation is \(r(r-1)+r+1=r^2+1=0\), giving \(r=\pm i\) — purely imaginary, \(\alpha=0,\,\beta=1\). Reading the rule above directly, with \(x^\alpha=x^0=1\):</p>
+<div class="katex-display" data-katex="y = c_1\cos(\ln x)+c_2\sin(\ln x)"></div>
+<p>The appearance of \(\ln x\) rather than an ordinary trigonometric argument is exactly what the \(x=e^t\) substitution predicts: with \(t=\ln x\), the constant-coefficient equation this becomes has purely imaginary roots \(\pm i\) in \(t\), contributing \(\cos t,\sin t\) — and translating back, \(t=\ln x\) is exactly what appears inside the trigonometric functions above.</p>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Interactive Lab</h1>
+<div class="subtitle">build a direction field with your own click, then watch a linear system's eigenvalues shape its trajectories</div>
+
+<h2>Lab 1 — Direction Fields &amp; Numerical Solvers</h2>
+<p>Pick an equation \(y'=f(x,y)\) from the dropdown. The canvas fills with its direction field — one short segment per grid point, sloped exactly as Panel I describes. <strong>Click anywhere on the canvas</strong> to drop an initial condition \((x_0,y_0)\); the lab then integrates forward and backward from that point using the selected numerical method and step size, and overlays the result against the equation's exact closed-form solution (thin, translucent) so you can watch the two agree — or, at a coarse step size, visibly disagree.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">direction field — click to set (x₀, y₀)</div>
+      <canvas id="cvField" width="440" height="380" style="width:100%;max-width:440px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Equation</label>
+      <select id="eqSelect">
+        <option value="growth">y′ = y  (exponential)</option>
+        <option value="linear">y′ = x − y  (linear)</option>
+        <option value="logistic">y′ = y(1 − y)  (logistic)</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Method</label>
+      <select id="methodSelect">
+        <option value="euler">Euler</option>
+        <option value="heun">Improved Euler (Heun)</option>
+        <option value="rk4">Runge–Kutta 4</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Step size h</label>
+      <input type="range" id="hSlider" min="5" max="100" value="40">
+      <span class="readout" id="hReadout">0.40</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">INITIAL POINT (x₀, y₀)</div>
+      <div class="v" id="ivpPoint">click the canvas</div>
+    </div>
+    <div class="block">
+      <div class="k">STEPS TO RIGHT EDGE</div>
+      <div class="v" id="stepCount">…</div>
+    </div>
+    <div class="block">
+      <div class="k">y(x_end) — NUMERIC</div>
+      <div class="v" id="numVal">…</div>
+    </div>
+    <div class="block">
+      <div class="k">y(x_end) — EXACT</div>
+      <div class="v" id="exactVal">…</div>
+    </div>
+    <div class="block">
+      <div class="k">|ERROR|</div>
+      <div class="v" id="fieldErr">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> direction field</span>
+    <span><span class="swatch" style="background:var(--blue); opacity:0.6;"></span> exact solution</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> numerical solution</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Set the method to <code>Euler</code> and drag \(h\) up toward its coarsest setting: the accent-colored numerical path visibly drifts off the translucent exact curve, especially through regions where the field is curving quickly — Euler's method only ever uses the slope at the <em>start</em> of each step, so it walks in a straight line while the true solution is bending underneath it. Switch to <code>RK4</code> at the same coarse \(h\) and the drift collapses to almost nothing — RK4 samples the slope at several points across each step and blends them, matching the Taylor expansion of the true solution to a much higher order. Panel VI derives exactly why, and by how much.</p>
+</div>
+
+<h3>Checking the lab by hand: one step, two methods</h3>
+<p>It's worth confirming the lab's numbers against pencil-and-paper arithmetic at least once. Take \(y'=x-y,\ y(0)=1\), and advance a single step of size \(h=0.5\). Euler's method uses only the starting slope, \(f(0,1)=0-1=-1\):</p>
+<div class="katex-display" data-katex="y(0.5) \approx 1 + 0.5\cdot(-1) = 0.5"></div>
+<p>The exact solution (Panel III's integrating-factor formula, \(y=x-1+2e^{-x}\) for this initial condition) gives \(y(0.5)=0.5-1+2e^{-0.5}\approx-0.5+1.21306=0.71306\) — Euler is already off by about \(0.213\), over a fifth of the true value, after just one step. RK4's four slope samples for the same step:</p>
+<div class="katex-display" data-katex="k_1=-1,\quad k_2=f(0.25,\,0.75)=-0.5,\quad k_3=f(0.25,\,0.875)=-0.625,\quad k_4=f(0.5,\,0.6875)=-0.1875"></div>
+<div class="katex-display" data-katex="y(0.5) \approx 1+\frac{0.5}{6}\big[-1+2(-0.5)+2(-0.625)+(-0.1875)\big] = 1-0.28646 = 0.71354"></div>
+<p>RK4's single-step error is about \(0.0005\) — roughly \(400\) times smaller than Euler's, from the identical step size and the identical four numbers \(f\) was evaluated at, just combined more cleverly. Reproduce this in the lab: select <code>y′ = x − y</code>, set \(h=0.5\), click near \((0,1)\), and switch between methods to watch the accent curve visibly jump toward the translucent exact curve.</p>
+
+<h2>Lab 2 — Phase Portraits for Linear Systems</h2>
+<p>This lab visualizes the planar system \(\mathbf{Y}'=A\mathbf{Y}\) with \(A=\left[\begin{smallmatrix}a&amp;b\\c&amp;d\end{smallmatrix}\right]\) from Panel VI. Adjust the sliders (or pick a preset) to change \(A\); the canvas redraws its vector field, and the lab computes \(A\)'s eigenvalues live, classifying the equilibrium at the origin by name. <strong>Click anywhere</strong> to drop a trajectory, integrated forward and backward through that point.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">phase portrait of Y′ = AY — click to add a trajectory</div>
+      <canvas id="cvPhase" width="440" height="380" style="width:100%;max-width:440px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Preset</label>
+      <select id="presetSelect">
+        <option value="saddle">saddle: [[1,0],[0,−1]]</option>
+        <option value="node">stable node: [[−1,0],[0,−2]]</option>
+        <option value="spiral">stable spiral: [[−0.2,1],[−1,−0.2]]</option>
+        <option value="center">center: [[0,1],[−1,0]]</option>
+        <option value="custom">custom (use sliders)</option>
+      </select>
+    </div>
+    <div class="control-row"><label>a</label><input type="range" id="aSlider" min="-300" max="300" value="100"><span class="readout" id="aReadout">1.00</span></div>
+    <div class="control-row"><label>b</label><input type="range" id="bSlider" min="-300" max="300" value="0"><span class="readout" id="bReadout">0.00</span></div>
+    <div class="control-row"><label>c</label><input type="range" id="cSlider" min="-300" max="300" value="0"><span class="readout" id="cReadout">0.00</span></div>
+    <div class="control-row"><label>d</label><input type="range" id="dSlider" min="-300" max="300" value="-100"><span class="readout" id="dReadout">-1.00</span></div>
+    <div class="control-row">
+      <button id="clearTrajBtn" style="font-family:var(--mono);font-size:12px;background:var(--bg-elevated);color:var(--ink-faint);border:1px solid var(--border);border-radius:4px;padding:6px 14px;cursor:pointer;">clear trajectories</button>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">MATRIX A</div>
+      <div class="v" id="phaseMatrix">…</div>
+    </div>
+    <div class="block">
+      <div class="k">trace, det</div>
+      <div class="v" id="phaseTraceDet">…</div>
+    </div>
+    <div class="block">
+      <div class="k">EIGENVALUES</div>
+      <div class="v" id="phaseEig">…</div>
+    </div>
+    <div class="block">
+      <div class="k">CLASSIFICATION</div>
+      <div class="v" id="phaseClass">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> vector field of AY</span>
+    <span><span class="swatch" style="background:var(--purple)"></span> trajectory through clicked point</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> origin (the equilibrium)</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Try the <code>saddle</code> preset and click a few points near the origin but off the axes: trajectories swing in, then peel away toward infinity, never settling — a saddle is unstable along one direction no matter how stable it looks along the other. Try <code>center</code>: every trajectory becomes a closed loop, neither approaching nor leaving the origin. Then drag \(a\) and \(d\) slightly negative while \(b,c\) stay opposite in sign: the closed loops tighten into inward spirals — a real physical damping term turning a perpetual oscillation into a decaying one. Panel VI derives the trace–determinant rule that predicts exactly which shape you're about to see, before you drag anything.</p>
+</div>
+
+<h3>A few more experiments worth running</h3>
+<p>A handful of specific settings make particular points from earlier panels concrete rather than abstract. In Lab 1, select <code>y′ = y(1 − y)</code> and click a point with \(0&lt;y_0&lt;1\) — the numeric curve should visibly flatten as it approaches \(y=1\), never quite reaching it, exactly Panel III's claim that a solution starting strictly between the two equilibria \(y=0\) and \(y=1\) can never touch either in finite time. Click a point with \(y_0\) slightly negative, and compare against \(y_0\) slightly positive: the two numeric curves diverge from each other almost immediately, a hands-on look at how differently an autonomous equation behaves on opposite sides of an equilibrium. In Lab 2, set the sliders to \(a=d=0\) and \(b=-c\ne0\) (a pure rotation, the <code>center</code> preset's shape) and watch trajectories trace perfect circles or ellipses forever; then nudge \(a\) and \(d\) to be small and <em>positive</em> instead of negative — the loops should now spiral slowly <em>outward</em>, the unstable-spiral row of Panel VI's classification table, made visible rather than merely tabulated.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Systems, Transforms &amp; Beyond</h1>
+<div class="subtitle">coupled equations, turning calculus into algebra, and the road to numerical and partial differential equations</div>
+
+<h2>Linear systems and the phase plane</h2>
+<p>Panel II showed any \(n\)th-order equation reduces to a first-order system \(\mathbf{Y}'=\mathbf{F}(x,\mathbf{Y})\). Specialize to the linear, constant-coefficient, homogeneous, planar case, \(\mathbf{Y}'=A\mathbf{Y}\) with \(A=\left[\begin{smallmatrix}a&amp;b\\c&amp;d\end{smallmatrix}\right]\) — exactly Panel V's Lab 2. The scalar ansatz \(y=e^{rx}\) generalizes directly: try \(\mathbf{Y}=e^{\lambda t}\mathbf{v}\) for a constant vector \(\mathbf{v}\). Substituting, \(\lambda e^{\lambda t}\mathbf{v}=Ae^{\lambda t}\mathbf{v}\), and cancelling the never-zero scalar \(e^{\lambda t}\) leaves</p>
+<div class="katex-display" data-katex="A\mathbf{v} = \lambda\mathbf{v}"></div>
+<p>— an eigenvalue equation. Every eigenpair \((\lambda_i,\mathbf{v}_i)\) of \(A\) supplies one basis solution \(e^{\lambda_i t}\mathbf{v}_i\), and (when \(A\) has two independent eigenvectors) the general solution is \(\mathbf{Y}(t)=c_1e^{\lambda_1t}\mathbf{v}_1+c_2e^{\lambda_2t}\mathbf{v}_2\) — superposition again, now over vector-valued solutions.</p>
+
+<h3>A shortcut for small systems: elimination</h3>
+<p>For a \(2\times2\) system, forming eigenvalues and eigenvectors is not the only route, and it's worth seeing the elementary alternative once to notice the two agree. Take \(x'=3x-2y,\ y'=2x-2y\). Solve the first equation for \(y\), \(y=\tfrac12(3x-x')\), and differentiate: \(y'=\tfrac12(3x'-x'')\). Substituting both into the second equation eliminates \(y\) entirely, leaving a single second-order equation in \(x\) alone:</p>
+<div class="katex-display" data-katex="\tfrac12(3x'-x'') = 2x-2\cdot\tfrac12(3x-x') \implies x''-x'-2x=0"></div>
+<p>solved by this panel's own Panel IV methods: characteristic roots \(r=2,-1\), so \(x=c_1e^{2t}+c_2e^{-t}\), and back-substituting into \(y=\tfrac12(3x-x')\) gives \(y=\tfrac{c_1}{2}e^{2t}+2c_2e^{-t}\). Compare against the matrix \(A=\left[\begin{smallmatrix}3&amp;-2\\2&amp;-2\end{smallmatrix}\right]\): its trace is \(1\) and determinant \(-2\), giving exactly the same characteristic equation \(\lambda^2-\lambda-2=0\) and the same roots \(2,-1\) that elimination found — the two methods are computing the identical object, one via a single higher-order scalar equation, the other via a matrix eigenvalue problem. Elimination is often faster by hand for a \(2\times2\) system; the eigenvalue framework is the one that survives unchanged to \(n\) dimensions, which is why this panel builds on it rather than on elimination.</p>
+
+<h3>Classifying the origin: the trace–determinant plane</h3>
+<p>The eigenvalues of a \(2\times2\) matrix solve \(\lambda^2-\tau\lambda+\Delta=0\) where \(\tau=\text{tr}(A)=a+d\) and \(\Delta=\det(A)=ad-bc\) — so \(\tau\) and \(\Delta\) alone determine the entire qualitative picture, with no need to solve for the eigenvalues explicitly first.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Classification of Y′ = AY by trace τ and determinant Δ</caption>
+<thead><tr><th>Condition</th><th>Eigenvalues</th><th>Behavior at origin</th></tr></thead>
+<tbody>
+<tr><td>Δ &lt; 0</td><td>real, opposite sign</td><td>saddle — always unstable</td></tr>
+<tr><td>Δ &gt; 0, τ² − 4Δ &gt; 0, τ &lt; 0</td><td>real, both negative</td><td>stable node</td></tr>
+<tr><td>Δ &gt; 0, τ² − 4Δ &gt; 0, τ &gt; 0</td><td>real, both positive</td><td>unstable node</td></tr>
+<tr><td>Δ &gt; 0, τ² − 4Δ &lt; 0, τ &lt; 0</td><td>complex, negative real part</td><td>stable spiral</td></tr>
+<tr><td>Δ &gt; 0, τ² − 4Δ &lt; 0, τ &gt; 0</td><td>complex, positive real part</td><td>unstable spiral</td></tr>
+<tr><td>Δ &gt; 0, τ = 0</td><td>purely imaginary</td><td>center — closed orbits</td></tr>
+<tr><td>Δ &gt; 0, τ² − 4Δ = 0</td><td>real, repeated</td><td>degenerate / star node</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — a forward glance to the Jacobian essay</span>
+<p>This entire classification is only stated here for <em>linear</em> systems, but it does nearly all of the qualitative work for nonlinear ones too: near an equilibrium point of a nonlinear system \(\mathbf{Y}'=\mathbf{F}(\mathbf{Y})\), the local behavior is, under mild conditions, governed by the eigenvalues of \(\mathbf{F}\)'s Jacobian matrix evaluated at that equilibrium — the best linear approximation to \(\mathbf{F}\) there. Linearizing a nonlinear system's equilibria and classifying each by the trace–determinant table above is exactly how qualitative behavior is extracted from equations with no closed-form solution at all. See the companion Jacobian essay for the linear-algebra machinery this leans on.</p>
+</div>
+
+<h3>A concrete application: the damped spring</h3>
+<p>The equation \(mx''+cx'+kx=0\) (mass, damping, spring constant, all \(\ge0\)) reduces, via \(y_1=x,\,y_2=x'\), to the system \(y_1'=y_2,\ y_2'=-\tfrac{k}{m}y_1-\tfrac{c}{m}y_2\), with matrix \(A=\left[\begin{smallmatrix}0&amp;1\\-k/m&amp;-c/m\end{smallmatrix}\right]\), trace \(\tau=-c/m\) and determinant \(\Delta=k/m\). Since \(k,m>0\), \(\Delta>0\) always — a saddle is impossible for a passive spring, matching physical intuition that this system can't fly apart in one direction while decaying in another. The classical three regimes fall directly out of the table: <strong>overdamped</strong> (\(\tau^2-4\Delta>0\), real negative roots, a node — the mass creeps back to rest with no oscillation), <strong>underdamped</strong> (\(\tau^2-4\Delta<0\), a stable spiral — oscillation that decays), and <strong>critically damped</strong> (\(\tau^2-4\Delta=0\), the degenerate case, the fastest possible return to rest without oscillating).</p>
+
+<h3>Worked example: solving a system by eigenvalues, with actual numbers</h3>
+<p>Let \(A=\left[\begin{smallmatrix}4&amp;2\\3&amp;-1\end{smallmatrix}\right]\), so \(\tau=3\) and \(\Delta=4(-1)-2(3)=-10\). Since \(\Delta&lt;0\), the table already predicts a saddle before a single eigenvector is computed. Solving \(\lambda^2-3\lambda-10=0\) directly confirms it: \(\lambda=\dfrac{3\pm\sqrt{9+40}}{2}=\dfrac{3\pm7}{2}\), giving \(\lambda_1=5,\ \lambda_2=-2\). For \(\lambda_1=5\): \((A-5I)\mathbf v=0\) reads \(-x+2y=0\), so \(\mathbf v_1=(2,1)\). For \(\lambda_2=-2\): \((A+2I)\mathbf v=0\) reads \(6x+2y=0\), so \(\mathbf v_2=(1,-3)\). The general solution assembles directly from these eigenpairs:</p>
+<div class="katex-display" data-katex="\mathbf{Y}(t) = c_1e^{5t}\left[\begin{smallmatrix}2\\1\end{smallmatrix}\right] + c_2e^{-2t}\left[\begin{smallmatrix}1\\-3\end{smallmatrix}\right]"></div>
+<p>Read off the qualitative picture directly from this formula, matching what the table promised: along the exact direction \((1,-3)\), the solution decays like \(e^{-2t}\) toward the origin; along every other direction, the growing \(e^{5t}\) term eventually dominates and the trajectory is flung away — the saddle behavior Panel V's Lab 2 lets you watch directly by dropping a trajectory near, but not exactly on, that decaying eigendirection.</p>
+
+<h2>Laplace transforms: turning calculus into algebra</h2>
+<p>The <strong>Laplace transform</strong> converts an entire IVP — equation and initial conditions together — into a single algebraic equation, no separate homogeneous/particular split required.</p>
+<div class="callout definition">
+<span class="callout-label">Definition</span>
+<div class="katex-display" data-katex="\mathcal{L}\{f\}(s) = F(s) = \int_0^{\infty} e^{-st}f(t)\,dt"></div>
+<p>The transform is linear (an integral of a linear combination is the linear combination of integrals), and its signature property is what it does to a derivative, via integration by parts:</p>
+<div class="katex-display" data-katex="\mathcal{L}\{f'\}(s) = sF(s)-f(0), \qquad \mathcal{L}\{f''\}(s) = s^2F(s)-sf(0)-f'(0)"></div>
+</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>A short transform table</caption>
+<thead><tr><th>f(t)</th><th>F(s) = ℒ{f}(s)</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>1/s</td></tr>
+<tr><td>t</td><td>1/s²</td></tr>
+<tr><td>tⁿ</td><td>n!/s^(n+1)</td></tr>
+<tr><td>e^(at)</td><td>1/(s−a)</td></tr>
+<tr><td>sin(bt)</td><td>b/(s²+b²)</td></tr>
+<tr><td>cos(bt)</td><td>s/(s²+b²)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Each derivative rule <em>bakes the initial conditions directly into the algebra</em>: transforming \(y''+3y'+2y=0\) with \(y(0)=1,\,y'(0)=0\) produces \(\big(s^2Y-s\big)+3\big(sY-1\big)+2Y=0\), a single linear equation for \(Y(s)\) that already knows the initial data, with no separate constants \(c_1,c_2\) left to solve for afterward. This is the same recurring theme as the integrating factor and the substitution methods of Panel III — a hard calculus problem converted into something a more elementary toolkit (here, high-school algebra and a lookup table) already knows how to finish.</p>
+</div>
+
+<h3>Worked example, start to finish</h3>
+<p>Solve \(y''+3y'+2y=0\), \(y(0)=1,\,y'(0)=0\), by transform. From the equation above, \(Y(s)(s^2+3s+2)=s+3\), so</p>
+<div class="katex-display" data-katex="Y(s) = \frac{s+3}{(s+1)(s+2)} = \frac{2}{s+1} - \frac{1}{s+2}"></div>
+<p>(partial fractions: \(A(s+2)+B(s+1)=s+3\); \(s=-1\) gives \(A=2\), \(s=-2\) gives \(B=-1\)). Reading the table backward term by term:</p>
+<div class="katex-display" data-katex="y(t) = 2e^{-t}-e^{-2t}"></div>
+<p>This matches Panel IV's characteristic-equation method exactly: \(r^2+3r+2=0\) gives \(r=-1,-2\), so \(y=c_1e^{-t}+c_2e^{-2t}\), and the initial conditions \(y(0)=c_1+c_2=1,\,y'(0)=-c_1-2c_2=0\) solve to \(c_1=2,\,c_2=-1\) — the identical answer, reached by an entirely different route. Two independent derivations landing on the same function is not a coincidence to marvel at each time; it's the ordinary consistency any correct pair of methods for the same well-posed problem is required to have.</p>
+
+<h3>Discontinuous forcing and the convolution theorem</h3>
+<p>The transform's reach extends past the smooth, elementary functions in the short table above. The <strong>unit step function</strong> \(u_c(t)\), equal to \(0\) for \(t&lt;c\) and \(1\) for \(t\ge c\), models a switch turned on at time \(c\), and its transform, together with the shift it induces, is what makes switched or discontinuous forcing tractable at all:</p>
+<div class="katex-display" data-katex="\mathcal{L}\{u_c(t)\}=\frac{e^{-cs}}{s}, \qquad \mathcal{L}\{u_c(t)f(t-c)\} = e^{-cs}F(s)"></div>
+<p>— a delay in time becomes, after transforming, nothing more than multiplication by a decaying exponential in \(s\), the same "translate the problem into algebra" theme running through this whole section. The reverse direction is handled by the <strong>convolution theorem</strong>: multiplying two transforms together corresponds, after inverting, not to multiplying the original functions but to <em>convolving</em> them,</p>
+<div class="katex-display" data-katex="\mathcal{L}^{-1}\{F(s)G(s)\} = (f*g)(t) = \int_0^t f(\tau)g(t-\tau)\,d\tau"></div>
+<p>which is exactly what's needed to invert a product like \(Y(s)=\dfrac{1}{s^2+1}\cdot G(s)\) when \(G(s)\) isn't itself in any standard table — the response of a fixed system to an arbitrary forcing term \(g(t)\), assembled from the system's own response to an idealized instantaneous impulse.</p>
+
+<h3>Worked example: a switch flipped mid-problem</h3>
+<p>Solve \(y'+y=u_1(t)\), \(y(0)=0\) — a system at rest, forced by nothing until a switch turns a constant input on at \(t=1\). Transforming: \(sY-0+Y=e^{-s}/s\), so \(Y(s)=\dfrac{e^{-s}}{s(s+1)}\). Partial fractions on the un-shifted part, \(\dfrac{1}{s(s+1)}=\dfrac1s-\dfrac1{s+1}\), whose inverse transform is \(f(t)=1-e^{-t}\); the shift theorem then reads the answer off directly:</p>
+<div class="katex-display" data-katex="y(t) = u_1(t)\big[1-e^{-(t-1)}\big] = \begin{cases}0 &amp; t&lt;1\\ 1-e^{-(t-1)} &amp; t\ge1\end{cases}"></div>
+<p>Check the two pieces directly against the original equation: for \(t&lt;1\), \(y\equiv0\) trivially satisfies \(y'+y=0\), matching the (as yet unswitched) zero forcing. For \(t\ge1\), \(y'=e^{-(t-1)}\), so \(y'+y=e^{-(t-1)}+1-e^{-(t-1)}=1\), matching the forcing after the switch flips. No case-by-case solving of two separate IVPs and gluing the pieces together at \(t=1\) was needed — the transform absorbed the entire switch into one algebraic manipulation, another instance of the panel's recurring theme.</p>
+
+<h2>Series solutions: when there's no closed form</h2>
+<p>Many linear equations with variable coefficients — Bessel's equation, Legendre's equation, and most equations arising from separating variables in a PDE — admit no closed form in elementary functions at all. Near an <strong>ordinary point</strong> \(x_0\) (where the leading coefficient doesn't vanish and the others are analytic), the standard recourse is to posit a solution as a power series, \(y=\sum_{k=0}^{\infty}a_k(x-x_0)^k\), substitute term by term, and match coefficients of each power of \((x-x_0)\) to generate a <strong>recurrence relation</strong> for the \(a_k\) — turning a differential equation into a difference equation for a sequence of numbers. Near a <strong>regular singular point</strong>, where the naive series ansatz fails, the <strong>Frobenius method</strong> generalizes it by allowing a leading fractional or negative power, \(y=x^\rho\sum_{k=0}^\infty a_kx^k\), with \(\rho\) itself determined by an indicial equation reminiscent of the Cauchy–Euler case in Panel IV — not a coincidence, since a regular singular point is, to leading order, locally Cauchy–Euler in character.</p>
+
+<h3>Worked example: a recurrence that resolves into a closed form</h3>
+<p>Solve \(y''-xy'-y=0\) near the ordinary point \(x_0=0\). Substituting \(y=\sum_{k=0}^\infty a_kx^k\), so \(y'=\sum_{k\ge1}ka_kx^{k-1}\) and \(y''=\sum_{k\ge2}k(k-1)a_kx^{k-2}\), and reindexing the first sum with \(n=k-2\) so every term carries the same power \(x^n\):</p>
+<div class="katex-display" data-katex="\sum_{n=0}^\infty(n+2)(n+1)a_{n+2}x^n \;-\; \sum_{n=0}^\infty na_nx^n \;-\; \sum_{n=0}^\infty a_nx^n = 0"></div>
+<p>Matching the coefficient of \(x^n\) to zero for every \(n\) gives \((n+2)(n+1)a_{n+2}=(n+1)a_n\), which simplifies to the remarkably clean recurrence</p>
+<div class="katex-display" data-katex="a_{n+2} = \frac{a_n}{n+2}"></div>
+<p>with \(a_0,a_1\) free — the two arbitrary constants a second-order equation is owed. The even-indexed coefficients telescope as \(a_2=a_0/2,\ a_4=a_2/4=a_0/8,\ a_6=a_4/6=a_0/48,\dots\), matching the pattern \(a_{2m}=a_0/(2^mm!)\), so the even solution sums to a recognizable series:</p>
+<div class="katex-display" data-katex="y_1(x) = a_0\sum_{m=0}^\infty \frac{(x^2/2)^m}{m!} = a_0\,e^{x^2/2}"></div>
+<p>— which can be checked directly, with no series in sight: \(y_1'=xe^{x^2/2}\), \(y_1''=(1+x^2)e^{x^2/2}\), and \(y_1''-xy_1'-y_1=(1+x^2-x^2-1)e^{x^2/2}=0\). The odd-indexed coefficients follow their own recurrence, \(a_{2m+1}=a_1/\big(3\cdot5\cdots(2m+1)\big)\), and this one does <em>not</em> resolve into any elementary closed form — it is, in fact, the series for a scaled imaginary error function. The lesson is double-edged and worth stating plainly: the series method makes no distinction between the two cases as it runs — it grinds out a recurrence and a sequence of coefficients regardless — and whether that sequence happens to be a disguised elementary function or a genuinely new one is something you only discover after the fact, by recognizing (or failing to recognize) the resulting series.</p>
+
+<h2>Numerical methods, made rigorous</h2>
+<p>Panel V's Lab 1 let you watch three numerical methods disagree by different amounts; here is where those amounts come from. Each method is built from Taylor's theorem applied to the true solution \(y(x)\) at a step of size \(h\):</p>
+<div class="katex-display" data-katex="y(x_n+h) = y(x_n) + hy'(x_n) + \frac{h^2}{2}y''(x_n) + \frac{h^3}{6}y'''(x_n) + \cdots"></div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Single-step methods for y′ = f(x,y)</caption>
+<thead><tr><th>Method</th><th>Update rule</th><th>Local error</th><th>Global error</th></tr></thead>
+<tbody>
+<tr><td>Euler</td><td>y_(n+1) = y_n + h·f(x_n, y_n)</td><td>O(h²)</td><td>O(h)</td></tr>
+<tr><td>Heun (improved Euler)</td><td>average of f at start and predicted end</td><td>O(h³)</td><td>O(h²)</td></tr>
+<tr><td>Runge–Kutta 4 (RK4)</td><td>weighted average of 4 slope samples per step</td><td>O(h⁵)</td><td>O(h⁴)</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Euler's update keeps only the first two terms of the Taylor expansion, replacing \(y'(x_n)\) with the known value \(f(x_n,y_n)\) and discarding everything from \(h^2\) onward — so each single step is wrong by an amount proportional to \(h^2\) (the first dropped term), and since roughly \(1/h\) steps are needed to cross a fixed interval, those per-step errors accumulate to a total global error proportional to \(h^2\cdot(1/h)=h\). Heun's method evaluates the slope <em>twice</em> per step — once at the start, once at a predicted endpoint — and averages them; this extra evaluation cancels the Taylor expansion's \(h^2\) term automatically, buying an extra order of accuracy essentially for free. RK4 pushes the same idea to four slope samples per step, arranged so that the update matches the true Taylor expansion through the \(h^4\) term — no algorithm this simple does meaningfully better, which is exactly why RK4, not Euler, is the default workhorse inside virtually every general-purpose numerical solver.</p>
+
+<div class="ascii">   EULER (1 slope/step)          RK4 (4 slopes/step, blended)
+
+        *  ←used slope                  k1
+         \                              / \
+          \___                        k2   \
+              \___  ← straight-line        \  k3
+                  \   steps drift off      /    \___
+                   \  a curving true            k4 \___
+                    \ solution                        \___
+                                                            true curve
+   error per step ~ h²                error per step ~ h⁵
+   accumulates to  ~ h                 accumulates to ~ h⁴</div>
+
+<div class="callout note">
+<span class="callout-label">Note — stiffness, and when accuracy isn't the only concern</span>
+<p>Order of accuracy is not the whole story. Some equations — typically ones combining a fast-decaying component with a slow one, such as a chemical reaction with two very different rate constants — are called <strong>stiff</strong>: an explicit method like Euler or RK4 is forced to use an impractically tiny \(h\) just to remain numerically <em>stable</em>, long after accuracy alone would have permitted a much larger step. The fix is not a higher-order explicit method but a qualitatively different one — an <strong>implicit</strong> method such as backward Euler, \(y_{n+1}=y_n+hf(x_{n+1},y_{n+1})\), which evaluates \(f\) at the step's unknown endpoint rather than its known start, trading a nonlinear equation to solve at each step for dramatically better stability at large \(h\). This is a genuinely separate axis from the accuracy this panel has focused on, and it's the reason production-grade solvers typically carry both an explicit and an implicit method and switch between them automatically.</p>
+</div>
+
+<h2>Stability, equilibria, and where the subject leads</h2>
+<p>Nothing above is limited to two dimensions. Every idea generalizes: an \(n\)-dimensional linear system \(\mathbf{Y}'=A\mathbf{Y}\) is solved by the eigenvalues and eigenvectors of the \(n\times n\) matrix \(A\) exactly as above, its equilibria are stable precisely when every eigenvalue has negative real part, and a nonlinear system's equilibria inherit that same classification through linearization by the Jacobian, as noted above. Autonomous scalar equations (Panel I) sit inside this same framework as the one-dimensional case, where "eigenvalue" degenerates to the single number \(f'(c)\) at an equilibrium \(c\): negative means stable, positive means unstable — the phase-line intuition from Panel I, recovered as the \(n=1\) instance of the same linearization idea used for full systems.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — when linearization isn't enough: Lyapunov's direct method</span>
+<p>Linearizing at an equilibrium and reading off the Jacobian's eigenvalues settles stability whenever those eigenvalues avoid the boundary case \(\text{Re}(\lambda)=0\) — but exactly at that boundary (the center case of this panel's classification table), the linear approximation is inconclusive, and the nonlinear terms that linearization discarded are exactly what decide the outcome. <strong>Lyapunov's direct method</strong> sidesteps linearization entirely: exhibit a scalar function \(V(\mathbf Y)\), positive everywhere near the equilibrium except at the equilibrium itself (think of it as a generalized energy), and check the sign of \(\dot V\) along trajectories, computed purely from the chain rule without ever solving the equation: \(\dot V=\nabla V\cdot\mathbf F(\mathbf Y)\). If \(\dot V\le0\) nearby, energy never increases and the equilibrium is stable; if \(\dot V&lt;0\) strictly away from the equilibrium, trajectories are forced to lose energy monotonically and the equilibrium is <em>asymptotically</em> stable — a conclusion reached with no eigenvalues, no closed-form solution, and no linearization at all, which is exactly why it succeeds in the borderline cases where the trace–determinant table falls silent.</p>
+</div>
+
+<h3>The matrix exponential: the eigenvalue picture, unified</h3>
+<p>The eigenvalue-by-eigenvalue construction earlier in this panel is really a special, computationally convenient case of one clean closed-form object. Define \(e^{At}\) directly by the same power series that defines the scalar exponential, now with a matrix in place of a number:</p>
+<div class="katex-display" data-katex="e^{At} = I + At + \frac{(At)^2}{2!} + \frac{(At)^3}{3!} + \cdots"></div>
+<p>Differentiating this series term by term (legitimate because it converges for every matrix \(A\) and every \(t\)) gives \(\dfrac{d}{dt}e^{At}=Ae^{At}\), so \(\mathbf{Y}(t)=e^{At}\mathbf{Y}_0\) solves \(\mathbf{Y}'=A\mathbf{Y}\), \(\mathbf{Y}(0)=\mathbf{Y}_0\) in one line — no eigenvalues required to state the solution, only to <em>compute</em> it efficiently. When \(A\) is diagonalizable with eigenpairs \((\lambda_i,\mathbf v_i)\), expanding \(\mathbf Y_0\) in the eigenvector basis and applying the series term by term recovers exactly \(\mathbf Y(t)=\sum_i c_ie^{\lambda_it}\mathbf v_i\) from earlier in this panel — the familiar formula is the matrix exponential, evaluated in the one basis where it happens to be easy to write down. This is the same relationship the scalar case has to \(y=e^{rx}\): the characteristic-equation ansatz of Panel IV was never a separate idea from "the solution operator is an exponential" — it was always that fact, viewed in coordinates chosen to make the exponential diagonal.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — a forward glance to partial differential equations</span>
+<p>Everything in this essay concerns functions of a <em>single</em> independent variable. Allow the unknown function to depend on two or more independent variables at once — \(u(x,t)\), say — and derivatives with respect to different variables can appear in the same equation: the heat equation \(u_t=\alpha u_{xx}\), the wave equation \(u_{tt}=c^2u_{xx}\). These are <strong>partial</strong> differential equations, a substantially larger subject, but one of the standard first attacks on them — <em>separation of variables</em> — works by guessing \(u(x,t)=X(x)T(t)\), substituting, and dividing to isolate all the \(x\)-dependence on one side and all the \(t\)-dependence on the other; each side, depending on a different variable but forced equal to the other, must equal a shared constant, and what falls out are two <em>ordinary</em> differential equations of exactly the kind this entire essay has been about — one of them frequently a Cauchy–Euler or Bessel-type equation solved by the series methods above. The subject doesn't so much end at ordinary differential equations as recruit them, again and again, as the working parts of something larger.</p>
+</div>
+
+<h2>A closing reference: every method in this essay, in one table</h2>
+<p>Six panels, and one recurring move: recognize the equation's shape, then apply the one translation device built for that shape. Collected in one place, with no new content, purely as a map back to where each piece lives:</p>
+<div class="tbl-wrap">
+<table>
+<caption>The full toolkit, by equation type</caption>
+<thead><tr><th>Equation type</th><th>Core device</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td>y′ = f(x,y), general</td><td>direction field; Picard iteration for existence/uniqueness</td><td>Panels I–II</td></tr>
+<tr><td>separable, linear, exact</td><td>direct integration after a change of variable</td><td>Panel III</td></tr>
+<tr><td>homogeneous, Bernoulli, Riccati</td><td>substitution reducing to separable or linear</td><td>Panel III</td></tr>
+<tr><td>linear, constant coefficients</td><td>characteristic equation, e^(rx) ansatz</td><td>Panel IV</td></tr>
+<tr><td>linear, variable coefficients</td><td>reduction of order; variation of parameters</td><td>Panel IV</td></tr>
+<tr><td>linear systems, constant coefficients</td><td>eigenvalues/eigenvectors; matrix exponential</td><td>Panel VI</td></tr>
+<tr><td>any linear IVP, including discontinuous forcing</td><td>Laplace transform</td><td>Panel VI</td></tr>
+<tr><td>variable coefficients, no closed form</td><td>power series / Frobenius method</td><td>Panel VI</td></tr>
+<tr><td>nonlinear, qualitative behavior only</td><td>phase portraits; linearization by the Jacobian</td><td>Panel VI</td></tr>
+<tr><td>any equation, numerically</td><td>Euler / Heun / RK4</td><td>Panels V–VI</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>One line to carry away: <em>a differential equation is never solved by staring at it directly — it is solved by finding the right change of perspective that turns it into something already known how to finish.</em> Separation turns it into two ordinary integrals. An integrating factor turns it into the derivative of a product. A characteristic equation turns it into algebra. A Laplace transform turns an entire IVP into algebra in one step. An eigenvalue problem turns a coupled system into \(n\) uncoupled scalar equations. Even numerically, Euler's method turns a continuous equation into a discrete, one-step-at-a-time algebraic recipe. Every technique in this essay is a different translation device — and the differential equation itself, the direction field from Panel I, is the one honest object all of these translations are required to agree with.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderField();
+  renderPhase();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+// ============ LAB 1: DIRECTION FIELD + NUMERICAL SOLVERS ============
+const cvField = document.getElementById('cvField');
+const fctx = cvField.getContext('2d');
+const eqSelect = document.getElementById('eqSelect');
+const methodSelect = document.getElementById('methodSelect');
+const hSlider = document.getElementById('hSlider');
+const hReadout = document.getElementById('hReadout');
+const ivpPoint = document.getElementById('ivpPoint');
+const stepCount = document.getElementById('stepCount');
+const numVal = document.getElementById('numVal');
+const exactVal = document.getElementById('exactVal');
+const fieldErr = document.getElementById('fieldErr');
+
+const FIELD_W = 440, FIELD_H = 380;
+const equations = {
+  growth: {
+    f: (x,y)=> y,
+    exact: (x,x0,y0)=> y0*Math.exp(x-x0),
+    xMin:-3, xMax:3, yMin:-3, yMax:3
+  },
+  linear: {
+    f: (x,y)=> x - y,
+    exact: (x,x0,y0)=> (x-1) + (y0-x0+1)*Math.exp(-(x-x0)),
+    xMin:-3, xMax:3, yMin:-3, yMax:3
+  },
+  logistic: {
+    f: (x,y)=> y*(1-y),
+    exact: (x,x0,y0)=>{
+      if(Math.abs(y0) < 1e-9) return 0;
+      const A = (1-y0)/y0;
+      return 1/(1+A*Math.exp(-(x-x0)));
+    },
+    xMin:-3, xMax:3, yMin:-1.5, yMax:2
+  }
+};
+
+let fieldPoint = null; // {x0,y0}
+
+function fw2s(x,y,cfg){
+  const sx = (x-cfg.xMin)/(cfg.xMax-cfg.xMin)*FIELD_W;
+  const sy = FIELD_H - (y-cfg.yMin)/(cfg.yMax-cfg.yMin)*FIELD_H;
+  return [sx,sy];
+}
+function fs2w(px,py,cfg){
+  const x = cfg.xMin + (px/FIELD_W)*(cfg.xMax-cfg.xMin);
+  const y = cfg.yMin + ((FIELD_H-py)/FIELD_H)*(cfg.yMax-cfg.yMin);
+  return [x,y];
+}
+
+function drawGrid(cfg){
+  fctx.strokeStyle = cssVar('--border');
+  fctx.lineWidth = 1;
+  for(let gx=Math.ceil(cfg.xMin); gx<=cfg.xMax; gx++){
+    const [sx,] = fw2s(gx,0,cfg);
+    fctx.beginPath(); fctx.moveTo(sx,0); fctx.lineTo(sx,FIELD_H); fctx.stroke();
+  }
+  for(let gy=Math.ceil(cfg.yMin); gy<=cfg.yMax; gy++){
+    const [,sy] = fw2s(0,gy,cfg);
+    fctx.beginPath(); fctx.moveTo(0,sy); fctx.lineTo(FIELD_W,sy); fctx.stroke();
+  }
+  fctx.strokeStyle = cssVar('--ink-faint');
+  fctx.lineWidth = 1.2;
+  const [ax1,ay1] = fw2s(cfg.xMin,0,cfg), [ax2,ay2] = fw2s(cfg.xMax,0,cfg);
+  fctx.beginPath(); fctx.moveTo(ax1,ay1); fctx.lineTo(ax2,ay2); fctx.stroke();
+  const [bx1,by1] = fw2s(0,cfg.yMin,cfg), [bx2,by2] = fw2s(0,cfg.yMax,cfg);
+  fctx.beginPath(); fctx.moveTo(bx1,by1); fctx.lineTo(bx2,by2); fctx.stroke();
+}
+
+function drawDirectionField(cfg){
+  const cols = 20, rows = 17;
+  fctx.strokeStyle = cssVar('--ink-faint');
+  fctx.lineWidth = 1.3;
+  for(let i=0;i<=cols;i++){
+    for(let j=0;j<=rows;j++){
+      const x = cfg.xMin + (i/cols)*(cfg.xMax-cfg.xMin);
+      const y = cfg.yMin + (j/rows)*(cfg.yMax-cfg.yMin);
+      const slope = cfg.f(x,y);
+      const len = 9;
+      const norm = Math.sqrt(1+slope*slope);
+      const dx = len/norm, dy = -len*slope/norm;
+      const [sx,sy] = fw2s(x,y,cfg);
+      fctx.beginPath();
+      fctx.moveTo(sx-dx,sy-dy);
+      fctx.lineTo(sx+dx,sy+dy);
+      fctx.stroke();
+    }
+  }
+}
+
+function stepFn(method){
+  if(method==='euler') return (f,x,y,h)=> y + h*f(x,y);
+  if(method==='heun') return (f,x,y,h)=>{
+    const k1=f(x,y);
+    const yt=y+h*k1;
+    const k2=f(x+h,yt);
+    return y + (h/2)*(k1+k2);
+  };
+  return (f,x,y,h)=>{ // rk4
+    const k1=f(x,y);
+    const k2=f(x+h/2, y+h*k1/2);
+    const k3=f(x+h/2, y+h*k2/2);
+    const k4=f(x+h, y+h*k3);
+    return y + (h/6)*(k1+2*k2+2*k3+k4);
+  };
+}
+
+function integratePath(cfg, method, x0, y0, h, dir){
+  const step = stepFn(method);
+  const pts = [[x0,y0]];
+  let x=x0, y=y0;
+  const xTarget = dir>0 ? cfg.xMax : cfg.xMin;
+  let n = 0;
+  while((dir>0 ? x<xTarget : x>xTarget) && n<2000 && Math.abs(y)<50){
+    const hh = dir*Math.min(h, Math.abs(xTarget-x));
+    if(Math.abs(hh) < 1e-9) break;
+    y = step(cfg.f, x, y, hh);
+    x = x + hh;
+    pts.push([x,y]);
+    n++;
+  }
+  return {pts, steps:n};
+}
+
+function drawPath(pts, cfg, color, width){
+  fctx.strokeStyle = color;
+  fctx.lineWidth = width;
+  fctx.beginPath();
+  pts.forEach(([x,y],i)=>{
+    const [sx,sy] = fw2s(x,y,cfg);
+    i===0 ? fctx.moveTo(sx,sy) : fctx.lineTo(sx,sy);
+  });
+  fctx.stroke();
+}
+
+function renderField(){
+  const cfg = equations[eqSelect.value];
+  fctx.clearRect(0,0,FIELD_W,FIELD_H);
+  fctx.fillStyle = cssVar('--bg-elevated');
+  fctx.fillRect(0,0,FIELD_W,FIELD_H);
+  drawGrid(cfg);
+  drawDirectionField(cfg);
+
+  const h = hSlider.value/100;
+  hReadout.textContent = h.toFixed(2);
+
+  if(fieldPoint){
+    const {x0,y0} = fieldPoint;
+    const method = methodSelect.value;
+
+    // exact curve, sampled finely, translucent
+    const exactPts = [];
+    for(let i=0;i<=200;i++){
+      const x = cfg.xMin + (i/200)*(cfg.xMax-cfg.xMin);
+      const y = cfg.exact(x,x0,y0);
+      if(Math.abs(y) < 60) exactPts.push([x,y]);
+    }
+    fctx.globalAlpha = 0.55;
+    drawPath(exactPts, cfg, cssVar('--blue'), 2.5);
+    fctx.globalAlpha = 1;
+
+    // numeric curve
+    const fwd = integratePath(cfg, method, x0, y0, h, +1);
+    const bwd = integratePath(cfg, method, x0, y0, h, -1);
+    drawPath(bwd.pts.slice().reverse().concat(fwd.pts.slice(1)), cfg, cssVar('--accent'), 2.2);
+
+    const [px,py] = fw2s(x0,y0,cfg);
+    fctx.fillStyle = cssVar('--accent');
+    fctx.beginPath(); fctx.arc(px,py,5,0,7); fctx.fill();
+
+    ivpPoint.textContent = `(${x0.toFixed(2)}, ${y0.toFixed(2)})`;
+    stepCount.textContent = fwd.steps;
+    const numEnd = fwd.pts.length ? fwd.pts[fwd.pts.length-1][1] : NaN;
+    const exEnd = cfg.exact(cfg.xMax, x0, y0);
+    numVal.textContent = isFinite(numEnd) ? numEnd.toFixed(5) : '—';
+    exactVal.textContent = isFinite(exEnd) ? exEnd.toFixed(5) : '—';
+    fieldErr.textContent = (isFinite(numEnd)&&isFinite(exEnd)) ? Math.abs(numEnd-exEnd).toExponential(3) : '—';
+  } else {
+    ivpPoint.textContent = 'click the canvas';
+    stepCount.textContent = '…'; numVal.textContent='…'; exactVal.textContent='…'; fieldErr.textContent='…';
+  }
+}
+
+function fieldEventToWorld(e){
+  const cfg = equations[eqSelect.value];
+  const rect = cvField.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (FIELD_W/rect.width);
+  const py = (clientY-rect.top) * (FIELD_H/rect.height);
+  return fs2w(px,py,cfg);
+}
+cvField.addEventListener('click', e=>{
+  const [x,y] = fieldEventToWorld(e);
+  fieldPoint = {x0:x, y0:y};
+  renderField();
+});
+cvField.addEventListener('touchstart', e=>{
+  const [x,y] = fieldEventToWorld(e);
+  fieldPoint = {x0:x, y0:y};
+  renderField();
+}, {passive:true});
+
+eqSelect.addEventListener('change', ()=>{ fieldPoint=null; renderField(); });
+methodSelect.addEventListener('change', renderField);
+hSlider.addEventListener('input', renderField);
+
+renderField();
+
+// ============ LAB 2: PHASE PORTRAIT FOR LINEAR SYSTEMS ============
+const cvPhase = document.getElementById('cvPhase');
+const pctx = cvPhase.getContext('2d');
+const presetSelect = document.getElementById('presetSelect');
+const aSlider = document.getElementById('aSlider'), bSlider = document.getElementById('bSlider');
+const cSlider = document.getElementById('cSlider'), dSlider = document.getElementById('dSlider');
+const aReadout = document.getElementById('aReadout'), bReadout = document.getElementById('bReadout');
+const cReadout = document.getElementById('cReadout'), dReadout = document.getElementById('dReadout');
+const clearTrajBtn = document.getElementById('clearTrajBtn');
+const phaseMatrix = document.getElementById('phaseMatrix');
+const phaseTraceDet = document.getElementById('phaseTraceDet');
+const phaseEig = document.getElementById('phaseEig');
+const phaseClass = document.getElementById('phaseClass');
+
+const PHASE_W = 440, PHASE_H = 380, PHASE_RANGE = 3.2;
+let trajectories = [];
+
+const presets = {
+  saddle: [1,0,0,-1],
+  node: [-1,0,0,-2],
+  spiral: [-0.2,1,-1,-0.2],
+  center: [0,1,-1,0]
+};
+
+function pw2s(x,y){
+  const sx = PHASE_W/2 + x*(PHASE_W/(2*PHASE_RANGE));
+  const sy = PHASE_H/2 - y*(PHASE_H/(2*PHASE_RANGE));
+  return [sx,sy];
+}
+function ps2w(px,py){
+  const x = (px-PHASE_W/2)/(PHASE_W/(2*PHASE_RANGE));
+  const y = (PHASE_H/2-py)/(PHASE_H/(2*PHASE_RANGE));
+  return [x,y];
+}
+
+function getMatrix(){
+  return [aSlider.value/100, bSlider.value/100, cSlider.value/100, dSlider.value/100];
+}
+
+function applyPreset(name){
+  if(!presets[name]) return;
+  const [a,b,c,d] = presets[name];
+  aSlider.value = a*100; bSlider.value = b*100; cSlider.value = c*100; dSlider.value = d*100;
+}
+
+function drawPhaseField(a,b,c,d){
+  const cols = 15, rows = 13;
+  pctx.strokeStyle = cssVar('--ink-faint');
+  pctx.lineWidth = 1.2;
+  for(let i=0;i<=cols;i++){
+    for(let j=0;j<=rows;j++){
+      const x = -PHASE_RANGE + (i/cols)*(2*PHASE_RANGE);
+      const y = -PHASE_RANGE + (j/rows)*(2*PHASE_RANGE);
+      const vx = a*x+b*y, vy = c*x+d*y;
+      const mag = Math.hypot(vx,vy) || 1;
+      const len = 8;
+      const dx = vx/mag*len, dy = -vy/mag*len;
+      const [sx,sy] = pw2s(x,y);
+      pctx.beginPath();
+      pctx.moveTo(sx-dx*0.3,sy-dy*0.3);
+      pctx.lineTo(sx+dx,sy+dy);
+      pctx.stroke();
+      // arrowhead
+      const ang = Math.atan2(dy,dx);
+      pctx.beginPath();
+      pctx.moveTo(sx+dx,sy+dy);
+      pctx.lineTo(sx+dx-4*Math.cos(ang-0.4), sy+dy-4*Math.sin(ang-0.4));
+      pctx.moveTo(sx+dx,sy+dy);
+      pctx.lineTo(sx+dx-4*Math.cos(ang+0.4), sy+dy-4*Math.sin(ang+0.4));
+      pctx.stroke();
+    }
+  }
+}
+
+function rk4System(a,b,c,d,x,y,h){
+  const f = (x,y)=>[a*x+b*y, c*x+d*y];
+  const k1=f(x,y);
+  const k2=f(x+h*k1[0]/2, y+h*k1[1]/2);
+  const k3=f(x+h*k2[0]/2, y+h*k2[1]/2);
+  const k4=f(x+h*k3[0], y+h*k3[1]);
+  return [x+(h/6)*(k1[0]+2*k2[0]+2*k3[0]+k4[0]), y+(h/6)*(k1[1]+2*k2[1]+2*k3[1]+k4[1])];
+}
+
+function computeTrajectory(a,b,c,d,x0,y0){
+  const h = 0.03, N = 400;
+  const pts = [[x0,y0]];
+  let x=x0,y=y0;
+  for(let i=0;i<N;i++){
+    [x,y] = rk4System(a,b,c,d,x,y,h);
+    pts.push([x,y]);
+    if(Math.abs(x)>50||Math.abs(y)>50) break;
+  }
+  const back = [[x0,y0]];
+  x=x0; y=y0;
+  for(let i=0;i<N;i++){
+    [x,y] = rk4System(a,b,c,d,x,y,-h);
+    back.push([x,y]);
+    if(Math.abs(x)>50||Math.abs(y)>50) break;
+  }
+  return back.reverse().concat(pts.slice(1));
+}
+
+function classify(tr,det){
+  if(Math.abs(det) < 1e-6) return 'degenerate (det ≈ 0)';
+  if(det < 0) return 'saddle — unstable';
+  const disc = tr*tr - 4*det;
+  if(Math.abs(disc) < 1e-6) return tr<0 ? 'degenerate node — stable' : 'degenerate node — unstable';
+  if(disc > 0) return tr<0 ? 'node — stable' : 'node — unstable';
+  if(Math.abs(tr) < 1e-6) return 'center — neutrally stable';
+  return tr<0 ? 'spiral — stable' : 'spiral — unstable';
+}
+
+function renderPhase(){
+  const [a,b,c,d] = getMatrix();
+  aReadout.textContent=a.toFixed(2); bReadout.textContent=b.toFixed(2);
+  cReadout.textContent=c.toFixed(2); dReadout.textContent=d.toFixed(2);
+
+  pctx.clearRect(0,0,PHASE_W,PHASE_H);
+  pctx.fillStyle = cssVar('--bg-elevated');
+  pctx.fillRect(0,0,PHASE_W,PHASE_H);
+
+  pctx.strokeStyle = cssVar('--border');
+  pctx.lineWidth = 1;
+  for(let g=-3; g<=3; g++){
+    const [sx,] = pw2s(g,0); pctx.beginPath(); pctx.moveTo(sx,0); pctx.lineTo(sx,PHASE_H); pctx.stroke();
+    const [,sy] = pw2s(0,g); pctx.beginPath(); pctx.moveTo(0,sy); pctx.lineTo(PHASE_W,sy); pctx.stroke();
+  }
+
+  drawPhaseField(a,b,c,d);
+
+  trajectories.forEach(pts=>{
+    pctx.strokeStyle = cssVar('--purple');
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pts.forEach(([x,y],i)=>{
+      const [sx,sy]=pw2s(x,y);
+      i===0 ? pctx.moveTo(sx,sy) : pctx.lineTo(sx,sy);
+    });
+    pctx.stroke();
+  });
+
+  const [ox,oy] = pw2s(0,0);
+  pctx.fillStyle = cssVar('--accent');
+  pctx.beginPath(); pctx.arc(ox,oy,5,0,7); pctx.fill();
+
+  const tr = a+d, det = a*d-b*c;
+  const disc = tr*tr-4*det;
+  phaseMatrix.innerHTML = `[ ${a.toFixed(2).padStart(6)}  ${b.toFixed(2).padStart(6)} ]<br>[ ${c.toFixed(2).padStart(6)}  ${d.toFixed(2).padStart(6)} ]`;
+  phaseTraceDet.textContent = `τ=${tr.toFixed(2)}, Δ=${det.toFixed(2)}`;
+  if(disc >= 0){
+    const s = Math.sqrt(disc);
+    phaseEig.textContent = `${((tr+s)/2).toFixed(2)}, ${((tr-s)/2).toFixed(2)}`;
+  } else {
+    const s = Math.sqrt(-disc);
+    phaseEig.textContent = `${(tr/2).toFixed(2)} ± ${(s/2).toFixed(2)}i`;
+  }
+  phaseClass.textContent = classify(tr,det);
+}
+
+function phaseEventToWorld(e){
+  const rect = cvPhase.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (PHASE_W/rect.width);
+  const py = (clientY-rect.top) * (PHASE_H/rect.height);
+  return ps2w(px,py);
+}
+cvPhase.addEventListener('click', e=>{
+  const [x,y] = phaseEventToWorld(e);
+  const [a,b,c,d] = getMatrix();
+  trajectories.push(computeTrajectory(a,b,c,d,x,y));
+  renderPhase();
+});
+cvPhase.addEventListener('touchstart', e=>{
+  const [x,y] = phaseEventToWorld(e);
+  const [a,b,c,d] = getMatrix();
+  trajectories.push(computeTrajectory(a,b,c,d,x,y));
+  renderPhase();
+}, {passive:true});
+
+presetSelect.addEventListener('change', ()=>{
+  if(presetSelect.value!=='custom'){ applyPreset(presetSelect.value); trajectories=[]; renderPhase(); }
+});
+[aSlider,bSlider,cSlider,dSlider].forEach(s=>s.addEventListener('input', ()=>{
+  presetSelect.value = 'custom';
+  renderPhase();
+}));
+clearTrajBtn.addEventListener('click', ()=>{ trajectories=[]; renderPhase(); });
+
+renderPhase();
+</script>
+</body>
+</html>
