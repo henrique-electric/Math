@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to Topology — Continuity Without a Ruler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{ font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right; }
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block{ min-width:140px; }
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre-line; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+.mini-toggle{
+  font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s;
+}
+.mini-toggle:hover{ color:var(--accent); border-color:var(--accent-dim); }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">TOPOLOGY</div>
+  <button class="tab-btn active" data-tab="t1">I · Shapes Without a Ruler</button>
+  <button class="tab-btn" data-tab="t2">II · Open Sets</button>
+  <button class="tab-btn" data-tab="t3">III · Continuity, Redefined</button>
+  <button class="tab-btn" data-tab="t4">IV · Homeomorphism</button>
+  <button class="tab-btn" data-tab="t5">V · Invariants</button>
+  <button class="tab-btn" data-tab="t6">VI · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t7">VII · Worked Examples</button>
+  <button class="tab-btn" data-tab="t8">VIII · How to Study It</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Shapes Without a Ruler</h1>
+<div class="subtitle">why topology exists — the properties of a space that survive stretching, bending, and twisting, but never cutting or gluing</div>
+
+<h2>The geometry that refuses to measure</h2>
+<p>Ordinary geometry — the kind built on a ruler and a protractor — is obsessed with exact quantities: this side is 5&nbsp;cm, that angle is 37°, these two triangles are congruent because every corresponding length and angle matches exactly. Move a shape, rotate it, reflect it, and geometry only calls it "the same" if every measurement survives untouched. That is an enormously useful notion of sameness, but it is also a brittle one — stretch a circle even slightly into an ellipse and, measurement by measurement, you have produced an entirely different object.</p>
+
+<p>Topology asks a much looser question, and in exchange it gets to answer that question in situations where a ruler is useless or doesn't even exist. Instead of "do the measurements match," topology asks: can one shape be continuously deformed into the other — stretched, bent, twisted, compressed — without ever cutting it open and without ever gluing separate points together? Under that rule a circle and an ellipse count as identical; so do a circle and the boundary of a square. Two shapes related this way are called <strong>homeomorphic</strong> (made precise in Panel IV), and topology is, at bottom, the study of which properties survive that kind of deformation and which do not.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the coffee cup and the donut</span>
+<p>The oldest joke in the subject is also its best one-line summary: a topologist can't tell a coffee cup from a donut. Both are a single solid blob of dough with exactly one hole running through it — the cup's hole is where the handle attaches. Squash the cup's body flat, thicken the handle, and round everything off, and you can watch it deform continuously into a donut (a torus) without a single cut and without a single new seam. The <em>number</em> of holes is a property that survives stretching; the number of ounces of coffee it holds is not — and topology only ever cares about properties of the first kind.</p>
+</div>
+
+<div class="ascii">   COFFEE CUP                 continuously reshaped                DONUT (TORUS)
+   (one loop of dough,        — squash the body, thicken            (one loop of dough,
+    the handle is the loop)     the handle, round it off —           the whole ring is the loop)
+
+        ___
+       /   \
+      |     |==)        ___              ⬭ ⬭ ⬭ ⬭
+       \___/       →   (   )==)     →    (         )
+                        \___/             (         )
+                                            ⬭ ⬭ ⬭ ⬭
+
+   exactly one hole                                    exactly one hole
+   (through the handle)                                (through the middle)
+   — never changes, at any stage of the squash —</div>
+
+<h2>A problem the old geometry couldn't even state — Königsberg</h2>
+<p>The historical starting point predates the word "topology" by more than a century. In 1736 the city of Königsberg straddled the banks and two islands of the river Pregel, connected by seven bridges. A popular puzzle asked whether a walk existed that crossed every bridge exactly once. Leonhard Euler solved it — by proving no such walk exists — and in doing so did something genuinely new: he discarded every geometric detail of the map. The exact shape of the islands, the length of each bridge, the distance between them — none of it mattered to his argument. All that mattered was which landmasses connected to which, and by how many bridges.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — Euler's insight, in modern language</span>
+<p>Represent each landmass as a point (a vertex) and each bridge as a connecting line (an edge). A walk crossing every edge exactly once exists if and only if the number of vertices with an odd number of edges is 0 or 2. Königsberg's four landmasses all had an odd number of bridges, so no such walk exists — a fact that has nothing to do with distances or angles, only with a connection pattern.</p>
+</div>
+
+<p>Euler had not yet named a field, but he had located its founding move: build an argument entirely out of connectivity, throwing away every measurement a ruler could report. Decades earlier, Leibniz had speculated about a "geometry of position," <em>analysis situs</em>, that would need no numbers at all; Euler's bridge argument is usually read as the first real specimen of it. The subject did not receive rigorous foundations, or the name <em>topology</em>, until the later work of Möbius, Listing, and Riemann, culminating in Henri Poincaré's 1895 paper — titled, in Leibniz's old phrase, <em>Analysis Situs</em> — which is generally credited as the birth of the field in its modern form.</p>
+
+<h2>Why build a subject with no ruler at all?</h2>
+<p>Many important questions genuinely do not care about distance. A subway map preserves the order in which stations connect, not the geographic distances between them, and it is topologically faithful even though it is geometrically wildly distorted. Whether a function's graph has a "hole" or a "jump" is a question about the connectivity of a set of points, not about exact coordinates — the same question this site's essays on limits and derivatives circle around, asked here in its most general form. And some of the deepest facts in mathematics are true for every sphere regardless of its exact radius or bumps — for instance, that any continuous assignment of a wind direction to every point of the Earth's surface must have at least one point of exactly zero wind. Statements that broad need a framework light enough to not care about measurement at all, and topology is that framework.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — "rubber-sheet geometry"</span>
+<p>Topology is often nicknamed <strong>rubber-sheet geometry</strong>: imagine every shape drawn on an infinitely stretchy sheet of rubber. You may stretch, compress, bend, and twist the sheet however you like — but never cut it, and never glue two points together that weren't already touching. Whatever survives every such deformation is a <em>topological property</em>. Length, area, and angle do not survive — stretch the sheet and they change freely. Connectedness, the number of holes, and whether a curve crosses itself do survive, and Panel V turns exactly those survivors into a precise toolkit.</p>
+</div>
+
+<h2>What this essay covers</h2>
+<p>Panels II and III build the formal machinery — what "open" means with no distance required, and what "continuous" means once "open" is the only tool available. Panel IV turns the coffee-cup joke into a precise definition, <em>homeomorphism</em>. Panel V catalogues the properties — invariants — that let you prove two shapes are <em>not</em> the same, which turns out to be the harder and more interesting half of the subject. Panel VI is hands-on: two small interactive experiments you can run yourself. Panel VII works three proofs end to end. Panel VIII is a practical map of where to go next, and what to read to get there.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Open Sets — The Building Block</h1>
+<div class="subtitle">throwing away distance itself, and keeping only the idea of a "nearby" point</div>
+
+<h2>Where "open" already lives, in disguise</h2>
+<p>Anyone who has worked through the \(\varepsilon\text{-}\delta\) definition of a limit has already met the idea this panel generalizes, just wearing different clothes. A set \(U\subseteq\mathbb R\) is called <strong>open</strong> if every point of \(U\) has an entire wiggle-room interval around it that still fits inside \(U\):</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — open set on the real line</span>
+<p>\(U\subseteq\mathbb R\) is open if, for every \(x\in U\), there exists \(\varepsilon>0\) such that the whole interval \((x-\varepsilon,\,x+\varepsilon)\) is contained in \(U\).</p>
+</div>
+
+<p>An open interval \((a,b)\) satisfies this immediately — move a hair inward from any interior point and you still have room on both sides. A closed interval \([a,b]\) fails it at exactly its two endpoints: no interval centered at \(a\) fits entirely inside \([a,b]\), because every such interval sticks out to the left of \(a\). This single wiggle-room idea is already doing real work — it is precisely what lets an \(\varepsilon\text{-}\delta\) limit proof talk about "getting close" without ever specifying how close is close enough in advance.</p>
+
+<h2>Generalizing: a topology needs no distance at all</h2>
+<p>The wiggle-room definition above still secretly depends on a ruler — it needs a distance \(\varepsilon\) to build the interval \((x-\varepsilon,x+\varepsilon)\). The genuinely general version of topology throws even that away. Instead of deriving open sets from a distance function, declare by fiat which subsets of a set \(X\) count as "open," subject to three bookkeeping rules that make the resulting structure behave the way "open" ought to behave.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — topological space</span>
+<p>A <strong>topology</strong> on a set \(X\) is a collection \(\tau\) of subsets of \(X\), called the <strong>open sets</strong>, satisfying:</p>
+<p>(1) \(\varnothing\) and \(X\) are both in \(\tau\).<br>
+(2) the union of any collection of sets in \(\tau\) — even infinitely many — is again in \(\tau\).<br>
+(3) the intersection of any <em>finite</em> collection of sets in \(\tau\) is again in \(\tau\).</p>
+<p>The pair \((X,\tau)\) is called a <strong>topological space</strong>.</p>
+</div>
+
+<h3>Why finite intersections, but arbitrary unions?</h3>
+<p>The asymmetry between rules (2) and (3) looks arbitrary until you see what happens without it. Consider the open intervals \(\left(-\tfrac1n,\tfrac1n\right)\) for \(n=1,2,3,\dots\), each one open in the ordinary sense of Panel II's first definition. Intersect all of them at once:</p>
+
+<div class="katex-display" data-katex="\bigcap_{n=1}^{\infty}\left(-\frac1n,\,\frac1n\right) \;=\; \{0\}"></div>
+
+<p>Every one of the infinitely many intervals shares only the point \(0\) — any nonzero \(x\), however small, fails to lie in \(\left(-\tfrac1n,\tfrac1n\right)\) once \(n\) is large enough that \(\tfrac1n<|x|\). But \(\{0\}\) is not open: no interval centered at \(0\) is contained in a single point. So an <em>infinite</em> intersection of open sets can fail to be open, even though every finite intersection of them is perfectly fine. Rule (3) is written with the word "finite" precisely to keep this counterexample out — it is not a simplification made for convenience, it is a boundary drawn exactly where the pattern breaks.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — arbitrary unions, but only finite intersections</span>
+<p>Get the two rules backwards and the definition collapses. Unions never cause this problem — a union only ever adds points, so if every set in a union is open, every point gained still keeps its wiggle-room. Intersections shrink a set toward a single point as you add more of them, and the counterexample above shows that shrinking process can squeeze the wiggle-room down to exactly zero in the infinite limit.</p>
+</div>
+
+<h2>Two extreme, and instructive, examples</h2>
+<p>The three axioms are satisfied, almost embarrassingly easily, by two topologies sitting at opposite extremes of the same set \(X\).</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Three topologies on the same kind of set</caption>
+<thead><tr><th>Topology</th><th>Open sets \(\tau\)</th><th>Intuition</th></tr></thead>
+<tbody>
+<tr><td>Discrete</td><td>every subset of \(X\)</td><td>maximum resolution — every point is its own open set, so no two distinct points can ever be "blurred together"</td></tr>
+<tr><td>Indiscrete (trivial)</td><td>only \(\varnothing\) and \(X\)</td><td>zero resolution — the only way to separate two points would need an open set containing one but not the other, and none exists</td></tr>
+<tr><td>Standard, on \(\mathbb R\)</td><td>every union of open intervals \((a,b)\)</td><td>the familiar wiggle-room notion of open from earlier in this panel</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>A basis — generating a topology from a short list</h2>
+<p>Listing every open set individually is unnecessary and usually impossible (the standard topology on \(\mathbb R\) already has uncountably many open sets). Instead, name a smaller collection \(\mathcal B\) of "basic" sets — for \(\mathbb R\), the open intervals \((a,b)\) — and declare the open sets of the topology to be exactly the sets that can be written as a union of members of \(\mathcal B\). This is called a <strong>basis</strong>, and it is how the standard topology on \(\mathbb R\) in the table above is actually built: not by listing every open set, but by listing the intervals and taking every possible union of them.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — nearness without numbers</span>
+<p>Once a topology is defined this way — an abstract list of "open" subsets satisfying three axioms — nothing about \(X\) itself needs to resemble a line or a plane at all. \(X\) could be a set of functions, a set of polynomials, or a set with no geometric picture in mind whatsoever. As long as some collection of its subsets satisfies the three axioms above, every idea in the rest of this essay — continuity, connectedness, compactness — applies to it unchanged. That generality, bought at the price of giving up distance, is the entire payoff of Panel II's definition.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>Continuity, Redefined</h1>
+<div class="subtitle">the \(\varepsilon\text{-}\delta\) definition, rewritten with no epsilon, no delta, and no distance in sight</div>
+
+<h2>Recall the metric definition</h2>
+<p>The familiar definition says \(f:\mathbb R\to\mathbb R\) is continuous at \(a\) if, for every \(\varepsilon>0\), there exists \(\delta>0\) such that \(|x-a|<\delta\) forces \(|f(x)-f(a)|<\varepsilon\). Read geometrically: name any target tolerance \(\varepsilon\) around the output \(f(a)\), and a matching input tolerance \(\delta\) around \(a\) can always be found that guarantees landing inside it. Every piece of that sentence — the two absolute-value inequalities — is a distance statement.</p>
+
+<h2>Translating it into open-set language</h2>
+<p>Rephrase the same sentence one layer up. "\(|f(x)-f(a)|<\varepsilon\)" says \(f(x)\) lies in the open interval \((f(a)-\varepsilon,f(a)+\varepsilon)\). "\(|x-a|<\delta\)" says \(x\) lies in the open interval \((a-\delta,a+\delta)\). So the \(\varepsilon\text{-}\delta\) condition says: for every open interval \(V\) around \(f(a)\), some open interval \(U\) around \(a\) maps entirely inside \(V\) — every point of \(U\) has its image landing in \(V\). That is exactly the statement that \(U\subseteq f^{-1}(V)\), and since every open set in \(\mathbb R\) is a union of such intervals (Panel II's basis), the condition can be pushed to its logical limit: require it for every open set at once, not interval by interval.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — topological continuity</span>
+<p>Let \((X,\tau_X)\) and \((Y,\tau_Y)\) be topological spaces. A function \(f:X\to Y\) is <strong>continuous</strong> if the preimage of every open set is open: for every \(U\in\tau_Y\),</p>
+<div class="katex-display" data-katex="f^{-1}(U) \;=\; \{\, x\in X : f(x)\in U \,\} \;\in\; \tau_X"></div>
+</div>
+
+<h3>Checking the two definitions agree on \(\mathbb R\)</h3>
+<p>Suppose \(f\) is continuous in the preimage-of-open sense. Fix \(a\) and \(\varepsilon>0\); the interval \(V=(f(a)-\varepsilon,f(a)+\varepsilon)\) is open, so \(f^{-1}(V)\) is open and contains \(a\). By Panel II's definition of open, some interval \((a-\delta,a+\delta)\subseteq f^{-1}(V)\) — which says exactly \(|x-a|<\delta\Rightarrow|f(x)-f(a)|<\varepsilon\), the \(\varepsilon\text{-}\delta\) condition. Conversely, if \(f\) is \(\varepsilon\text{-}\delta\)-continuous at every point and \(U\) is any open set, then every \(a\in f^{-1}(U)\) has some open interval around \(f(a)\) inside \(U\) (since \(U\) is open), and the \(\varepsilon\text{-}\delta\) condition supplies a \(\delta\)-interval around \(a\) mapping into it — so \(f^{-1}(U)\) is open, being a union of such intervals. The two definitions are the same statement, viewed through different vocabulary.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — why bother with the harder-looking version</span>
+<p>The preimage definition needs no mention of numbers, distances, or "getting close" — only the concept of an open set, which Panel II showed can exist on spaces with no distance function whatsoever. That is exactly why the preimage version, not the \(\varepsilon\text{-}\delta\) version, is the one actually used the moment a space has no natural notion of distance at all — a space of functions, a space of shapes, a space built purely from an abstract topology.</p>
+</div>
+
+<h2>Homeomorphism, previewed</h2>
+<p>Continuity by itself is a one-directional statement — it only says forward images behave, not that the map is reversible. Chaining two continuity conditions together gives the notion this essay has been circling since Panel I:</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — homeomorphism</span>
+<p>A function \(f:X\to Y\) is a <strong>homeomorphism</strong> if it is a bijection, and both \(f\) and its inverse \(f^{-1}\) are continuous. Two spaces admitting a homeomorphism between them are called <strong>homeomorphic</strong>, written \(X\cong Y\), and topology treats them as literally the same object.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — a continuous bijection is not automatically a homeomorphism</span>
+<p>Take \(X=[0,2\pi)\) and \(Y\) the unit circle, with \(f(\theta)=(\cos\theta,\sin\theta)\). This \(f\) is a continuous bijection — every angle in the half-open interval hits a distinct point of the circle exactly once. But \(f^{-1}\) is not continuous at the point \((1,0)\): points on the circle just <em>below</em> angle \(0\) are close to \((1,0)\) but their preimages sit near \(2\pi\), far from the preimage \(0\) of \((1,0)\) itself. The map "cuts" the circle open at one seam without ever showing it in the forward direction. (There is a clean sufficient condition that rules this failure out — a continuous bijection out of a <em>compact</em> space into a well-behaved target is automatically a homeomorphism — but \([0,2\pi)\) fails to be compact for exactly the reason Panel V makes precise, and Panel VIII points toward where that theorem is actually proved.)</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Homeomorphism — When Two Shapes Are Really the Same</h1>
+<div class="subtitle">the equivalence relation topology is built around, and how to actually construct one by hand</div>
+
+<h2>Building one explicitly: a square's boundary and a circle</h2>
+<p>Panel I claimed a circle and the boundary of a square are topologically identical. Here is the map that proves it. Let \(\partial S\) be the boundary of the square \([-1,1]^2\), and send each point \(p\in\partial S\) radially out to the unit circle:</p>
+
+<div class="katex-display" data-katex="f(p) \;=\; \frac{p}{\lVert p\rVert_2}, \qquad p\in\partial S"></div>
+
+<p>This is well-defined because \(\partial S\) never contains the origin (every boundary point has a coordinate of magnitude exactly \(1\), so \(\lVert p\rVert_2\ge 1>0\)), and it is continuous because it's built from continuous operations — the norm, and division by a nonvanishing continuous function. Every ray out of the origin crosses \(\partial S\) exactly once (the square is convex and contains the origin in its interior), so \(f\) is a bijection onto the circle. The inverse sends a circle point back out to the boundary along the same ray by an explicit, equally continuous scaling factor. Both directions continuous, both directions defined everywhere they need to be: \(f\) is a homeomorphism.</p>
+
+<div class="ascii">        SQUARE BOUNDARY ∂S                          UNIT CIRCLE
+
+         ┌───────────┐                                  ╭───╮
+         │      •p   │      p ↦ p / ‖p‖₂                │  •│  f(p)
+         │  ·        │      ───────────▶                │ ·  │
+         │·          │      (radial projection,          │╱   │
+         └───────────┘       continuous both ways)       ╰───╯
+
+         every ray from the center crosses each curve exactly once —
+         that single fact makes the radial map a bijection in both directions</div>
+
+<h2>Why the coffee-cup joke works for <em>any</em> cup and <em>any</em> donut</h2>
+<p>The square-to-circle map above was built by hand for one specific pair of shapes. The coffee cup and the donut are harder to write an explicit formula for, but a general theorem does the work instead: the <strong>classification of compact surfaces</strong> shows that every closed surface (with no boundary and no self-intersection) is completely determined, up to homeomorphism, by two numbers — whether it can be embedded without a "twist" like a Möbius strip's, and its <strong>genus</strong>, the number of handles or holes it has. A coffee cup and a donut are both closed surfaces of genus \(1\), so the classification theorem guarantees a homeomorphism exists between them, even without ever writing one down by hand. Panel V returns to genus as the sharpest tool this essay covers for telling surfaces apart.</p>
+
+<h2>Homeomorphism is an equivalence relation</h2>
+<p>Three quick facts justify treating "\(\cong\)" as a genuine notion of sameness rather than a one-off trick:</p>
+<p><strong>Reflexive</strong> — the identity map \(X\to X\) is trivially a homeomorphism, so \(X\cong X\) always.</p>
+<p><strong>Symmetric</strong> — if \(f:X\to Y\) is a homeomorphism, its inverse \(f^{-1}:Y\to X\) is continuous by definition and is itself a bijection with inverse \(f\), so \(f^{-1}\) is a homeomorphism too, giving \(Y\cong X\).</p>
+<p><strong>Transitive</strong> — if \(f:X\to Y\) and \(g:Y\to Z\) are homeomorphisms, the composite \(g\circ f\) is a continuous bijection (compositions of continuous bijections are continuous bijections), and \((g\circ f)^{-1}=f^{-1}\circ g^{-1}\) is continuous for the same reason, so \(X\cong Z\).</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>An equivalence relation partitions its universe into disjoint classes, and homeomorphism is no exception: it partitions every topological space that could possibly exist into <strong>topological types</strong> — a circle and a square boundary in the same class, a coffee cup and a donut in another, a solid ball and a hollow sphere in two different ones again. Panel V exists because "which class is this space in" needs a way to answer it that doesn't require exhibiting an explicit map every single time.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Invariants — What Survives the Stretch</h1>
+<div class="subtitle">properties immune to any homeomorphism — the toolkit for proving two shapes are genuinely different</div>
+
+<h2>Why you need invariants at all</h2>
+<p>Proving two spaces <em>are</em> homeomorphic just takes one explicit map, as Panel IV did for the square and the circle. Proving two spaces are <em>not</em> homeomorphic can never be done by trying maps and failing — failing to find one proves nothing, since the right map might simply not have been tried yet. What's needed instead is a property guaranteed to be preserved by every homeomorphism, so that finding it present in one space and absent in the other rules out every possible map at once, without checking any of them individually.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — topological invariant</span>
+<p>A property \(P\) of topological spaces is a <strong>topological invariant</strong> if, whenever \(X\cong Y\), \(X\) has property \(P\) exactly when \(Y\) does. Equivalently: if \(X\) has \(P\) and \(Y\) does not, then \(X\not\cong Y\) — no homeomorphism between them can exist.</p>
+</div>
+
+<h2>Connectedness</h2>
+<p>A space is <strong>connected</strong> if it cannot be split into two disjoint, nonempty <em>open</em> sets whose union is the whole space; otherwise it is <strong>disconnected</strong>. Connectedness is an invariant because the continuous image of a connected space is always connected — a homeomorphism, being continuous both ways, can never turn one connected piece into two, nor merge two pieces into one.</p>
+<p><strong>Example.</strong> \(\mathbb R\) is connected. \(\mathbb R\setminus\{0\}\) is not: it splits into \((-\infty,0)\) and \((0,\infty)\), two disjoint nonempty open sets whose union is the whole space. So \(\mathbb R\not\cong\mathbb R\setminus\{0\}\) — deleting a single point from the line genuinely changes its topological type, even though it changes no visible "shape" in the usual sense.</p>
+
+<h2>Compactness</h2>
+<p>A space is <strong>compact</strong> if every open cover — every collection of open sets whose union is the whole space — has a <em>finite</em> subcollection that still covers it. On \(\mathbb R^n\), the Heine–Borel theorem says this is equivalent to the more familiar "closed and bounded," which is exactly the hidden ingredient behind the Extreme Value Theorem from calculus: a continuous function on a compact set always attains a maximum, precisely because compactness rules out the function "running away" toward a boundary point that isn't actually included.</p>
+<p><strong>Example.</strong> \([0,1]\) is compact. \((0,1)\) is not: the open cover \(\left\{\left(\tfrac1n,1\right): n=2,3,4,\dots\right\}\) covers all of \((0,1)\) (every \(x\) in the interval lies in \(\left(\tfrac1n,1\right)\) once \(n\) is large enough that \(\tfrac1n<x\)), but any <em>finite</em> subcollection has a largest \(n=N\) in it, and the point \(\tfrac1{N+1}\) is left uncovered. No finite subcover exists, so \((0,1)\) is not compact — and since compactness is an invariant, \([0,1]\not\cong(0,1)\).</p>
+
+<h2>Genus and the Euler characteristic</h2>
+<p>For a closed surface built as a polyhedron with \(V\) vertices, \(E\) edges, and \(F\) faces, the quantity \(\chi = V-E+F\) is an invariant called the <strong>Euler characteristic</strong> — it comes out the same number no matter which polyhedral decomposition of the surface you happen to use. A sphere always gives \(\chi=2\); a torus (donut surface) always gives \(\chi=0\); in general, a surface of <strong>genus</strong> \(g\) (g handles) has \(\chi=2-2g\). Since \(\chi\) is an invariant, a sphere and a torus can never be homeomorphic — no continuous deformation changes the number of holes, so no map can turn \(2\) into \(0\).</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Four invariants, and a pair of spaces each one separates</caption>
+<thead><tr><th>Invariant</th><th>What it measures</th><th>A pair it tells apart</th></tr></thead>
+<tbody>
+<tr><td>Connectedness</td><td>can the space be split into two open, disjoint, nonempty pieces?</td><td>\(\mathbb R\) vs. \(\mathbb R\setminus\{0\}\)</td></tr>
+<tr><td>Compactness</td><td>does every open cover reduce to a finite one?</td><td>\([0,1]\) vs. \((0,1)\)</td></tr>
+<tr><td>Euler characteristic / genus</td><td>how many handles or holes a closed surface has</td><td>sphere (\(\chi=2\)) vs. torus (\(\chi=0\))</td></tr>
+<tr><td>Dimension</td><td>how many independent directions the space locally has</td><td>\(\mathbb R\) vs. \(\mathbb R^2\) — true, but its proof needs machinery beyond this essay</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Every "are these the same shape?" question in topology reduces to exactly one of two moves: build an explicit homeomorphism (Panel IV), or find a single invariant where the two spaces disagree (this panel). There is no third option and no in-between — either a map exists connecting them or a permanent, homeomorphism-proof obstruction rules every possible map out at once.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Interactive Lab</h1>
+<div class="subtitle">test the open-ball definition by hand, and watch a single deleted point prove a theorem</div>
+
+<h2>Lab 1 — Open Set Explorer</h2>
+<p>Move the cursor over the canvas to test a point \(p\). For the selected set \(S\), the readout reports whether \(p\in S\) and, if so, the radius of the largest open ball centered at \(p\) that still fits entirely inside \(S\) — exactly the quantity Panel II's wiggle-room definition asks for. Watch that radius shrink toward zero as you approach a boundary that the set does not include, and stay comfortably positive everywhere else.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">MOVE THE CURSOR — TESTING OPENNESS POINT BY POINT</div>
+      <canvas id="cvOpen" width="340" height="340" style="width:100%;max-width:340px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Set S</label>
+      <select id="setSelect">
+        <option value="openDisk" selected>open disk: x² + y² &lt; 1</option>
+        <option value="closedDisk">closed disk: x² + y² ≤ 1</option>
+        <option value="halfPlane">open half-plane: y &gt; 0</option>
+        <option value="punctPlane">plane minus the origin</option>
+        <option value="singlePoint">the single point {(0,0)}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">CURSOR POINT p</div><div class="v" id="ptOut">…</div></div>
+    <div class="block"><div class="k">p ∈ S ?</div><div class="v" id="memOut">…</div></div>
+    <div class="block"><div class="k">LARGEST BALL RADIUS ε FITTING IN S</div><div class="v" id="epsOut">…</div></div>
+    <div class="block" style="flex:1 1 100%;"><div class="k">READING</div><div class="v" id="verdictOut">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--accent)"></span> set S (dashed edge = excluded, solid edge = included)</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> cursor point p</span>
+    <span><span class="swatch" style="background:var(--green)"></span> largest ball of radius ε around p</span>
+  </div>
+</div>
+
+<h2>Lab 2 — The Puncture Invariant</h2>
+<p>Click anywhere on the segment's interior, or anywhere on the circle, to remove that single point; click an existing removal to restore it. Watch the piece-count readouts as you go. This is Panel V's connectedness invariant, running live: one carefully placed puncture is all it takes to prove a circle and a line segment can never be homeomorphic.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">CLICK A POINT TO REMOVE OR RESTORE IT</div>
+      <canvas id="cvPunct" width="640" height="300" style="width:100%;max-width:640px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>&nbsp;</label>
+      <button class="mini-toggle" id="punctReset">reset both shapes</button>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">SEGMENT [0,1] — PIECES REMAINING</div><div class="v" id="segOut">1</div></div>
+    <div class="block"><div class="k">CIRCLE S¹ — PIECES REMAINING</div><div class="v" id="circOut">1</div></div>
+    <div class="block" style="flex:1 1 100%;"><div class="k">READING</div><div class="v" id="punctVerdict">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--red)"></span> removed point</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> remaining piece(s)</span>
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> the two endpoints of [0,1] are fixed, not clickable</span>
+  </div>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — why the segment's endpoints are excluded</span>
+<p>Only the segment's <em>interior</em> is clickable in Lab 2 on purpose. Delete an interior point of \([0,1]\) and it splits in two; delete an endpoint instead (say \(0\), leaving \((0,1]\)) and it stays in one piece, exactly the way deleting any point of a circle does. That asymmetry is itself a topological fact worth sitting with: it is precisely how a "boundary point" of an interval gets distinguished from an "interior" one using nothing but connectedness — no notion of distance, only which points disconnect the space when removed and which don't.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>Worked Examples</h1>
+<div class="subtitle">four short proofs, each one a direct application of a definition or invariant from Panels II–V</div>
+
+<h2>A circle is not homeomorphic to a closed interval</h2>
+<p><strong>Claim.</strong> \(S^1\not\cong[0,1]\).</p>
+<p><strong>Proof.</strong> Suppose toward contradiction that \(f:[0,1]\to S^1\) is a homeomorphism. Pick any interior point \(a\in(0,1)\) and let \(X=[0,1]\setminus\{a\}\), \(Y=S^1\setminus\{f(a)\}\). Since \(f\) restricts to a homeomorphism between \(X\) and \(Y\) (removing corresponding points from two homeomorphic spaces leaves the remainders homeomorphic — the restricted map is still a continuous bijection with continuous inverse), connectedness of \(X\) and \(Y\) must agree. But \(X=[0,a)\cup(a,1]\) splits into two disjoint nonempty open pieces — disconnected — while \(Y\), a circle with a single point removed, is a single unbroken arc — connected. Contradiction. So no such \(f\) exists. \(\blacksquare\)</p>
+<p>This is exactly Lab 2 from Panel VI, stated as a formal theorem: one puncture disconnects the interval but never the circle, and connectedness is enough to rule out every possible homeomorphism at once.</p>
+
+<h2>Checking continuity directly from the preimage definition</h2>
+<p>Let \(f(x)=x^2\) on \(\mathbb R\), and test the open set \(U=(-1,4)\). By hand: \(f^{-1}(U) = \{x : -1 < x^2 < 4\}\). Since \(x^2\ge0\) always, the left inequality holds for every real \(x\); the right inequality \(x^2<4\) holds exactly when \(-2<x<2\). So \(f^{-1}(U)=(-2,2)\) — an open interval, hence an open set. Panel III's definition asks for this to happen for <em>every</em> open \(U\), not just this one, but the pattern generalizes directly: preimages of open intervals under \(x^2\) are always open, which is the content of \(x^2\) being continuous everywhere, checked with no \(\varepsilon\) or \(\delta\) in sight.</p>
+
+<h2>A bounded interval and the entire real line are topologically identical</h2>
+<p>Take \(f(x) = \tan\!\big(\pi(x-\tfrac12)\big)\) on the open interval \((0,1)\). As \(x\) ranges over \((0,1)\), the quantity \(\pi(x-\tfrac12)\) ranges over \(\left(-\tfrac{\pi}{2},\tfrac{\pi}{2}\right)\), and \(\tan\) is a continuous bijection from that interval onto all of \(\mathbb R\), with continuous inverse \(\arctan\). So \(f\) is a homeomorphism, and \((0,1)\cong\mathbb R\).</p>
+<div class="katex-display" data-katex="f:(0,1)\to\mathbb R, \qquad f(x)=\tan\!\left(\pi\left(x-\tfrac12\right)\right)"></div>
+<p>This is genuinely surprising the first time you see it: a set of finite length and the entire infinite line are, topologically, the exact same object. "Length" was never a topological invariant to begin with — it depends on a ruler, and Panel I's entire premise was that topology doesn't carry one.</p>
+
+<h2>Euler characteristic of a cube</h2>
+<p>A cube's surface has \(V=8\) vertices, \(E=12\) edges, and \(F=6\) faces:</p>
+<div class="katex-display" data-katex="\chi = V - E + F = 8 - 12 + 6 = 2"></div>
+<p>which matches the sphere's Euler characteristic from Panel V exactly — as it must, since a cube's surface can be inflated into a perfect sphere by a continuous deformation (push every face outward until it's spherical), and \(\chi\) is a topological invariant. The specific decomposition into vertices, edges, and faces is disposable; the number \(2\) it produces is not.</p>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="t8">
+<h1>How to Study Topology</h1>
+<div class="subtitle">prerequisites, a standard path through the subject, and how to actually make the definitions stick</div>
+
+<h2>What you need before starting</h2>
+<p>Two habits of mind matter more than any specific fact. The first is basic comfort with sets and functions — unions, intersections, bijections, the idea of a function as a rule that relocates points rather than "computes a number" — the same reading this site's essay on functions as mappings builds for linear algebra, needed here in its most general, structure-free form. The second is the \(\varepsilon\text{-}\delta\) habit of mind from real analysis and calculus: the discipline of pinning down "arbitrarily close" with a precise, checkable condition. Panel III of this essay leaned on that habit directly to build the preimage definition of continuity; without it, "open set" and "continuous map" both risk staying permanently vague.</p>
+
+<h2>The standard path through the subject</h2>
+<p><strong>1. Point-set topology</strong> — everything in this essay, extended: product spaces, quotient spaces, separation axioms (Hausdorff spaces and stronger conditions), and the compactness theorem mentioned as a forward-pointer in Panel III's warning callout. The standard reference is James Munkres's textbook <em>Topology</em>, which most courses follow closely.</p>
+<p><strong>2. Algebraic topology</strong> — assigns algebraic objects (groups, mostly) to topological spaces, in a way that turns "are these homeomorphic" questions Panel V couldn't settle into pure algebra questions instead. The <strong>fundamental group</strong> tracks loops that can't be shrunk to a point (it immediately explains why a disk and an annulus differ — one has loops that can't contract, the other doesn't); <strong>homology</strong> generalizes the Euler-characteristic idea from Panel V into a full algebraic invariant, one for every dimension at once. Allen Hatcher's textbook <em>Algebraic Topology</em> is the standard entry point and is freely available from the author.</p>
+<p><strong>3. Differential topology and manifolds</strong> — spaces that locally look like \(\mathbb R^n\) closely enough to support calculus on them. This is where topology reconnects directly with the rest of this site: the derivative, linearized in the companion Jacobian essay as a matrix of partial rates of change, is exactly the tool that lets you do calculus on a manifold once its topology has been pinned down.</p>
+<p><strong>4. Specialized branches</strong> to choose between once the above is solid: knot theory (which loops in 3-dimensional space can be untangled into a circle, and which cannot); geometric topology and the classification of 3-manifolds (the setting of the Poincaré conjecture, resolved by Grigori Perelman in 2003); topological data analysis, which uses the connectedness and hole-counting ideas of Panel V directly on real-world data sets; and the role of manifold topology in general relativity, where spacetime itself is modeled as a 4-dimensional manifold.</p>
+
+<h2>How to actually study it</h2>
+<p><strong>Draw pictures, constantly, despite the abstract axioms.</strong> The axioms in Panel II look like pure symbol manipulation on first contact, but topology is one of the most visual subjects in mathematics once past that first wall — every serious topologist reasons with pictures of tori, Möbius strips, and deformations far more than with the raw axioms.</p>
+<p><strong>Don't skip breaking the axioms by hand.</strong> Panel II's infinite-intersection counterexample is short enough to reconstruct from memory, and most of the intuition for <em>why</em> the axioms are shaped the way they are lives in exercises exactly like it — building small examples that satisfy two of the three rules and fail the third.</p>
+<p><strong>Alternate between the abstract and the concrete.</strong> Keep a running list of named spaces — the circle, the torus, the Möbius strip, the Klein bottle, real projective space — and test every new abstract definition against all of them immediately. An abstract definition with no concrete home to test itself against rarely survives contact with a real problem.</p>
+<p><strong>Practice Panel VII's kind of proof relentlessly.</strong> "These two spaces are not homeomorphic, and here is the invariant that proves it" is the single most diagnostic skill in the entire subject — it is the one exercise that cannot be faked by pattern-matching, because it demands actually understanding what the invariant measures and why a homeomorphism is forced to preserve it.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>Topology is what is left of geometry once every ruler has been taken away and only continuity remains. Panels II and III turned that idea into two precise definitions — open set, continuous map — built entirely without distance. Panel IV turned it into an equivalence relation worth naming, homeomorphism. Panel V supplied the tools for telling equivalence classes apart when no explicit map can be found. Panel VIII, this panel, is simply the map for where the resulting subject goes next.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6','t7','t8'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawOpenSet();
+  drawPunct();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ---------- shared helpers ----------
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function fmtN(n, d){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+
+// ============ LAB 1: OPEN SET EXPLORER ============
+const openCv = document.getElementById('cvOpen');
+const octx = openCv.getContext('2d');
+const setSelect = document.getElementById('setSelect');
+const ptOut = document.getElementById('ptOut');
+const memOut = document.getElementById('memOut');
+const epsOut = document.getElementById('epsOut');
+const verdictOut = document.getElementById('verdictOut');
+
+const OS_SIZE = 340, OS_CX = 170, OS_CY = 170, OS_RANGE = 1.6;
+const OS_SCALE = OS_SIZE / (2*OS_RANGE);
+let osPt = {x:0.5, y:0.5, has:false};
+
+function osWorldToScreen(x,y){ return [OS_CX + x*OS_SCALE, OS_CY - y*OS_SCALE]; }
+function osScreenToWorld(px,py){ return [(px-OS_CX)/OS_SCALE, (OS_CY-py)/OS_SCALE]; }
+
+function osTest(setKey, x, y){
+  const d = Math.hypot(x,y);
+  if(setKey === 'openDisk'){
+    if(d < 1) return {inSet:true, eps: 1-d};
+    return {inSet:false, eps:0};
+  }
+  if(setKey === 'closedDisk'){
+    if(d <= 1) return {inSet:true, eps: Math.max(0, 1-d)};
+    return {inSet:false, eps:0};
+  }
+  if(setKey === 'halfPlane'){
+    if(y > 0) return {inSet:true, eps: y};
+    return {inSet:false, eps:0};
+  }
+  if(setKey === 'punctPlane'){
+    if(d > 0.04) return {inSet:true, eps: Math.min(d, 1.5)};
+    return {inSet:false, eps:0};
+  }
+  if(setKey === 'singlePoint'){
+    if(d < 0.045) return {inSet:true, eps:0};
+    return {inSet:false, eps:0};
+  }
+  return {inSet:false, eps:0};
+}
+
+function drawOpenSet(){
+  const setKey = setSelect.value;
+  octx.clearRect(0,0,OS_SIZE,OS_SIZE);
+  octx.fillStyle = cssVar('--bg-elevated');
+  octx.fillRect(0,0,OS_SIZE,OS_SIZE);
+
+  // grid
+  octx.strokeStyle = cssVar('--border-soft'); octx.lineWidth = 1;
+  for(let g=-1.5; g<=1.5; g+=0.5){
+    let [x1,y1] = osWorldToScreen(g,-OS_RANGE), [x2,y2] = osWorldToScreen(g,OS_RANGE);
+    octx.beginPath(); octx.moveTo(x1,y1); octx.lineTo(x2,y2); octx.stroke();
+    [x1,y1] = osWorldToScreen(-OS_RANGE,g); [x2,y2] = osWorldToScreen(OS_RANGE,g);
+    octx.beginPath(); octx.moveTo(x1,y1); octx.lineTo(x2,y2); octx.stroke();
+  }
+  // axes
+  octx.strokeStyle = cssVar('--ink-faint'); octx.lineWidth = 1.2;
+  let [ax1,ay1] = osWorldToScreen(-OS_RANGE,0), [ax2,ay2] = osWorldToScreen(OS_RANGE,0);
+  octx.beginPath(); octx.moveTo(ax1,ay1); octx.lineTo(ax2,ay2); octx.stroke();
+  [ax1,ay1] = osWorldToScreen(0,-OS_RANGE); [ax2,ay2] = osWorldToScreen(0,OS_RANGE);
+  octx.beginPath(); octx.moveTo(ax1,ay1); octx.lineTo(ax2,ay2); octx.stroke();
+
+  const accent = cssVar('--accent');
+
+  if(setKey === 'openDisk' || setKey === 'closedDisk'){
+    const [cx,cy] = osWorldToScreen(0,0);
+    const r = OS_SCALE * 1;
+    octx.fillStyle = accent; octx.globalAlpha = 0.18;
+    octx.beginPath(); octx.arc(cx,cy,r,0,7); octx.fill();
+    octx.globalAlpha = 1;
+    octx.strokeStyle = accent; octx.lineWidth = 2;
+    octx.setLineDash(setKey === 'openDisk' ? [5,4] : []);
+    octx.beginPath(); octx.arc(cx,cy,r,0,7); octx.stroke();
+    octx.setLineDash([]);
+  } else if(setKey === 'halfPlane'){
+    const [x1,y1] = osWorldToScreen(-OS_RANGE, OS_RANGE);
+    octx.fillStyle = accent; octx.globalAlpha = 0.18;
+    octx.fillRect(0, 0, OS_SIZE, OS_CY);
+    octx.globalAlpha = 1;
+    octx.strokeStyle = accent; octx.lineWidth = 2; octx.setLineDash([5,4]);
+    octx.beginPath(); octx.moveTo(0,OS_CY); octx.lineTo(OS_SIZE,OS_CY); octx.stroke();
+    octx.setLineDash([]);
+  } else if(setKey === 'punctPlane'){
+    octx.fillStyle = accent; octx.globalAlpha = 0.14;
+    octx.fillRect(0,0,OS_SIZE,OS_SIZE);
+    octx.globalAlpha = 1;
+    const [ox,oy] = osWorldToScreen(0,0);
+    octx.fillStyle = cssVar('--bg-elevated');
+    octx.beginPath(); octx.arc(ox,oy,5,0,7); octx.fill();
+    octx.strokeStyle = cssVar('--red'); octx.lineWidth = 1.5; octx.setLineDash([2,2]);
+    octx.beginPath(); octx.arc(ox,oy,5,0,7); octx.stroke();
+    octx.setLineDash([]);
+  } else if(setKey === 'singlePoint'){
+    const [ox,oy] = osWorldToScreen(0,0);
+    octx.fillStyle = accent;
+    octx.beginPath(); octx.arc(ox,oy,4,0,7); octx.fill();
+  }
+
+  if(osPt.has){
+    const {x,y} = osPt;
+    const res = osTest(setKey, x, y);
+    const [px,py] = osWorldToScreen(x,y);
+
+    if(res.inSet && res.eps > 0.006){
+      octx.strokeStyle = cssVar('--green'); octx.lineWidth = 1.5; octx.setLineDash([3,3]);
+      octx.beginPath(); octx.arc(px,py, res.eps*OS_SCALE, 0, 7); octx.stroke();
+      octx.setLineDash([]);
+    }
+    octx.fillStyle = cssVar('--blue');
+    octx.beginPath(); octx.arc(px,py,4,0,7); octx.fill();
+    octx.strokeStyle = cssVar('--bg-elevated'); octx.lineWidth = 1; octx.stroke();
+
+    ptOut.textContent = `(${x.toFixed(2)}, ${y.toFixed(2)})`;
+    memOut.textContent = res.inSet ? 'yes' : 'no';
+    epsOut.textContent = res.inSet ? (res.eps < 0.006 ? '≈ 0' : res.eps.toFixed(3)) : 'n/a';
+    if(!res.inSet){
+      verdictOut.textContent = 'p is not a member of S — openness is only tested at points inside the set.';
+    } else if(res.eps > 0.02){
+      verdictOut.textContent = 'A positive-radius ball fits entirely inside S around p — consistent with S being open here.';
+    } else {
+      verdictOut.textContent = 'ε has shrunk to (about) zero at p — no ball fits inside S, so S fails to be open at this point.';
+    }
+  } else {
+    ptOut.textContent = '…'; memOut.textContent = '…'; epsOut.textContent = '…';
+    verdictOut.textContent = 'Move the cursor over the canvas to test a point.';
+  }
+}
+
+function osPointerToWorld(e){
+  const rect = openCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (OS_SIZE/rect.width);
+  const py = (clientY-rect.top) * (OS_SIZE/rect.height);
+  return osScreenToWorld(px,py);
+}
+openCv.addEventListener('mousemove', e=>{
+  const [x,y] = osPointerToWorld(e);
+  osPt = {x,y,has:true};
+  drawOpenSet();
+});
+openCv.addEventListener('mouseleave', ()=>{ osPt.has=false; drawOpenSet(); });
+openCv.addEventListener('touchmove', e=>{
+  const [x,y] = osPointerToWorld(e);
+  osPt = {x,y,has:true};
+  drawOpenSet();
+}, {passive:true});
+setSelect.addEventListener('change', drawOpenSet);
+drawOpenSet();
+
+// ============ LAB 2: PUNCTURE INVARIANT ============
+const punctCv = document.getElementById('cvPunct');
+const pctx = punctCv.getContext('2d');
+const segOut = document.getElementById('segOut');
+const circOut = document.getElementById('circOut');
+const punctVerdict = document.getElementById('punctVerdict');
+const punctResetBtn = document.getElementById('punctReset');
+
+const SEG_Y = 150, SEG_X0 = 70, SEG_X1 = 330;
+const CIRC_CX = 490, CIRC_CY = 150, CIRC_R = 95;
+let segBreaks = [];   // array of t in (0,1)
+let circBreaks = [];  // array of theta in [0, 2*PI)
+
+function segPos(t){ return SEG_X0 + (SEG_X1-SEG_X0)*t; }
+function circPos(theta){ return [CIRC_CX + CIRC_R*Math.cos(theta), CIRC_CY + CIRC_R*Math.sin(theta)]; }
+
+function drawPunct(){
+  pctx.clearRect(0,0,640,300);
+  pctx.fillStyle = cssVar('--bg-elevated');
+  pctx.fillRect(0,0,640,300);
+
+  const ink = cssVar('--ink-dim'), accent = cssVar('--accent'), red = cssVar('--red'), faint = cssVar('--ink-faint');
+
+  // labels
+  pctx.font = '12px JetBrains Mono, monospace';
+  pctx.fillStyle = faint; pctx.textAlign = 'center';
+  pctx.fillText('SEGMENT [0,1]', (SEG_X0+SEG_X1)/2, SEG_Y-60);
+  pctx.fillText('CIRCLE S¹', CIRC_CX, CIRC_CY-CIRC_R-20);
+
+  // --- segment ---
+  const sBreaks = [...segBreaks].sort((a,b)=>a-b);
+  const stops = [0, ...sBreaks, 1];
+  pctx.strokeStyle = accent; pctx.lineWidth = 4; pctx.lineCap = 'round';
+  for(let i=0;i<stops.length-1;i++){
+    const gap = 0.012;
+    const a = stops[i] + (i===0 ? 0 : gap);
+    const b = stops[i+1] - (i===stops.length-2 ? 0 : gap);
+    if(b>a){
+      pctx.beginPath(); pctx.moveTo(segPos(a),SEG_Y); pctx.lineTo(segPos(b),SEG_Y); pctx.stroke();
+    }
+  }
+  // endpoint dots (fixed, not clickable)
+  pctx.fillStyle = ink;
+  [0,1].forEach(t=>{
+    pctx.beginPath(); pctx.arc(segPos(t),SEG_Y,4,0,7); pctx.fill();
+  });
+  // break markers
+  pctx.fillStyle = red;
+  sBreaks.forEach(t=>{
+    pctx.beginPath(); pctx.arc(segPos(t),SEG_Y,5,0,7); pctx.fill();
+  });
+
+  // --- circle ---
+  const cBreaks = [...circBreaks].sort((a,b)=>a-b);
+  pctx.strokeStyle = accent; pctx.lineWidth = 4; pctx.lineCap = 'round';
+  if(cBreaks.length === 0){
+    pctx.beginPath(); pctx.arc(CIRC_CX,CIRC_CY,CIRC_R,0,7); pctx.stroke();
+  } else {
+    const gap = 0.05;
+    for(let i=0;i<cBreaks.length;i++){
+      const a = cBreaks[i] + gap;
+      const b = (i===cBreaks.length-1 ? cBreaks[0]+2*Math.PI : cBreaks[i+1]) - gap;
+      if(b>a){
+        pctx.beginPath(); pctx.arc(CIRC_CX,CIRC_CY,CIRC_R,a,b); pctx.stroke();
+      }
+    }
+  }
+  pctx.fillStyle = red;
+  cBreaks.forEach(theta=>{
+    const [x,y] = circPos(theta);
+    pctx.beginPath(); pctx.arc(x,y,5,0,7); pctx.fill();
+  });
+
+  const segPieces = segBreaks.length + 1;
+  const circPieces = circBreaks.length === 0 ? 1 : circBreaks.length;
+  segOut.textContent = segPieces;
+  circOut.textContent = circPieces;
+
+  if(segBreaks.length===0 && circBreaks.length===0){
+    punctVerdict.textContent = 'Nothing removed yet — both shapes are still in one piece. Click a point on either curve.';
+  } else if(segBreaks.length===1 && circBreaks.length===1){
+    punctVerdict.textContent = `Exactly one puncture on each: the segment split into ${segPieces} pieces, the circle stayed in ${circPieces}. No homeomorphism can turn a segment into a circle — this single difference proves it.`;
+  } else {
+    punctVerdict.textContent = `Segment pieces: ${segPieces}. Circle pieces: ${circPieces}. Try exactly one puncture on each shape to see the classic proof.`;
+  }
+}
+
+function punctClick(e){
+  const rect = punctCv.getBoundingClientRect();
+  const clientX = e.touches ? e.changedTouches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.changedTouches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (640/rect.width);
+  const py = (clientY-rect.top) * (300/rect.height);
+
+  // segment hit test
+  if(Math.abs(py-SEG_Y) < 14 && px > SEG_X0-10 && px < SEG_X1+10){
+    let t = (px - SEG_X0) / (SEG_X1 - SEG_X0);
+    t = Math.max(0, Math.min(1, t));
+    if(t > 0.04 && t < 0.96){
+      const idx = segBreaks.findIndex(b => Math.abs(b-t) < 0.03);
+      if(idx >= 0) segBreaks.splice(idx,1);
+      else if(segBreaks.length < 6) segBreaks.push(t);
+      drawPunct();
+      return;
+    }
+  }
+  // circle hit test
+  const dx = px-CIRC_CX, dy = py-CIRC_CY;
+  const dist = Math.hypot(dx,dy);
+  if(Math.abs(dist-CIRC_R) < 16){
+    let theta = Math.atan2(dy,dx);
+    if(theta < 0) theta += 2*Math.PI;
+    const idx = circBreaks.findIndex(b => Math.abs(b-theta) < 0.09 || Math.abs(b-theta) > 2*Math.PI-0.09);
+    if(idx >= 0) circBreaks.splice(idx,1);
+    else if(circBreaks.length < 6) circBreaks.push(theta);
+    drawPunct();
+  }
+}
+punctCv.addEventListener('click', punctClick);
+punctCv.addEventListener('touchend', e=>{ e.preventDefault(); punctClick(e); }, {passive:false});
+punctResetBtn.addEventListener('click', ()=>{ segBreaks = []; circBreaks = []; drawPunct(); });
+drawPunct();
+</script>
+
+</body>
+</html>

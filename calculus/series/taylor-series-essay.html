@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taylor Series — Rebuilding a Function From One Point</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre-wrap; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">TAYLOR SERIES</div>
+  <button class="tab-btn active" data-tab="t1">I · From Slope to Curvature</button>
+  <button class="tab-btn" data-tab="t2">II · Deriving the Formula</button>
+  <button class="tab-btn" data-tab="t3">III · The Remainder</button>
+  <button class="tab-btn" data-tab="t4">IV · Why a Power Series at All</button>
+  <button class="tab-btn" data-tab="t5">V · The Linear Algebra Underneath</button>
+  <button class="tab-btn" data-tab="t6">VI · Functional Analysis</button>
+  <button class="tab-btn" data-tab="t7">VII · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t8">VIII · Worked Examples</button>
+  <button class="tab-btn" data-tab="t9">IX · Where This Leads</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>From Slope to Curvature</h1>
+<div class="subtitle">how much of a function, far from a point, is already hiding in its derivatives at that one point</div>
+
+<h2>An infinite, but purely local, dossier</h2>
+<p>Suppose you're handed an enormous file on a function \(f\): not just its value at one point \(a\), but the value of <em>every</em> one of its derivatives there too — \(f(a)\), \(f'(a)\), \(f''(a)\), \(f'''(a)\), and so on, forever. That's an infinite pile of numbers, but every single one of them is a strictly <em>local</em> fact — a statement about how \(f\) behaves in an infinitesimally small neighborhood of \(a\), and nothing else. The question this essay chases is startling once you actually ask it out loud: how much of \(f\), arbitrarily far away from \(a\), is already secretly determined by that local pile? The answer, remarkably often, is <em>all of it</em>.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — picking up a dangling thread</span>
+<p>The companion Derivative essay closed by noting that local linearity — the tangent-line approximation \(f(a+h)\approx f(a)+f'(a)h\) — is "only its opening move," with each additional derivative buying one more order of accuracy. This essay is that longer expansion, carried out to its logical end.</p>
+</div>
+
+<h2>Zeroth order: the crudest possible guess</h2>
+<p>Start with the least ambitious approximation imaginable: pretend \(f\) is constant near \(a\), \(f(x)\approx f(a)\). This uses exactly one fact — the value \(f(a)\) — and it is correct at exactly one point, \(x=a\), and drifts away from \(f\) immediately on either side, at a rate governed entirely by how fast \(f\) is actually changing.</p>
+
+<h2>First order: local linearity, revisited</h2>
+<p>The fix is the one the Derivative essay already made: use the slope too. \(f(x)\approx f(a)+f'(a)(x-a)\) is the tangent line — it matches \(f\) in <em>height</em> and in <em>slope</em> at \(a\), and consequently tracks \(f\) for noticeably longer before drifting off, at least as long as \(f\) doesn't bend much. But a straight line has zero curvature everywhere, and most functions worth studying bend. The tangent line eventually peels away from any curve that curves, no matter how good the match was right at \(a\).</p>
+
+<div class="ascii">   DEGREE 0                    DEGREE 1                     DEGREE 2 (next panel)
+   f(x) ≈ f(a)                  f(x) ≈ f(a)+f'(a)(x−a)        + curvature correction
+
+    ─────●─────                    ⟍        ●        ⟋           ╲___●___╱
+   flat line, touches            tangent line — matches          matches the bend
+   only the height at a          height AND slope at a           too; hugs a wider
+   drifts away on both            but zero curvature of           stretch of the
+   sides immediately              its own — drifts eventually     curve before
+                                                                    drifting away</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the question this whole essay chases</span>
+<p>What if you don't stop at slope? A polynomial has as many "knobs" as it has terms — degree \(n\) gives \(n+1\) coefficients to tune. If a straight line can be forced to match \(f\)'s height and slope at \(a\), what stops a quadratic from also being forced to match its curvature there — and a cubic from matching whatever comes after curvature? Nothing does. Taking this all the way, matching <em>every</em> derivative \(f\) has at \(a\), is the entire content of the Taylor series. Local linearity was "match derivative \(0\) and derivative \(1\)." What follows is "match every derivative there is."</p>
+</div>
+
+<h3>The open question this essay answers in three stages</h3>
+<p>Write the next approximation as \(P_2(x) = f(a) + f'(a)(x-a) + c_2(x-a)^2\), with \(c_2\) left as an unknown to be pinned down. What value of \(c_2\) makes \(P_2''(a)\) equal to \(f''(a)\) — the one condition that would make \(P_2\) match \(f\)'s curvature, not just its height and slope? Panel II answers this by brute-force differentiation, and the pattern it finds generalizes to every order, all at once, with no extra cleverness required. Panel III then asks the question that separates a cute algebraic trick from a genuinely powerful theorem: once you let the degree run off to infinity, does the resulting infinite sum actually converge back to \(f\)? The answer is a qualified yes — qualified in a way that turns out to matter a great deal.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Deriving the Formula</h1>
+<div class="subtitle">why the coefficients are forced to be f⁽ᵏ⁾(a)/k! — and why the factorial is not decoration</div>
+
+<h2>Setting up the matching conditions</h2>
+<p>Look for a polynomial of degree \(n\), written in the most convenient possible form — powers of \((x-a)\) rather than powers of \(x\), since every derivative will eventually be evaluated at \(x=a\):</p>
+<div class="katex-display" data-katex="P_n(x) = c_0 + c_1(x-a) + c_2(x-a)^2 + \cdots + c_n(x-a)^n"></div>
+<p>The goal, stated precisely: choose the coefficients \(c_0,\dots,c_n\) so that \(P_n^{(j)}(a) = f^{(j)}(a)\) for every \(j=0,1,\dots,n\) — the polynomial and \(f\) agree not just in value at \(a\), but in every derivative up to order \(n\).</p>
+
+<h2>What differentiating (x−a)ᵏ, j times, actually does</h2>
+<p>Differentiate \((x-a)^k\) once: you get \(k(x-a)^{k-1}\). Differentiate it \(j\) times: you get \(k(k-1)\cdots(k-j+1)(x-a)^{k-j}\), provided \(j\le k\) — a product of \(j\) descending integers times a surviving power of \((x-a)\). Now evaluate at \(x=a\):</p>
+<div class="katex-display" data-katex="\left.\frac{d^j}{dx^j}(x-a)^k\right|_{x=a} = \begin{cases}k! &amp; j=k\\[2pt] 0 &amp; j\ne k\end{cases}"></div>
+<p>Two cases, and both are forced. If \(j&lt;k\), a positive power \((x-a)^{k-j}\) survives, and it vanishes the instant \(x=a\) is substituted. If \(j&gt;k\), the term dies even sooner — differentiating a degree-\(k\) polynomial more than \(k\) times always gives the zero function outright. Only the single case \(j=k\) survives evaluation at \(a\) with a nonzero result, and that result is exactly \(k(k-1)\cdots1 = k!\) — the descending product runs from \(k\) all the way down to \(1\), with nothing left over.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — why the factorial is forced, not decorative</span>
+<p>The factorial in Taylor's formula is not a normalization chosen for taste. It is the literal, mechanical byproduct of differentiating a power \(j\) times: each of the \(j\) derivatives brings down one more descending factor, and by the time you've differentiated \((x-a)^k\) exactly \(k\) times, you've multiplied together every integer from \(k\) down to \(1\). Dividing by \(k!\) later is simply undoing that bookkeeping — canceling the exact residue that \(k\)-fold differentiation leaves behind, so that what's left is honestly \(f^{(k)}(a)\) and nothing else.</p>
+</div>
+
+<h2>Extracting one coefficient at a time</h2>
+<p>Differentiate \(P_n\) itself \(j\) times and evaluate at \(a\). Every term in the sum behaves exactly as above, so every term with \(k\ne j\) vanishes, and the one surviving term is \(c_j\cdot j!\):</p>
+<div class="katex-display" data-katex="P_n^{(j)}(a) = c_j\cdot j!"></div>
+<p>Setting this equal to the matching condition \(P_n^{(j)}(a)=f^{(j)}(a)\) and solving for \(c_j\) gives the formula the entire essay is built around:</p>
+<div class="katex-display" data-katex="c_j = \frac{f^{(j)}(a)}{j!}"></div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — Taylor polynomial and Taylor series</span>
+<p>The <strong>degree-\(n\) Taylor polynomial</strong> of \(f\) at \(a\) is</p>
+<div class="katex-display" data-katex="P_n(x) = \sum_{k=0}^n \frac{f^{(k)}(a)}{k!}(x-a)^k"></div>
+<p>and the <strong>Taylor series</strong> of \(f\) at \(a\) is the formal limit \(n\to\infty\):</p>
+<div class="katex-display" data-katex="T_f(x) = \sum_{k=0}^\infty \frac{f^{(k)}(a)}{k!}(x-a)^k"></div>
+<p>When \(a=0\) this is also called the <strong>Maclaurin series</strong> of \(f\) — no new idea, just the common special case worth its own name.</p>
+</div>
+
+<h3>Uniqueness: there is no other polynomial that would work</h3>
+<p>Suppose \(Q_n\) is some other degree-\(n\) polynomial that also matches \(f\)'s value and first \(n\) derivatives at \(a\). Let \(D=P_n-Q_n\), a polynomial of degree at most \(n\). Since both \(P_n\) and \(Q_n\) agree with \(f\) in every derivative up to order \(n\) at \(a\), \(D^{(j)}(a)=0\) for every \(j=0,\dots,n\). Write \(D(x)=\sum_{k=0}^n d_k(x-a)^k\); the identical argument above gives \(D^{(j)}(a)=j!\,d_j\), so \(j!\,d_j=0\) for every \(j\), and since \(j!\ne0\) this forces every \(d_j=0\). Hence \(D\equiv0\) and \(Q_n=P_n\) — the Taylor polynomial isn't one convenient choice among several; it's the only degree-\(n\) polynomial that could possibly do the job.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — a proof that will be reused</span>
+<p>Nothing about this uniqueness argument mentioned \(f\) at all — it's a statement purely about polynomials written in powers of \((x-a)\): such a polynomial is completely determined by its derivatives at \(a\), with no redundancy and no ambiguity anywhere. Panel V returns to this exact argument, unchanged, to prove that the powers \((x-a)^k\) are linearly independent — the same computation, read as a fact about vectors instead of a fact about approximation.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Remainder</h1>
+<div class="subtitle">exactly how large the gap is between f and its Taylor polynomial — and why that gap doesn't always shrink to zero</div>
+
+<h2>An exact identity, not yet an approximation</h2>
+<p>Define the <strong>remainder</strong> \(R_n(x) = f(x) - P_n(x)\) — the error left over after using the degree-\(n\) Taylor polynomial in place of \(f\). Panel II built \(P_n\) so that it matches \(f\) well <em>at</em> \(a\); this panel derives an exact formula for \(R_n(x)\) everywhere else, using the same repeated-integration-by-parts move the companion Jacobian essay uses to prove differentiability from continuous partials.</p>
+
+<p>Start from the Fundamental Theorem of Calculus, an exact statement with no approximation in it yet:</p>
+<div class="katex-display" data-katex="f(x) = f(a) + \int_a^x f'(t)\,dt"></div>
+<p>Integrate by parts, choosing the antiderivative \(v=-(x-t)\) for \(dv=dt\) specifically because it makes the boundary term collapse nicely at \(t=x\):</p>
+<div class="katex-display" data-katex="\int_a^x f'(t)\,dt = \Big[-f'(t)(x-t)\Big]_a^x + \int_a^x f''(t)(x-t)\,dt = f'(a)(x-a) + \int_a^x f''(t)(x-t)\,dt"></div>
+<p>So already, exactly: \(f(x) = f(a) + f'(a)(x-a) + \int_a^x f''(t)(x-t)\,dt\). Integrate by parts a second time on the remaining integral, this time with \(v=-\tfrac{(x-t)^2}{2}\):</p>
+<div class="katex-display" data-katex="\int_a^x f''(t)(x-t)\,dt = \Big[-f''(t)\tfrac{(x-t)^2}{2}\Big]_a^x + \int_a^x f'''(t)\tfrac{(x-t)^2}{2}\,dt = \frac{f''(a)}{2}(x-a)^2 + \int_a^x f'''(t)\frac{(x-t)^2}{2}\,dt"></div>
+<p>Two rounds in, the pattern is already visible: each integration by parts peels off exactly one more Taylor term and leaves behind an integral one derivative higher, with one more power of \((x-t)\) and one more factorial in the denominator. Repeating this \(n+1\) times in total gives the exact identity — no approximation, no limit, just algebra:</p>
+
+<div class="callout definition">
+<span class="callout-label">Theorem — Taylor's theorem, integral (Cauchy) form</span>
+<div class="katex-display" data-katex="f(x) = \underbrace{\sum_{k=0}^n \frac{f^{(k)}(a)}{k!}(x-a)^k}_{P_n(x)} \;+\; \underbrace{\int_a^x f^{(n+1)}(t)\,\frac{(x-t)^n}{n!}\,dt}_{R_n(x)}"></div>
+</div>
+
+<h2>From an integral to a single number: the Lagrange form</h2>
+<p>The integral form is exact but awkward to bound by hand. Notice that the weight \(\frac{(x-t)^n}{n!}\) never changes sign as \(t\) ranges over the interval between \(a\) and \(x\) — it's the same sign throughout. That's precisely the hypothesis needed for the weighted Mean Value Theorem for integrals: there is some \(\xi\) strictly between \(a\) and \(x\) at which \(f^{(n+1)}\) can be pulled entirely outside the integral:</p>
+<div class="katex-display" data-katex="R_n(x) = \int_a^x f^{(n+1)}(t)\frac{(x-t)^n}{n!}\,dt = f^{(n+1)}(\xi)\int_a^x\frac{(x-t)^n}{n!}\,dt = \frac{f^{(n+1)}(\xi)}{(n+1)!}(x-a)^{n+1}"></div>
+
+<div class="callout definition">
+<span class="callout-label">Theorem — Taylor's theorem, Lagrange remainder</span>
+<p>If \(f\) is \((n+1)\)-times differentiable on an interval containing \(a\) and \(x\), there exists \(\xi\) strictly between \(a\) and \(x\) such that</p>
+<div class="katex-display" data-katex="f(x) = \sum_{k=0}^n \frac{f^{(k)}(a)}{k!}(x-a)^k + \frac{f^{(n+1)}(\xi)}{(n+1)!}(x-a)^{n+1}"></div>
+</div>
+<p>This is the single-variable derivative's Mean Value Theorem in disguise — set \(n=0\) and it reads \(f(x)=f(a)+f'(\xi)(x-a)\), exactly the ordinary MVT. Taylor's theorem is the same statement, run one order at a time, over and over.</p>
+
+<p>The immediate, practical payoff is an honest error bound. If \(|f^{(n+1)}(t)|\le M\) for every \(t\) between \(a\) and \(x\), then</p>
+<div class="katex-display" data-katex="|R_n(x)| \le \frac{M}{(n+1)!}|x-a|^{n+1}"></div>
+<p>— a number you can actually compute, without knowing exactly which \(\xi\) the theorem is talking about.</p>
+
+<h2>Does the series actually converge back to f?</h2>
+<p>Now let \(n\to\infty\). Two entirely separate questions are hiding here, and it's easy to conflate them. First: does the numerical series \(\sum_k \frac{f^{(k)}(a)}{k!}(x-a)^k\) converge at all, for a given \(x\)? That's an ordinary series-convergence question, answerable by the ratio test on the coefficients, and it defines a <strong>radius of convergence</strong> \(R\) — the series converges (absolutely) for \(|x-a|&lt;R\) and diverges for \(|x-a|&gt;R\). Second, and entirely different: <em>if</em> it converges, does it converge to \(f(x)\) — or to something else?</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — smooth is not the same as analytic</span>
+<p>Let \(f(x)=e^{-1/x^2}\) for \(x\ne0\) and \(f(0)=0\). This function is \(C^\infty\) — infinitely differentiable everywhere, including at \(0\) — and every single derivative at the origin is exactly zero: \(f^{(k)}(0)=0\) for every \(k\ge0\) (provable by induction: each derivative has the form of a polynomial in \(1/x\) times \(e^{-1/x^2}\), and the exponential decay overwhelms any polynomial growth as \(x\to0\)). The Taylor series of \(f\) at \(0\) is therefore the identically-zero function — it converges everywhere, trivially, to \(0\). But \(f(x)\ne0\) for every \(x\ne0\). The series converges; it just doesn't converge to \(f\), anywhere except the single point \(x=0\) itself.</p>
+</div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — analytic vs. merely smooth</span>
+<p>A function is <strong>analytic</strong> at \(a\) if it equals its own Taylor series in some neighborhood of \(a\) — equivalently, if \(R_n(x)\to0\) as \(n\to\infty\) for \(x\) near \(a\). A function can be \(C^\infty\) (infinitely differentiable, so that every \(f^{(k)}(a)\) exists and the series can be formally written down) without being analytic — \(e^{-1/x^2}\) at \(0\) is the standard witness. Every analytic function is smooth; the converse fails, and it fails for a structural reason, not a pathological one: the derivatives at a single point are, in general, simply not enough information to reconstruct the whole function, and Taylor's theorem is exactly the tool that tells you when they are.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Why a Power Series at All</h1>
+<div class="subtitle">what's actually gained by trading a function for a sequence of numbers</div>
+
+<h2>Turning a differentiable object into an arithmetic one</h2>
+<p>A computer, at the hardware level, can add, subtract, and multiply. It has no built-in circuit for "take the sine of," "raise \(e\) to the," or "take the natural log of" — those are transcendental operations, defined by limits or differential equations, not by finite arithmetic. Every numerical evaluation of \(\sin(0.7)\) or \(e^{0.3}\) that a machine ever actually performs bottoms out in evaluating a polynomial — typically a truncated Taylor series, or a closely related polynomial tuned by the same underlying idea. The power series isn't a curiosity sitting next to the "real" definition of these functions; for computational purposes, it effectively <em>is</em> the definition, because it's the only form built entirely out of operations a machine can execute directly.</p>
+
+<h2>Compressing an uncountable amount of information into a countable list</h2>
+<p>Knowing a general function \(f\) completely means knowing \(f(x)\) for every one of uncountably many values of \(x\) — an function is, in the worst case, an unimaginably large, unlistable object. Taylor's theorem says something startling about analytic functions specifically: that entire infinite amount of information is already compressed into a single countable sequence, \(f(a), f'(a), f''(a),\dots\) — a list you genuinely could write down, one entry at a time. This is the essay's opening question, answered: for an analytic \(f\), the local pile of derivatives at one point contains the whole function, everywhere within the radius of convergence, and representing \(f\) as a power series is simply making that compression explicit and usable.</p>
+
+<h2>Series algebra replaces limit computations</h2>
+<p>Once a function is written as a power series, calculus operations on it become algebra. Term-by-term differentiation and integration of a power series, within its radius of convergence, reproduce the true derivative and antiderivative exactly:</p>
+<div class="katex-display" data-katex="\frac{d}{dx}\sum_{k=0}^\infty a_k(x-a)^k = \sum_{k=1}^\infty k\,a_k(x-a)^{k-1}, \qquad \int\sum_{k=0}^\infty a_k(x-a)^k\,dx = \sum_{k=0}^\infty \frac{a_k}{k+1}(x-a)^{k+1}+C"></div>
+<p>Panel VIII cashes this in directly: once \(\sin x\)'s series is known, \(\cos x\)'s series falls out by differentiating term by term — no new limit is ever computed, only arithmetic on exponents and coefficients already in hand. This is the same closure property that makes the <strong>power series method</strong> for differential equations work: substitute an unknown series \(\sum a_k x^k\) into an ODE, differentiate term by term, and match coefficients order by order. A differential problem — genuinely hard, involving limits — becomes a recursive algebraic one, solvable by pure bookkeeping. (The companion differential equations essay develops the calculus side of this machinery in full; the point here is narrower: it's the series representation specifically that turns "solve a differential equation" into "solve a recursion.")</p>
+
+<h2>Rigidity: a function pinned down by a shadow of itself</h2>
+<p>Because Panel II proved the coefficients are forced — there is no other polynomial, hence no other series, that could match \(f\)'s derivatives at \(a\) — an analytic function is extraordinarily rigid. If two functions, both analytic on a connected interval, agree on any small sub-interval (or even just on a sequence of points converging to some point in that interval), their Taylor series at that point are identical, and rigidity propagates: the set of points where all their derivatives agree is both open (by the local Taylor argument) and closed (by continuity), so on a connected domain it's everything. Two analytic functions that agree almost anywhere are forced to agree everywhere they're both defined. This is completely false for merely smooth functions — a smooth bump can be identically zero on one interval and nonzero immediately outside it — which is exactly the extra structure analyticity buys.</p>
+
+<h2>A doorway into the complex plane</h2>
+<p>A power series makes just as much sense with a complex variable as a real one, provided \(|z-a|\) stays inside the radius of convergence — nothing in \(\sum c_k(x-a)^k\) required \(x\) to be real. This is, very concretely, <em>how</em> \(\sin\), \(\cos\), and \(\exp\) get extended to complex arguments in the first place: not by some new definition, but by plugging a complex number into the same real Taylor series and letting the arithmetic run. Panel VIII's worked payoff — Euler's formula, \(e^{i\theta}=\cos\theta+i\sin\theta\) — is a genuine consequence of representing these three functions as power series, one that is completely invisible if you only ever think of them as "ratios of triangle sides" or "the function equal to its own derivative."</p>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>The Linear Algebra Underneath</h1>
+<div class="subtitle">Taylor coefficients are coordinates — read off by a completely different mechanism than usual</div>
+
+<h2>Polynomials form a vector space, and the powers of (x−a) are a basis</h2>
+<p>The set of all polynomials is a vector space: add two polynomials, or scale one by a constant, and the result is still a polynomial. The companion Functions as Mappings essay develops exactly what a <strong>basis</strong> means for a vector space — a spanning, linearly independent set whose linear combinations reach every vector in the space, each in exactly one way. The powers \(\{1,(x-a),(x-a)^2,(x-a)^3,\dots\}\) form precisely such a basis for the space of polynomials, and Panel II already proved the one fact needed to know this:</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the uniqueness proof was a linear-independence proof all along</span>
+<p>Panel II showed: if a degree-\(n\) polynomial \(D(x)=\sum_{k=0}^n d_k(x-a)^k\) has \(D^{(j)}(a)=0\) for every \(j=0,\dots,n\), then every \(d_j=0\). Read \(D\equiv0\) as a function instead of "\(D\) matches zero derivatives," and this is exactly the definition of <strong>linear independence</strong>: the only linear combination of the powers \((x-a)^k\) that produces the zero polynomial is the trivial one. The identical computation that pinned down Taylor's coefficients in Panel II is, read differently, the proof that the monomial basis is genuinely a basis.</p>
+</div>
+
+<div class="ascii">   ℝⁿ, STANDARD BASIS                       C^∞(I), MONOMIAL BASIS AT a
+
+   v = x₁e₁ + x₂e₂ + ⋯ + xₙeₙ                f  ↦  c₀·1 + c₁(x−a) + c₂(x−a)² + ⋯
+   coordinates found by SOLVING              coordinates found by DIFFERENTIATING —
+   a linear system (or projecting,           cₖ = f⁽ᵏ⁾(a)/k!, one derivative
+   for an orthonormal basis)                 pulls out exactly one coordinate</div>
+
+<h2>Coefficient extraction as a linear functional</h2>
+<p>For a genuine polynomial, the coordinates \(c_k\) relative to this basis are just its coefficients. The leap Taylor's theorem makes is applying the <em>same</em> basis to a function \(f\) that isn't a polynomial at all — and asking what its "coordinates" ought to be. The answer Panel II already derived is that the \(k\)-th coordinate is extracted by a specific operation: differentiate \(k\) times, evaluate at \(a\), divide by \(k!\).</p>
+<p>Define, for each \(k\), the map \(c_k:C^\infty(I)\to\mathbb R\) by \(c_k(f)=\dfrac{f^{(k)}(a)}{k!}\). This is a <strong>linear functional</strong> — a linear map out of a function space and into the scalars — because differentiation itself is linear: \((f+g)^{(k)}=f^{(k)}+g^{(k)}\) and \((\lambda f)^{(k)}=\lambda f^{(k)}\), by induction from the sum and constant-multiple rules the companion Derivative essay derives directly from the limit definition. Linearity of \(k\)-fold differentiation makes \(c_k\) linear immediately:</p>
+<div class="katex-display" data-katex="c_k(f+g) = c_k(f)+c_k(g), \qquad c_k(\lambda f) = \lambda\,c_k(f)"></div>
+
+<h2>The Taylor map, and its kernel</h2>
+<p>Bundle every \(c_k\) into a single map sending a function to its entire sequence of coordinates:</p>
+<div class="katex-display" data-katex="T:C^\infty(I)\to\mathbb R^{\mathbb N}, \qquad T(f) = \Big(f(a),\ f'(a),\ \tfrac{f''(a)}{2!},\ \tfrac{f'''(a)}{3!},\ \dots\Big)"></div>
+<p>Since each coordinate of \(T(f)\) is a linear functional of \(f\), \(T\) itself is a linear map — precisely the "matrix as a recipe" idea from the companion Functions as Mappings essay, one level up: instead of a finite matrix built from where finitely many basis vectors land, \(T\) is an infinite family of coordinate-extracting functionals, one per basis vector \((x-a)^k\), applied to \(f\).</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — Panel III's warning, reframed as a kernel</span>
+<p>What is \(\ker T\) — the set of functions every one of whose coordinates is zero? Exactly the functions all of whose derivatives vanish at \(a\), and Panel III already exhibited a nonzero one: \(e^{-1/x^2}\). Linear algebra has a name for a linear map with a nontrivial kernel — it isn't injective, meaning distinct inputs can share the same output; here, both \(e^{-1/x^2}\) and the zero function map under \(T\) to the same all-zero sequence. Restricted to the subspace of <em>analytic</em> functions, though, \(T\) is injective: if \(T(f)=0\) for analytic \(f\), then \(f\) equals its own Taylor series near \(a\) — which is identically zero — so \(f\equiv0\) near \(a\), and Panel IV's rigidity argument extends this to \(f\equiv0\) on all of a connected domain. \(T\) is a genuine linear isomorphism from analytic functions onto the ring of convergent power series; it merely fails to be one on the much larger space of smooth functions, and \(e^{-1/x^2}\) is living proof of exactly how it fails.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Functional Analysis</h1>
+<div class="subtitle">what convergence means for an infinite sum of functions, and differentiation as an operator with its own matrix</div>
+
+<h2>From formal algebra to an actual limit</h2>
+<p>Panel V treated coefficients as algebra — coordinates in a basis. Making \(\sum_k c_k(x-a)^k\) genuinely <em>equal</em> \(f\) requires a notion of limit for a sequence of functions, which is where linear algebra hands off to functional analysis. The relevant statement, standard for power series, is that convergence is <strong>uniform on compact subintervals</strong> of the radius of convergence: for every \(r&lt;R\),</p>
+<div class="katex-display" data-katex="\sup_{|x-a|\le r}\big|P_n(x)-f(x)\big| \;\longrightarrow\; 0 \qquad (n\to\infty)"></div>
+<p>— the worst-case error over the whole sub-interval shrinks to zero, not merely the error at each individual \(x\) separately. This upgrade from pointwise to uniform convergence is exactly what makes the space of convergent power series behave well: it's what licenses swapping limits with derivatives and integrals term by term, the operation Panel IV leaned on twice.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — a genuine normed space</span>
+<p>The set of functions analytic near \(a\) and convergent on a disk of radius \(r\), equipped with the sup norm \(\|f\|=\sup_{|x-a|\le r}|f(x)|\), is a normed vector space, and it is complete in that norm — a Banach space, in the vocabulary the companion Jacobian essay uses when it extends differentiability itself from \(\mathbb{R}^n\) to arbitrary Banach spaces via the Fréchet derivative. Taylor's theorem, in that language, is the statement that the map \(f\mapsto(P_n)_{n\ge0}\) converges in exactly this norm — not some looser, harder-to-use notion of closeness.</p>
+</div>
+
+<h2>Differentiation as a linear operator, and Taylor's formula as its exponential</h2>
+<p>Panel V treated \(D=\dfrac{d}{dx}\) only long enough to note that it's linear. Taken seriously as a linear operator on a function space, Taylor's theorem has a strikingly compact restatement. Write \(f(a+h)\) using the series directly:</p>
+<div class="katex-display" data-katex="f(a+h) = \sum_{k=0}^\infty \frac{h^k}{k!}f^{(k)}(a) = \sum_{k=0}^\infty \frac{h^kD^k}{k!}f\bigg|_{x=a} = \big(e^{hD}f\big)(a)"></div>
+<p>where \(e^{hD}\) is defined, by direct analogy with the ordinary scalar exponential's own Taylor series, as the operator series \(\sum_k \frac{h^kD^k}{k!}\). Writing \((T_hf)(x)=f(x+h)\) for the operator that shifts a function's graph by \(h\), Taylor's theorem says exactly \(T_h=e^{hD}\): shifting a function is the exponential of differentiating it. For an analytic \(f\) this is not a formal trick dressed up in new notation — it is Taylor's theorem, verbatim, renamed.</p>
+
+<h3>A finite, fully rigorous version of the same identity</h3>
+<p>The infinite-dimensional statement above has convergence subtleties baked in; a finite-dimensional version has none at all, and it's worth seeing computed by hand. Restrict to polynomials of degree \(\le2\), a genuine finite-dimensional vector space with basis \(\{1,x,x^2\}\). Differentiation sends \(1\mapsto0\), \(x\mapsto1\), \(x^2\mapsto2x\) — by the companion Functions as Mappings essay's "matrix as a recipe," those images are exactly the columns of \(D\)'s matrix in this basis:</p>
+<div class="katex-display" data-katex="[D] = \begin{bmatrix}0&amp;1&amp;0\\0&amp;0&amp;2\\0&amp;0&amp;0\end{bmatrix}"></div>
+<p>This matrix is <strong>nilpotent</strong> — \([D]^3=0\), since differentiating a quadratic three times is identically zero — so the operator exponential's series terminates after finitely many terms instead of running forever:</p>
+<div class="katex-display" data-katex="e^{h[D]} = I + h[D] + \frac{h^2}{2}[D]^2 = \begin{bmatrix}1&amp;h&amp;h^2\\0&amp;1&amp;2h\\0&amp;0&amp;1\end{bmatrix}"></div>
+<p>Apply this to the coordinate vector of \(p(x)=c_0+c_1x+c_2x^2\):</p>
+<div class="katex-display" data-katex="\begin{bmatrix}1&amp;h&amp;h^2\\0&amp;1&amp;2h\\0&amp;0&amp;1\end{bmatrix}\begin{bmatrix}c_0\\c_1\\c_2\end{bmatrix} = \begin{bmatrix}c_0+c_1h+c_2h^2\\c_1+2c_2h\\c_2\end{bmatrix}"></div>
+<p>and compare against expanding \(p(x+h)=c_0+c_1(x+h)+c_2(x+h)^2\) directly in powers of \(x\): the constant term is \(c_0+c_1h+c_2h^2\), the linear coefficient is \(c_1+2c_2h\), the quadratic coefficient is \(c_2\) — an exact match, term for term, with zero convergence concerns anywhere, because \([D]\) is nilpotent rather than merely bounded. The infinite-dimensional identity \(T_h=e^{hD}\) is this finite, checkable computation's shadow cast onto an infinite-dimensional space.</p>
+
+<h2>Why Taylor's method can't be "solve a linear system," the way Fourier's is</h2>
+<p>The companion Functions as Mappings essay's closing panel gestures at Fourier series — expanding a periodic function in the orthogonal basis \(\{\sin kx,\cos kx\}\) — as a second instance of "coordinates in a function space." The two constructions look parallel from a distance, but the mechanism extracting coefficients is fundamentally different, and the difference has a precise, checkable cause: the monomial basis is not orthogonal under the ordinary inner product. Take the simplest possible witness on \([-1,1]\):</p>
+<div class="katex-display" data-katex="\int_{-1}^1 1\cdot x^2\,dx = \frac23 \ne 0"></div>
+<p>An orthogonal basis lets you recover a coordinate by projecting — integrating the function against one basis element, with every other basis element's contribution vanishing automatically by orthogonality. Nonzero cross-terms like the one above mean that trick is simply unavailable for monomials. Differentiate-and-evaluate is not a lesser substitute for projection; it's the only tool that exploits the one piece of structure the monomial basis actually has — that \((x-a)^k\) and all its derivatives below order \(k\) vanish at \(a\), a triangular structure orthogonality never needed and integration-against-a-basis-function never uses.</p>
+
+<div class="ascii">   TAYLOR (local)                            FOURIER (global)
+   basis {(x−a)^k}, NOT orthogonal            basis {sin kx, cos kx}, orthogonal
+   coefficient = a derivative, at ONE         coefficient = an integral, over the
+     point — needs only a neighborhood          WHOLE domain — needs f everywhere
+   extraction exploits triangularity          extraction exploits orthogonality
+     of the basis (lower powers vanish)         (cross terms vanish automatically)</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>Interactive Lab</h1>
+<div class="subtitle">drag the center, raise the degree, and watch the polynomial hug the curve out to the edge of the disk of convergence</div>
+
+<p>Pick a function, then drag the center \(a\) and the degree \(n\). The canvas plots \(f(x)\) in <span style="color:var(--accent)">gold</span> against its degree-\(n\) Taylor polynomial \(P_n(x)\) at \(a\) in <span style="color:var(--blue)">blue</span>. For <code>1/(1−x)</code> and <code>ln(1+x)</code>, a <span style="color:var(--purple)">dashed purple</span> line marks the boundary of the interval of convergence, \(a\pm R\) — watch \(P_n\) fail to help at all past that boundary, no matter how large \(n\) gets.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">f(x) VS. THE DEGREE-n TAYLOR POLYNOMIAL AT a</div>
+      <canvas id="cvTaylor" width="560" height="360" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Function f(x)</label>
+      <select id="tfnSelect">
+        <option value="sin" selected>sin(x)</option>
+        <option value="cos">cos(x)</option>
+        <option value="exp">eˣ</option>
+        <option value="geo">1/(1−x)</option>
+        <option value="ln">ln(1+x)</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>center a</label>
+      <input type="range" id="taSlider" min="-3" max="3" step="0.05" value="0">
+      <span class="readout" id="taReadout">0.00</span>
+    </div>
+    <div class="control-row">
+      <label>degree n</label>
+      <input type="range" id="tnSlider" min="0" max="10" step="1" value="4">
+      <span class="readout" id="tnReadout">4</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">CENTER a</div><div class="v" id="tCenterOut">0.00</div></div>
+    <div class="block"><div class="k">DEGREE n</div><div class="v" id="tDegreeOut">4</div></div>
+    <div class="block"><div class="k">RADIUS OF CONVERGENCE R</div><div class="v" id="tRadiusOut">∞</div></div>
+    <div class="block"><div class="k">|ERROR| PAST a</div><div class="v" id="tErrorOut">…</div></div>
+    <div class="block" style="flex:1 1 100%;"><div class="k">FIRST COEFFICIENTS cₖ = f⁽ᵏ⁾(a)/k!</div><div class="v" id="tCoefOut">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--accent)"></span> f(x)</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> Pₙ(x)</span>
+    <span><span class="swatch" style="background:var(--purple)"></span> boundary of convergence, a ± R</span>
+    <span><span class="swatch" style="background:var(--ink)"></span> the center point a</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Try <code>eˣ</code> or <code>sin(x)</code> first — their radius of convergence is infinite, so raising \(n\) makes \(P_n\) hug \(f\) over an ever-widening window with no boundary to hit. Then switch to <code>1/(1−x)</code> and drag \(a\) toward \(0.8\): the two purple lines close in from both sides, and no matter how high you push \(n\), \(P_n\) refuses to track \(f\) once \(x\) crosses either one — exactly Panel III's distinction between "the series converges" and "the series converges to \(f\)," now visible as a wall neither more terms nor more patience can cross.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="t8">
+<h1>Worked Examples</h1>
+<div class="subtitle">five classic series, two of them derived twice, and one genuine payoff at the end</div>
+
+<h2>eˣ: the function that is its own list of derivatives</h2>
+<p>Since \(\frac{d}{dx}e^x=e^x\), every derivative of \(e^x\) at \(0\) equals \(e^0=1\). Panel II's formula reads off immediately:</p>
+<div class="katex-display" data-katex="e^x = \sum_{k=0}^\infty \frac{x^k}{k!} = 1+x+\frac{x^2}{2!}+\frac{x^3}{3!}+\cdots \qquad (R=\infty)"></div>
+
+<h2>sin x, and cos x for free by differentiating term by term</h2>
+<p>The derivatives of \(\sin x\) cycle with period \(4\): \(\sin,\cos,-\sin,-\cos,\dots\), so at \(x=0\) they cycle through \(0,1,0,-1,0,1,\dots\). Only the odd-order derivatives survive:</p>
+<div class="katex-display" data-katex="\sin x = \sum_{k=0}^\infty (-1)^k\frac{x^{2k+1}}{(2k+1)!} = x-\frac{x^3}{3!}+\frac{x^5}{5!}-\cdots \qquad (R=\infty)"></div>
+<p>Panel IV's promised payoff: differentiate this series term by term, with no new limit computation whatsoever, and \(\cos x\)'s series falls out directly:</p>
+<div class="katex-display" data-katex="\frac{d}{dx}\sin x = \sum_{k=0}^\infty (-1)^k\frac{(2k+1)x^{2k}}{(2k+1)!} = \sum_{k=0}^\infty (-1)^k\frac{x^{2k}}{(2k)!} = \cos x"></div>
+
+<h2>1/(1−x): the same series, from two completely different directions</h2>
+<p>Via derivatives: \(f(x)=\frac1{1-x}\) has \(f^{(k)}(x)=\frac{k!}{(1-x)^{k+1}}\), so \(f^{(k)}(0)=k!\), and Panel II's formula gives \(c_k=1\):</p>
+<div class="katex-display" data-katex="\frac1{1-x} = \sum_{k=0}^\infty x^k \qquad (|x|&lt;1)"></div>
+<p>Via pure algebra, with no derivative in sight: multiply out the telescoping product directly,</p>
+<div class="katex-display" data-katex="(1-x)(1+x+x^2+\cdots+x^n) = 1-x^{n+1}"></div>
+<p>and for \(|x|&lt;1\), \(x^{n+1}\to0\), so dividing by \((1-x)\) recovers the identical series. Two unrelated-looking derivations landing on the same object is itself Panel IV's point made concrete: once a function is known to be a power series, ordinary algebraic manipulation — not just literal differentiation — is a completely legitimate way to find it.</p>
+
+<h2>ln(1+x), by integrating a series already in hand</h2>
+<p>Rather than differentiate \(\ln(1+x)\) four or five times and hunt for a pattern, substitute \(-x\) into the geometric series above and integrate term by term — another direct cash-in of Panel IV's closure property:</p>
+<div class="katex-display" data-katex="\frac1{1+x} = \sum_{k=0}^\infty(-1)^kx^k \implies \ln(1+x) = \int_0^x\frac{dt}{1+t} = \sum_{k=0}^\infty\frac{(-1)^k}{k+1}x^{k+1} = x-\frac{x^2}{2}+\frac{x^3}{3}-\cdots \qquad (R=1)"></div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Five series, and the radius each one refuses to be pushed past</caption>
+<thead><tr><th>f(x)</th><th>Maclaurin series</th><th>Radius of convergence</th></tr></thead>
+<tbody>
+<tr><td>\(e^x\)</td><td>\(\sum x^k/k!\)</td><td>\(\infty\)</td></tr>
+<tr><td>\(\sin x\)</td><td>\(\sum(-1)^kx^{2k+1}/(2k+1)!\)</td><td>\(\infty\)</td></tr>
+<tr><td>\(\cos x\)</td><td>\(\sum(-1)^kx^{2k}/(2k)!\)</td><td>\(\infty\)</td></tr>
+<tr><td>\(1/(1-x)\)</td><td>\(\sum x^k\)</td><td>\(1\)</td></tr>
+<tr><td>\(\ln(1+x)\)</td><td>\(\sum(-1)^kx^{k+1}/(k+1)\)</td><td>\(1\)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>The payoff: Euler's formula, derived rather than declared</h2>
+<p>Substitute \(x=i\theta\) into \(e^x\)'s series — legitimate precisely because the series converges for every complex argument, Panel IV's "doorway into the complex plane," and absolute convergence licenses freely regrouping the terms:</p>
+<div class="katex-display" data-katex="e^{i\theta} = \sum_{k=0}^\infty\frac{(i\theta)^k}{k!} = \sum_{m=0}^\infty\frac{(i\theta)^{2m}}{(2m)!} + \sum_{m=0}^\infty\frac{(i\theta)^{2m+1}}{(2m+1)!}"></div>
+<p>splitting the sum into even and odd powers of \(k\). Since \(i^{2m}=(i^2)^m=(-1)^m\) and \(i^{2m+1}=i\cdot(-1)^m\):</p>
+<div class="katex-display" data-katex="e^{i\theta} = \sum_{m=0}^\infty(-1)^m\frac{\theta^{2m}}{(2m)!} \;+\; i\sum_{m=0}^\infty(-1)^m\frac{\theta^{2m+1}}{(2m+1)!} \;=\; \cos\theta + i\sin\theta"></div>
+<p>the two sums being, term for term, exactly the \(\cos\theta\) and \(\sin\theta\) series derived earlier in this panel. Euler's formula isn't a separate fact bolted onto three unrelated functions — it's what those three particular power series were always going to say the moment a complex number got substituted into one of them.</p>
+
+</section>
+
+<!-- ============ PANEL 9 ============ -->
+<section class="panel" id="t9">
+<h1>Where This Leads</h1>
+<div class="subtitle">more variables, wider domains, and power series with no calculus in them at all</div>
+
+<h2>More than one variable: the Hessian returns</h2>
+<p>Everything in this essay generalizes directly to \(f:\mathbb R^n\to\mathbb R\). The companion Jacobian essay's Hessian panel already derived the second-order case — matching value, gradient, and curvature all at once:</p>
+<div class="katex-display" data-katex="f(a+h) \approx f(a) + \nabla f(a)\cdot h + \frac12\,h^{\mathsf T}H_f(a)\,h"></div>
+<p>which is exactly Panel I's degree-\(2\) approximation, one dimension up: the gradient plays the role of \(f'(a)\), and the Hessian — a full matrix of second partials rather than a single number — plays the role of \(f''(a)\). Higher terms continue the pattern with third derivatives arranged into a rank-\(3\) tensor, and so on; the bookkeeping grows, but the underlying idea, matching every derivative there is at one point, is unchanged.</p>
+
+<h2>Analytic continuation: chaining disks together</h2>
+<p>A power series centered at \(a\) is only guaranteed to represent \(f\) inside its radius of convergence — but nothing stops you from picking a new center \(b\) inside that disk, recomputing a fresh Taylor series there, and getting a new disk of convergence that typically pokes out past the first one. Chaining such disks together, one overlapping the next, can extend a function's known domain far beyond where it was originally defined — the mechanism behind extending functions like the Riemann zeta function or the Gamma function past their original defining formulas. Panel IV's rigidity theorem is what makes this well-defined at all: any two chains of disks that reach the same new point are forced, by uniqueness, to agree there.</p>
+
+<h2>Power series with no calculus in them whatsoever</h2>
+<p>Strip away convergence and derivatives entirely, and a power series is still useful as pure bookkeeping: a <strong>generating function</strong> is a formal power series whose coefficients are a sequence you actually care about, with no claim that the sum converges to anything in particular. The Fibonacci numbers \(F_0=0,F_1=1,F_2=1,F_3=2,\dots\) have the closed-form generating function</p>
+<div class="katex-display" data-katex="\sum_{n=0}^\infty F_nx^n = \frac{x}{1-x-x^2}"></div>
+<p>and manipulating the series algebraically — the same "series algebra instead of new limits" idea from Panel IV — extracts facts about the sequence (growth rate, closed formulas, identities between terms) that would be far harder to find by manipulating the recursion \(F_n=F_{n-1}+F_{n-2}\) directly. This is Panel V's thesis taken to its most literal extreme: a power series, at bottom, is nothing but a vector's coordinates in the monomial basis, and that idea has content even when no function or limit is anywhere in sight.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — companion essays</span>
+<p>This essay leaned throughout on three companions written to be read alongside it: the Derivative essay, for the local-linearity idea this whole construction extends; the Jacobian essay, for the Hessian, the Fréchet derivative, and the Banach-space language used in Panel VI; and the Functions as Mappings essay, for the basis-and-coordinates framework Panel V and Panel VI both apply to an infinite-dimensional function space instead of \(\mathbb R^n\).</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>A Taylor series is what happens when "the tangent line is the best local linear approximation" is refused as a stopping point — every derivative at one point turned into one coordinate of \(f\), in a basis built entirely out of powers of \((x-a)\), extracted not by projection but by the one tool that basis's own structure actually offers: differentiate, evaluate, divide by a factorial that exists purely to undo what the differentiating just did.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6','t7','t8','t9'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawTaylor();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ---------- shared helpers ----------
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function fmtN(n, d){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+function factorial(n){ let r=1; for(let i=2;i<=n;i++) r*=i; return r; }
+
+// ============ INTERACTIVE LAB: TAYLOR POLYNOMIALS ============
+const TFNS = {
+  sin: { label:'sin(x)', f:x=>Math.sin(x), coef:(a,k)=>Math.sin(a+k*Math.PI/2)/factorial(k),
+         domMin:-Infinity, domMax:Infinity, halfW:5.5, yMin:-2.5, yMax:2.5, aMin:-3, aMax:3, aDefault:0 },
+  cos: { label:'cos(x)', f:x=>Math.cos(x), coef:(a,k)=>Math.cos(a+k*Math.PI/2)/factorial(k),
+         domMin:-Infinity, domMax:Infinity, halfW:5.5, yMin:-2.5, yMax:2.5, aMin:-3, aMax:3, aDefault:0 },
+  exp: { label:'eˣ', f:x=>Math.exp(x), coef:(a,k)=>Math.exp(a)/factorial(k),
+         domMin:-Infinity, domMax:Infinity, halfW:2.6, yMin:-1, yMax:10, aMin:-1.5, aMax:1.5, aDefault:0 },
+  geo: { label:'1/(1−x)', f:x=>1/(1-x), coef:(a,k)=>1/Math.pow(1-a,k+1), RFn:a=>Math.abs(1-a),
+         domMin:-Infinity, domMax:0.97, halfW:2.2, yMin:-6, yMax:6, aMin:-1.2, aMax:0.8, aDefault:0 },
+  ln: { label:'ln(1+x)', f:x=>Math.log(1+x), coef:(a,k)=> k===0 ? Math.log(1+a) : Math.pow(-1,k-1)/(k*Math.pow(1+a,k)), RFn:a=>Math.abs(1+a),
+        domMin:-0.97, domMax:Infinity, halfW:2.2, yMin:-4, yMax:4, aMin:-0.8, aMax:2, aDefault:0 }
+};
+
+let TL = { fn:'sin', a:0, n:4 };
+
+const tfnSelect = document.getElementById('tfnSelect');
+const taSlider = document.getElementById('taSlider');
+const tnSlider = document.getElementById('tnSlider');
+const taReadout = document.getElementById('taReadout');
+const tnReadout = document.getElementById('tnReadout');
+const cvTaylor = document.getElementById('cvTaylor');
+const tctx = cvTaylor.getContext('2d');
+const tCenterOut = document.getElementById('tCenterOut');
+const tDegreeOut = document.getElementById('tDegreeOut');
+const tRadiusOut = document.getElementById('tRadiusOut');
+const tErrorOut = document.getElementById('tErrorOut');
+const tCoefOut = document.getElementById('tCoefOut');
+
+function onFnChange(){
+  const cfg = TFNS[TL.fn];
+  TL.a = cfg.aDefault;
+  taSlider.min = cfg.aMin; taSlider.max = cfg.aMax; taSlider.step = 0.05; taSlider.value = TL.a;
+  taReadout.textContent = TL.a.toFixed(2);
+  drawTaylor();
+}
+tfnSelect.addEventListener('change', ()=>{ TL.fn = tfnSelect.value; onFnChange(); });
+taSlider.addEventListener('input', ()=>{ TL.a = +taSlider.value; taReadout.textContent = TL.a.toFixed(2); drawTaylor(); });
+tnSlider.addEventListener('input', ()=>{ TL.n = +tnSlider.value; tnReadout.textContent = TL.n; drawTaylor(); });
+
+function drawTaylor(){
+  const cfg = TFNS[TL.fn];
+  const a = TL.a, n = TL.n;
+  const coefs = []; for(let k=0;k<=n;k++) coefs.push(cfg.coef(a,k));
+
+  const xMin = Math.max(cfg.domMin, a-cfg.halfW);
+  const xMax = Math.min(cfg.domMax, a+cfg.halfW);
+  const yMin = cfg.yMin, yMax = cfg.yMax;
+
+  const W=cvTaylor.width, H=cvTaylor.height;
+  const marginL=42, marginR=18, marginT=18, marginB=30;
+  const plotW=W-marginL-marginR, plotH=H-marginT-marginB;
+  const xs = wx => marginL + (wx-xMin)/(xMax-xMin)*plotW;
+  const ys = wy => marginT + (1-(wy-yMin)/(yMax-yMin))*plotH;
+
+  tctx.clearRect(0,0,W,H);
+  tctx.fillStyle = cssVar('--bg-elevated'); tctx.fillRect(0,0,W,H);
+
+  // grid
+  tctx.strokeStyle = cssVar('--border'); tctx.lineWidth=1;
+  for(let gx=Math.ceil(xMin); gx<=Math.floor(xMax); gx++){ tctx.beginPath(); tctx.moveTo(xs(gx),marginT); tctx.lineTo(xs(gx),marginT+plotH); tctx.stroke(); }
+  for(let gy=Math.ceil(yMin); gy<=Math.floor(yMax); gy++){ tctx.beginPath(); tctx.moveTo(marginL,ys(gy)); tctx.lineTo(marginL+plotW,ys(gy)); tctx.stroke(); }
+  tctx.strokeStyle = cssVar('--ink-faint'); tctx.lineWidth=1.2;
+  if(yMin<=0 && yMax>=0){ tctx.beginPath(); tctx.moveTo(marginL,ys(0)); tctx.lineTo(marginL+plotW,ys(0)); tctx.stroke(); }
+  if(xMin<=0 && xMax>=0){ tctx.beginPath(); tctx.moveTo(xs(0),marginT); tctx.lineTo(xs(0),marginT+plotH); tctx.stroke(); }
+
+  // radius-of-convergence boundary
+  const R = cfg.RFn ? cfg.RFn(a) : Infinity;
+  if(Number.isFinite(R)){
+    [a-R, a+R].forEach(bx=>{
+      if(bx>xMin && bx<xMax){
+        tctx.strokeStyle = cssVar('--purple'); tctx.lineWidth=1.3; tctx.setLineDash([3,3]);
+        tctx.beginPath(); tctx.moveTo(xs(bx),marginT); tctx.lineTo(xs(bx),marginT+plotH); tctx.stroke();
+        tctx.setLineDash([]);
+      }
+    });
+  }
+
+  // f(x) curve
+  tctx.strokeStyle = cssVar('--accent'); tctx.lineWidth=2.2; tctx.lineJoin='round';
+  tctx.beginPath(); let started=false;
+  for(let i=0;i<=400;i++){
+    const wx = xMin+(xMax-xMin)*i/400;
+    const wy = cfg.f(wx);
+    if(!Number.isFinite(wy) || wy<yMin-1 || wy>yMax+1){ started=false; continue; }
+    const sx=xs(wx), sy=ys(Math.max(yMin,Math.min(yMax,wy)));
+    if(!started){ tctx.moveTo(sx,sy); started=true; } else tctx.lineTo(sx,sy);
+  }
+  tctx.stroke();
+
+  // Pn(x) curve, evaluated by Horner's method in (x-a)
+  tctx.strokeStyle = cssVar('--blue'); tctx.lineWidth = 2; tctx.setLineDash([6,4]);
+  tctx.beginPath(); started=false;
+  for(let i=0;i<=400;i++){
+    const wx = xMin+(xMax-xMin)*i/400;
+    let p = coefs[n];
+    for(let k=n-1;k>=0;k--) p = p*(wx-a)+coefs[k];
+    if(!Number.isFinite(p) || p<yMin-1 || p>yMax+1){ started=false; continue; }
+    const sx=xs(wx), sy=ys(Math.max(yMin,Math.min(yMax,p)));
+    if(!started){ tctx.moveTo(sx,sy); started=true; } else tctx.lineTo(sx,sy);
+  }
+  tctx.stroke(); tctx.setLineDash([]);
+
+  // center point marker
+  const ay = ys(Math.max(yMin,Math.min(yMax,cfg.f(a))));
+  tctx.fillStyle = cssVar('--ink');
+  tctx.beginPath(); tctx.arc(xs(a),ay,4,0,7); tctx.fill();
+
+  updateTaylorReadouts(cfg, coefs, a, n, R, xMin, xMax);
+}
+
+function updateTaylorReadouts(cfg, coefs, a, n, R, xMin, xMax){
+  tCenterOut.textContent = a.toFixed(2);
+  tDegreeOut.textContent = n;
+  tRadiusOut.textContent = Number.isFinite(R) ? R.toFixed(2) : '∞';
+
+  let probe = a + 1.0;
+  probe = Math.max(cfg.domMin+0.03, Math.min(cfg.domMax-0.03, probe));
+  probe = Math.max(xMin+0.01, Math.min(xMax-0.01, probe));
+  let p = coefs[n]; for(let k=n-1;k>=0;k--) p = p*(probe-a)+coefs[k];
+  const err = Math.abs(cfg.f(probe)-p);
+  tErrorOut.textContent = `${fmtN(err,5)}  at x=${probe.toFixed(2)}`;
+
+  tCoefOut.textContent = coefs.slice(0, Math.min(6,coefs.length)).map((c,k)=>`c${k}=${fmtN(c,4)}`).join('   ') + (coefs.length>6 ? '  …' : '');
+}
+
+// ---------- init ----------
+onFnChange();
+</script>
+
+</body>
+</html>
