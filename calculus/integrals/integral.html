@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Integral — Total Accumulation, Derived From Scratch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+.mini-toggle{
+  font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s;
+}
+.mini-toggle:hover{ color:var(--accent); border-color:var(--accent-dim); }
+.mini-toggle.on{ color:var(--green); border-color:var(--green); }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">THE INTEGRAL</div>
+  <button class="tab-btn active" data-tab="t1">I · Total Accumulation</button>
+  <button class="tab-btn" data-tab="t2">II · The Limit Definition</button>
+  <button class="tab-btn" data-tab="t3">III · The Fundamental Theorem</button>
+  <button class="tab-btn" data-tab="t4">IV · Rules, Derived</button>
+  <button class="tab-btn" data-tab="t5">V · When It Doesn't Exist</button>
+  <button class="tab-btn" data-tab="t6">VI · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t7">VII · Worked Examples</button>
+  <button class="tab-btn" data-tab="t8">VIII · Where This Leads</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Total Accumulation</h1>
+<div class="subtitle">how a total measured against a constant rate becomes a total measured against a rate that never stops changing</div>
+
+<h2>Two kinds of total</h2>
+<p>Arithmetic hands you an exact total the moment a rate holds steady. Drive at a constant 50 mph for 2 hours and you have gone exactly 100 miles — no subtlety, just a product: rate times elapsed time. Geometrically that product is an area, the area of a rectangle whose height is the rate and whose width is the duration, the same quantity that measures the area swept out under any horizontal line on a graph.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — total at a constant rate</span>
+<p>For a quantity accumulating at a constant rate \(r\) over an interval of length \(L\), the <strong>total accumulated</strong> is \(r\cdot L\). Geometrically it is the area of the rectangle of height \(r\) and width \(L\) sitting above that interval.</p>
+</div>
+
+<h2>The paradox of a total with no constant rate</h2>
+<p>But a car's speedometer rarely sits still. Velocity climbs through a green light, eases for a curve, and the honest total distance travelled is the area under a curve that keeps bending — not a rectangle at all, but some irregular region with a curved top edge. "Rate times time" cannot be applied wholesale anymore, because there is no single rate to multiply by. The obvious fix is to chop the trip into pieces so short that velocity is essentially constant on each one — but "essentially constant" is not "constant," and any residual wobble, multiplied across infinitely many pieces, seems like it ought to matter.</p>
+
+<p>Push the chopping to its limit and a genuine paradox appears, a mirror image of the one that opens the companion derivative essay. Shrink each piece down to a single instant, and the "area" contributed by that one instant is a rectangle of zero width — which has zero area, no matter how tall its height. Zero, added to itself infinitely many times, is still zero by every ordinary rule of arithmetic. If the whole region really is nothing but infinitely many zero-width instants stacked side by side, how can the total area be a positive number at all?</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the illusion of "infinitely many slices"</span>
+<p>The integral does not actually add up infinitely many zero-width slices, and it does not really contain a step where "\(0\) added to itself infinitely often" becomes positive — no such step exists, because \(0\times\infty\) is not an arithmetic operation with a defined answer. Instead the integral studies the <em>trend</em> of ordinary finite sums, built from slices of perfectly positive width, and asks what single number those sums are converging toward as the slices are made narrower and more numerous. "Total accumulated quantity" is the name for that destination, not for a summation that ever literally reaches infinitely many terms.</p>
+</div>
+
+<h2>Rectangles closing in on the exact area</h2>
+<p>Geometrically, a finite sum of rectangle areas is only ever an <em>approximation</em> to the true area under a curve — some rectangles poke out above the curve, others fall short below it. As the rectangles are made narrower and more numerous, that overshoot-and-undershoot shrinks, and for any reasonably well-behaved curve the sum approaches a limiting value: the exact area under the curve. That limiting sum is precisely the total accumulated quantity.</p>
+
+<div class="ascii">    4 RECTANGLES                    16 RECTANGLES                   n → ∞
+
+     ┌┐  curve                       ┌┐┌┐  curve                     the stairsteps
+     ││ ┌┐                           ││││┌┐┌┐                          thin until
+     │└─┘│┌┐                         │││││││└┐┌┐                     no gap is left
+     │   └┘│                         ││││││││└┘│                       between the
+     └─────┘                         └────────┘                       rectangles and
+                                                                          the curve
+    visible over/under-shoot          stairsteps hug the                itself — the
+    at every single rectangle          curve far more tightly           slide is complete</div>
+
+<p>Nothing here ever divides — or multiplies — by zero at any finite stage of this refinement. Every finite sum, for every finite number of rectangles, is an ordinary, perfectly well-defined number. Only in the limit — and only in the informal description of what is being approached — does "infinitely many, infinitely thin" enter the picture at all. Turning "make the rectangles narrower and more numerous" into a precise piece of algebra, one that pins down the exact area as a single number rather than a vague destination, is the entire content of Panel II.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — what this essay assumes, and what it redeems</span>
+<p>This essay leans on the same limit machinery built up in the companion derivative essay, and it redeems a promise made at that essay's close: the total accumulated quantity is approached through exactly the strategy used there for the tangent slope — an ordinary, finite quantity, made exact by watching what it approaches as a shrinking parameter goes to zero. Where the derivative slid a second point toward a first, the integral narrows a rectangle's width toward nothing while multiplying their number without bound.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>The Limit Definition</h1>
+<div class="subtitle">turning "narrower, more numerous rectangles" into an algebraic formula that pins down the integral exactly</div>
+
+<h2>Partitions, subintervals, sample points</h2>
+<p>Fix an interval \([a,b]\) and chop it into \(n\) pieces using a <strong>partition</strong> \(P\): a chain of points \(a=x_0\lt x_1\lt x_2\lt\cdots\lt x_n=b\). Each piece \([x_{i-1},x_i]\) has width \(\Delta x_i = x_i - x_{i-1}\), and on each piece a single <strong>sample point</strong> \(x_i^{*}\) is chosen, anywhere in \([x_{i-1},x_i]\), to stand in for the function's height across that whole piece.</p>
+
+<div class="ascii">              f(x_i*) ●┄┄┄┄┄┄┄┄┄┐
+                        │        │  height = f(x_i*)
+                        │        │
+                   0 ───┴────────┴───
+                        └─ Δx_i ─┘
+
+              one rectangle's signed area = f(x_i*) · Δx_i</div>
+
+<p>The signed area of that one rectangle is \(f(x_i^{*})\cdot\Delta x_i\) — positive where the curve sits above the axis, negative where it dips below, exactly the bookkeeping needed so that regions below the axis subtract from the total rather than being counted as unsigned area. Summing every rectangle's contribution gives the <strong>Riemann sum</strong>:</p>
+
+<div class="katex-display" data-katex="S(P) = \sum_{i=1}^{n} f(x_i^{*})\,\Delta x_i"></div>
+
+<p>This is exactly the constant-rate formula from Panel I, applied piecewise and added up. As the partition is refined — every \(\Delta x_i\) shrinking, \(n\) growing without bound — the Riemann sum traces out the sequence of stairstep approximations from the ascii diagram in Panel I, and the integral is defined to be wherever that sequence is headed.</p>
+
+<h2>Definition of the definite integral</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — the definite integral</span>
+<p>The definite integral of \(f\) over \([a,b]\), written \(\int_a^b f(x)\,dx\), is the limit of the Riemann sum as the partition's mesh — the width of its widest subinterval, written \(\|P\|\) — shrinks to zero:</p>
+</div>
+
+<div class="katex-display" data-katex="\int_a^b f(x)\,dx = \lim_{\|P\|\to 0} \sum_{i=1}^{n} f(x_i^{*})\,\Delta x_i"></div>
+
+<p>— provided this limit exists <em>and comes out the same number</em> no matter which partitions or which sample points \(x_i^{*}\) are used along the way. If it does, \(f\) is said to be <strong>Riemann integrable</strong> on \([a,b]\), and the integral is the exact signed area between the curve and the axis. Leibniz's notation is not decorative: \(\int\) is a stretched-out \(S\), for "sum," and \(dx\) is what \(\Delta x_i\) becomes once it is pushed all the way to the limit — the entire symbol is a fossil of exactly the Riemann sum it replaces.</p>
+
+<h3>Left, right, and midpoint sums must agree</h3>
+<p>Because this is a genuine limit over <em>every</em> admissible choice of sample point, three natural special cases — always sampling at the left endpoint, always at the right endpoint, always at the midpoint of each subinterval — must all converge to the same number for the integral to exist at all. For a reasonably tame function they do, and the gap between the left-sum and right-sum approximations is exactly the kind of overshoot-and-undershoot visible in Panel I's ascii diagram, closing as the mesh shrinks. Panel V exhibits a function so wild that even this much agreement fails.</p>
+
+<h2>Two languages: Riemann and Darboux</h2>
+<p>As with the derivative, this idea was formalized in two dominant ways, and each earns its keep in different settings.</p>
+
+<p><strong>Riemann's formulation</strong>, given above, is the more intuitive one: pick any partition, pick any sample points, sum the rectangles, and ask what the sums approach. It matches the picture in Panel I almost exactly.</p>
+
+<p><strong>Darboux's formulation</strong> replaces "pick a sample point" with the two extreme choices available on each subinterval, removing the sample-point freedom entirely and replacing it with the subinterval's own infimum and supremum:</p>
+
+<div class="katex-display" data-katex="L(P) = \sum_{i=1}^{n} m_i\,\Delta x_i, \qquad U(P) = \sum_{i=1}^{n} M_i\,\Delta x_i, \qquad m_i = \inf_{[x_{i-1},x_i]} f, \quad M_i = \sup_{[x_{i-1},x_i]} f"></div>
+
+<p>\(L(P)\) is the <strong>lower sum</strong>, built from the shortest possible rectangles that still touch the curve from below; \(U(P)\) is the <strong>upper sum</strong>, built from the tallest. Every Riemann sum for that same partition, no matter which sample points were used, is trapped between them: \(L(P)\le S(P)\le U(P)\). Darboux integrability asks for the largest lower sum over all partitions to meet the smallest upper sum over all partitions — the <em>upper</em> and <em>lower integrals</em> agreeing exactly — and this turns out to be fully equivalent to Riemann's definition. It is not the more intuitive picture, but, like Leibniz notation for the derivative, it is the version later theorems lean on, because "does this one number sandwich every rectangle from above and below" is easier to reason about than "does this limit agree for every conceivable sample-point choice."</p>
+
+<h2>Continuity is sufficient — but, this time, not necessary</h2>
+<p>The companion derivative essay proved that continuity is <em>necessary</em> for differentiability but not <em>sufficient</em> for it. Integrability inverts that relationship, and the inversion is worth sitting with.</p>
+
+<p>Continuity turns out to be sufficient. If \(f\) is continuous on \([a,b]\), it is automatically uniformly continuous there (a standard consequence of \([a,b]\) being closed and bounded, usually proved separately as the Heine–Cantor theorem): for every \(\varepsilon>0\) there is a \(\delta>0\) such that any two points within \(\delta\) of each other have outputs within \(\frac{\varepsilon}{b-a}\) of each other, regardless of where in \([a,b]\) those points sit. Choose a partition with mesh smaller than that \(\delta\). On every subinterval, any two points are within \(\delta\) of each other by construction, so \(M_i - m_i \le \frac{\varepsilon}{b-a}\) on every piece, and summing:</p>
+
+<div class="katex-display" data-katex="U(P) - L(P) = \sum_{i=1}^{n}(M_i-m_i)\Delta x_i \;\le\; \frac{\varepsilon}{b-a}\sum_{i=1}^n \Delta x_i \;=\; \varepsilon"></div>
+
+<p>Since \(\varepsilon\) was arbitrary, the upper and lower integrals can be squeezed arbitrarily close together, forcing them to be equal: continuous functions on closed, bounded intervals are always Riemann integrable.</p>
+
+<p>But continuity is not necessary. A function can fail to be continuous at a handful of points — even a step function with an outright jump — and still be perfectly integrable, because a finite number of misbehaving points cannot stop the upper and lower sums from converging together; each bad point only ever spoils one shrinking subinterval's worth of area, and that contribution vanishes in the limit right along with the mesh.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the arrow flips</span>
+<p>For the derivative: differentiable \(\Rightarrow\) continuous, always; continuous \(\not\Rightarrow\) differentiable, as \(|x|\) showed. For the integral, the implication runs the other direction: continuous \(\Rightarrow\) integrable, always; but integrable \(\not\Rightarrow\) continuous, as a plain step function shows. Panel V pushes this gap to its breaking point — a bounded function so pathologically discontinuous that no amount of refining the partition ever forces the upper and lower sums together, the direct counterpart to the derivative essay's nowhere-differentiable Weierstrass function.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Fundamental Theorem</h1>
+<div class="subtitle">why accumulating a rate and then differentiating it hands the rate straight back</div>
+
+<h2>The accumulation function</h2>
+<p>Fix a starting point \(a\) and let the far endpoint slide. Define the <strong>accumulation function</strong>:</p>
+
+<div class="katex-display" data-katex="A(x) = \int_a^x f(t)\,dt"></div>
+
+<p>\(A(x)\) is the running total swept out from \(a\) up to \(x\) — a brand-new function, built out of \(f\) by the integral, in exactly the way the derivative built \(f'\) out of \(f\). The question this panel answers is the deepest one calculus asks: if \(f\) is a rate, and \(A\) is the total that rate accumulates, what is the <em>rate of change of the total itself</em>? The answer is not "some new function requiring new machinery" — it is \(f\) again, exactly.</p>
+
+<h2>FTC Part 1: accumulation, differentiated, is the original rate</h2>
+<div class="callout definition">
+<span class="callout-label">Theorem — Fundamental Theorem of Calculus, Part 1</span>
+<p>If \(f\) is continuous on \([a,b]\), then \(A(x)=\int_a^x f(t)\,dt\) is differentiable on \([a,b]\), and \(A'(x) = f(x)\).</p>
+</div>
+
+<p>Before chasing the algebra, look at what is actually being claimed. \(A(x+h)-A(x)\) is the sliver of new area swept out as the accumulation window grows from \(x\) to \(x+h\) — and for \(h\) small, that sliver looks almost exactly like a thin rectangle: width \(h\), height roughly \(f(x)\), the height the curve happens to have right at the sliver's left edge. "Almost exactly" is the entire content of the theorem: the sliver's <em>average</em> height, \(\frac{A(x+h)-A(x)}{h}\), converges to the curve's height at the single point \(x\) as the sliver's width shrinks to nothing — which is precisely what "\(A'(x)=f(x)\)" says.</p>
+
+<div class="ascii">          M_h ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈  tallest value of f on [x, x+h]
+                          ╭──╮
+                        ╱      ╲
+            f(x) ●─────╯        ╲       the new sliver of area:
+                        │        │      A(x+h) − A(x) = ∫ₓ^(x+h) f(t) dt
+          m_h  ┈┈┈┈┈┈┈┈┈│┈┈┈┈┈┈┈┈│┈┈  shortest value of f on [x, x+h]
+                        └──── h ────┘
+
+               m_h · h   ≤   A(x+h) − A(x)   ≤   M_h · h
+             (short rectangle)  (actual sliver)  (tall rectangle)</div>
+
+<p>Squeeze the sliver's exact area between the areas of the shortest and tallest rectangles that could possibly bound it, divide everything by \(h\), and let the window close — that is the whole proof. What follows is exactly that picture, made precise.</p>
+
+<p>The proof is the derivative essay's difference-quotient machinery, aimed at \(A\) instead of at \(f\) directly. Split off the newly accumulated sliver between \(x\) and \(x+h\):</p>
+
+<div class="katex-display" data-katex="A(x+h) - A(x) = \int_x^{x+h} f(t)\,dt"></div>
+
+<p>Because \(f\) is continuous on the closed interval \([x,x+h]\), the Extreme Value Theorem guarantees it attains a minimum \(m_h\) and a maximum \(M_h\) there. Bounding the integrand between its own extremes bounds the integral the same way — immediate from the Riemann-sum definition itself, since replacing every sampled height with something no smaller (or no larger) can only push every term of every sum up (or down):</p>
+
+<div class="katex-display" data-katex="m_h\cdot h \;\le\; \int_x^{x+h} f(t)\,dt \;\le\; M_h\cdot h"></div>
+
+<p>Dividing by \(h\) turns this into a bound on the exact quantity Panel II's difference quotient needs:</p>
+
+<div class="katex-display" data-katex="m_h \;\le\; \frac{A(x+h)-A(x)}{h} \;\le\; M_h"></div>
+
+<p>As \(h\to0\), the shrinking interval \([x,x+h]\) collapses onto the single point \(x\), and continuity of \(f\) at \(x\) forces both extreme values trapped inside it to converge to \(f(x)\): \(m_h\to f(x)\) and \(M_h\to f(x)\). The squeeze theorem — the same tool that tamed \(\frac{\sin h}{h}\) in the derivative essay — closes the gap from both sides at once:</p>
+
+<div class="katex-display" data-katex="\boxed{\;A'(x) = \lim_{h\to0}\frac{A(x+h)-A(x)}{h} = f(x)\;}"></div>
+
+<h2>FTC Part 2: evaluating a total without ever summing a rectangle</h2>
+<div class="callout definition">
+<span class="callout-label">Theorem — Fundamental Theorem of Calculus, Part 2</span>
+<p>If \(F\) is <em>any</em> function with \(F'=f\) on \([a,b]\) — any <strong>antiderivative</strong> of \(f\) — then \(\displaystyle\int_a^b f(x)\,dx = F(b) - F(a)\).</p>
+</div>
+
+<p>Part 1 already produced one antiderivative of \(f\): the function \(A\) itself. If \(F\) is any other antiderivative, then \((F-A)'(x) = F'(x)-A'(x) = f(x)-f(x) = 0\) for every \(x\) in \([a,b]\). A function whose derivative is zero everywhere on an interval is constant there — a standard consequence of the Mean Value Theorem, established in most treatments of the derivative and not reproduced here. So \(F(x) = A(x) + C\) for some fixed constant \(C\), and that constant cancels the instant the function is evaluated at two points and subtracted:</p>
+
+<div class="katex-display" data-katex="F(b) - F(a) = \big[A(b)+C\big] - \big[A(a)+C\big] = A(b) - A(a)"></div>
+
+<p>Since \(A(a)=\int_a^a f(t)\,dt = 0\) (an interval of zero width bounds zero area) and \(A(b)=\int_a^b f(t)\,dt\), this collapses to exactly the claim:</p>
+
+<div class="katex-display" data-katex="\boxed{\;\int_a^b f(x)\,dx = F(b)-F(a) \;=:\; \big[F(x)\big]_a^b\;}"></div>
+
+<h3>A second proof, straight from the Riemann sum</h3>
+<p>The proof above is short, but it leans on Part 1's accumulation function to get there. There is a second route that never needs \(A\) at all, and it is worth walking through because it reconnects Part 2 directly to Panel II's Riemann sums — the objects this entire essay is built from — instead of treating the theorem as an isolated fact about antiderivatives that happens to be true.</p>
+
+<p>Take any partition \(a=x_0\lt x_1\lt\cdots\lt x_n=b\) of \([a,b]\), no matter how coarse. The left side of the claim telescopes into a sum of purely local changes in \(F\), every interior value cancelling against itself:</p>
+
+<div class="katex-display" data-katex="F(b)-F(a) = \sum_{i=1}^{n}\big[F(x_i)-F(x_{i-1})\big]"></div>
+
+<p>Since \(F'=f\) exists on all of \([a,b]\), \(F\) is differentiable — hence continuous — on each piece \([x_{i-1},x_i]\), so the Mean Value Theorem applies to every single term: on each piece there is some point \(c_i\) inside \((x_{i-1},x_i)\) at which \(F\)'s instantaneous rate exactly equals its average rate across that piece, no approximation involved:</p>
+
+<div class="katex-display" data-katex="F(x_i)-F(x_{i-1}) = F'(c_i)\,(x_i-x_{i-1}) = f(c_i)\,\Delta x_i"></div>
+
+<p>Substituting this into the telescoped sum produces something that should look immediately familiar:</p>
+
+<div class="katex-display" data-katex="F(b)-F(a) = \sum_{i=1}^{n} f(c_i)\,\Delta x_i"></div>
+
+<p>The right-hand side is <em>exactly</em> a Riemann sum for \(f\) over this partition — not an approximation of one, an actual instance of Panel II's \(S(P)=\sum f(x_i^{*})\Delta x_i\), with the sample points \(c_i\) supplied by the Mean Value Theorem rather than chosen freely. This equality holds on the nose, with no error term, for <em>every</em> partition of \([a,b]\), however coarse or fine. Panel II already established that \(f\), being continuous, is Riemann integrable — meaning every Riemann sum, for every partition and every admissible choice of sample points, converges to the same number \(\int_a^b f(x)\,dx\) as the mesh shrinks to zero. The left side \(F(b)-F(a)\) is a fixed constant, unmoved by how finely the partition is cut; the right side is converging to \(\int_a^b f(x)\,dx\) by Panel II. Two quantities that are equal at every stage of refinement, one of which is constant and the other of which converges, force that limit to equal the constant:</p>
+
+<div class="katex-display" data-katex="\boxed{\;F(b)-F(a) = \lim_{\|P\|\to0}\sum_{i=1}^n f(c_i)\,\Delta x_i = \int_a^b f(x)\,dx\;}"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — where the rigour was actually hiding</span>
+<p>This version makes visible exactly which theorem does the load-bearing work. The Mean Value Theorem is what converts "rate times tiny width" from an approximation into an exact local statement — it is the reason the sliver picture from Part 1's proof can be made to hold with equality rather than merely in the limit. Panel II's integrability guarantee is what then licenses trusting a sum built from MVT's oddly-placed, not-freely-chosen sample points to converge to the very same limit as every other Riemann sum. Nothing here required guessing that \(F(b)-F(a)\) and \(\int_a^b f\) might coincide and then checking it after the fact; the equality falls straight out of telescoping algebra plus one theorem about derivatives, applied one small piece at a time.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the two-way bridge</span>
+<p>This is the promise the derivative essay closed on, redeemed in full: differentiation and integration are inverse operations. Part 1 says integrating and then differentiating gets you back where you started, \(\frac{d}{dx}\int_a^x f(t)\,dt = f(x)\). Part 2 turns that fact into a computational shortcut — it means nobody has to take the limit of a Riemann sum by hand ever again. Find any one antiderivative, however it is found, and the entire infinite refining-rectangles process from Panels I and II collapses into a single subtraction.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Integration Rules, Derived</h1>
+<div class="subtitle">every antiderivative shortcut is a differentiation rule, already on record, run backward through FTC Part 2</div>
+
+<h2>The power rule, reversed</h2>
+<p>The derivative essay proved, from the limit definition, that \(\frac{d}{dx}\big[x^n\big] = nx^{n-1}\). Retarget that fact at the function \(\frac{x^{n+1}}{n+1}\): by the power rule, \(\frac{d}{dx}\left[\frac{x^{n+1}}{n+1}\right] = (n+1)\cdot\frac{x^n}{n+1} = x^n\), valid whenever \(n\ne-1\) (division by \(n+1=0\) is the one gap). That function is therefore an antiderivative of \(x^n\), and FTC Part 2 hands back the rule immediately, with no new limit computation required:</p>
+
+<div class="katex-display" data-katex="\boxed{\;\int x^n\,dx = \frac{x^{n+1}}{n+1} + C \qquad (n\ne -1)\;}"></div>
+
+<div class="callout note">
+<span class="callout-label">Note — patching the one gap</span>
+<p>The excluded case \(n=-1\) is not a dead end; it is answered by a different derivative already on file. Because \(\frac{d}{dx}[\ln x] = \frac1x\) for \(x\gt0\), and \(\frac{d}{dx}[\ln(-x)] = \frac{1}{-x}\cdot(-1) = \frac1x\) for \(x\lt0\) by the chain rule, \(\ln|x|\) is an antiderivative of \(\frac1x\) on its entire domain at once: \(\int \frac1x\,dx = \ln|x| + C\).</p>
+</div>
+
+<h2>Linearity, from linearity of the derivative</h2>
+<p>If \(F'=f\) and \(G'=g\), then \((cF\pm G)' = cF'\pm G' = cf\pm g\) by the derivative essay's own linearity rule. So \(cF\pm G\) is an antiderivative of \(cf\pm g\), and FTC Part 2 reads it straight off:</p>
+
+<div class="katex-display" data-katex="\int \big[c\,f(x)\pm g(x)\big]\,dx = c\int f(x)\,dx \pm \int g(x)\,dx"></div>
+
+<h2>Substitution, from the chain rule reversed</h2>
+<p>Let \(F'=f\) and let \(g\) be differentiable. The chain rule gives the derivative of the composition \(F(g(x))\) directly:</p>
+
+<div class="katex-display" data-katex="\frac{d}{dx}\Big[F\big(g(x)\big)\Big] = F'\big(g(x)\big)\cdot g'(x) = f\big(g(x)\big)\,g'(x)"></div>
+
+<p>Read backward, this says \(F(g(x))\) is an antiderivative of \(f(g(x))g'(x)\) — precisely the pattern of an outer function's rate, times the inner function's own rate of change, that the chain rule always leaves behind. Writing \(u=g(x)\), so that \(du = g'(x)\,dx\), turns this into the familiar substitution rule, and the bookkeeping on a definite integral follows the same logic applied directly to \(f\) instead of to \(f\circ g\):</p>
+
+<div class="katex-display" data-katex="\int f\big(g(x)\big)g'(x)\,dx = F\big(g(x)\big) + C = \int f(u)\,du, \qquad \int_a^b f\big(g(x)\big)g'(x)\,dx = \int_{g(a)}^{g(b)} f(u)\,du"></div>
+
+<h2>Integration by parts, from the product rule reversed</h2>
+<p>The derivative essay's product rule states \((uv)' = u'v+uv'\). Applying FTC Part 2 to both sides over \([a,b]\) — the left side integrates back to \(uv\) itself, by definition of antiderivative — gives:</p>
+
+<div class="katex-display" data-katex="\big[u(x)v(x)\big]_a^b = \int_a^b u'(x)v(x)\,dx + \int_a^b u(x)v'(x)\,dx"></div>
+
+<p>Rearranging to isolate the second integral, and writing it in Leibniz's compact \(du,\,dv\) notation:</p>
+
+<div class="katex-display" data-katex="\boxed{\;\int u\,dv = uv - \int v\,du\;}"></div>
+
+<p>Nothing here was invented; the product rule was proved once, in the derivative essay, and this is that same fact read from right to left.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Elementary antiderivatives — Panel IV of the derivative essay, read backward</caption>
+<thead><tr><th>f(x)</th><th>∫f(x) dx</th></tr></thead>
+<tbody>
+<tr><td>\(c\) (constant)</td><td>\(cx + C\)</td></tr>
+<tr><td>\(x^n\;(n\ne-1)\)</td><td>\(\dfrac{x^{n+1}}{n+1} + C\)</td></tr>
+<tr><td>\(1/x\)</td><td>\(\ln|x| + C\)</td></tr>
+<tr><td>\(e^x\)</td><td>\(e^x + C\)</td></tr>
+<tr><td>\(\sin x\)</td><td>\(-\cos x + C\)</td></tr>
+<tr><td>\(\cos x\)</td><td>\(\sin x + C\)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Every boxed result on this panel is nothing more than "take a differentiation rule already proved, and apply FTC Part 2 to it once, symbolically, so the underlying limit never has to be recomputed by hand." That is why integration so often feels like pattern-matching against a mental catalogue of derivatives run in reverse: it is exactly that, and the companion integration-techniques essay works through the harder pattern-matching — partial fractions, trigonometric substitution, the tabular method — case by case, once this panel's three generating rules are in hand.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>When It Doesn't Exist</h1>
+<div class="subtitle">boundedness is necessary but not sufficient — a taxonomy of the ways accumulation can fail to converge</div>
+
+<h2>Unbounded functions break the sum outright</h2>
+<p>If \(f\) is unbounded on \([a,b]\), no partition can save it: some subinterval will always contain points where \(f\) grows arbitrarily large, so the sample point \(x_i^{*}\) on that piece can be chosen to make \(f(x_i^{*})\Delta x_i\) — and hence the whole Riemann sum — as large as desired, no matter how the rest of the partition is arranged. The limit in Panel II's definition cannot settle on a single number when the sums themselves refuse to settle at all. Boundedness on \([a,b]\) is therefore necessary for Riemann integrability. It is not, on its own, sufficient.</p>
+
+<h2>The Dirichlet function: a taxonomy-breaking monster</h2>
+<p>Define \(D(x)=1\) when \(x\) is rational and \(D(x)=0\) when \(x\) is irrational, on \([0,1]\). This function is perfectly bounded — it only ever takes the values \(0\) and \(1\) — yet it fails to be integrable in the most total way possible. Between any two distinct real numbers, no matter how close together, there sits both a rational number and an irrational one (both sets are dense in \(\mathbb{R}\)). So on <em>every</em> subinterval of <em>every</em> partition, no matter how fine, \(D\) still takes both values \(0\) and \(1\):</p>
+
+<div class="ascii">   EVERY PARTITION, NO MATTER HOW FINE:
+
+   U(P) = 1  ─────────────────────────   (sup = 1 on every subinterval, forever)
+
+                    the gap never closes
+
+   L(P) = 0  ─────────────────────────   (inf = 0 on every subinterval, forever)
+
+   upper integral = 1,  lower integral = 0,  1 ≠ 0 — not integrable, at any scale</div>
+
+<p>Every lower sum is exactly \(0\) and every upper sum is exactly \(1\), for every partition without exception — refining the mesh doesn't even narrow the gap, let alone close it. The upper and lower integrals are stuck at \(1\) and \(0\) respectively, and \(D\) is not Riemann integrable on any subinterval of \([0,1]\) either.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the monster of integration</span>
+<p>Peter Gustav Lejeune Dirichlet introduced this function in 1829, decades before Weierstrass's nowhere-differentiable curve. It is, in its own way, a more total failure than Weierstrass's: the derivative essay's monster fails to have a tangent line at every point, but its upper and lower difference quotients can still be finite and merely disagree. Dirichlet's function's upper and lower sums disagree by the maximum possible amount, \(1\), at every scale, from the very first partition onward — there is no refining process to even begin.</p>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — the exception, not the rule, resolved</span>
+<p>Riemann's definition partitions the <em>domain</em> — the \(x\)-axis — into pieces. Henri Lebesgue's 1902 integral partitions the <em>range</em> instead, weighting each output value by the "measure" (a generalized notion of length) of the set of inputs producing it. The rationals are countable, and every countable subset of \(\mathbb{R}\) has Lebesgue measure zero, so the Lebesgue integral of \(D\) is simply \(1\times(\text{measure }0) + 0\times(\text{measure }1) = 0\) — a single, unambiguous value where the Riemann sums saw nothing but permanent disagreement. Lebesgue integration is the direct measure-theoretic descendant of everything built in this essay, and it is the standard on which modern probability theory is built.</p>
+</div>
+
+<h2>Improper integrals: relaxing the boundary, not the machinery</h2>
+<p>A function can stay perfectly tame everywhere except at the very edge of the interval — a vertical asymptote at an endpoint, or an interval that never ends at all — and the integral is rescued the same way the derivative essay rescued corner points: not by changing the definition, but by wrapping an ordinary limit around it.</p>
+
+<div class="katex-display" data-katex="\int_0^1 \frac{1}{\sqrt{x}}\,dx = \lim_{t\to0^+}\int_t^1 x^{-1/2}\,dx = \lim_{t\to0^+}\Big[2\sqrt{x}\Big]_t^1 = \lim_{t\to0^+}\big(2-2\sqrt{t}\big) = 2"></div>
+
+<p>The region under \(1/\sqrt{x}\) near \(0\) is infinitely tall but converges to a finite area anyway — the asymptote is "thin enough" for its area to add up to something finite. The same rescue handles an infinite domain:</p>
+
+<div class="katex-display" data-katex="\int_1^{\infty} \frac{1}{x^2}\,dx = \lim_{b\to\infty}\Big[-\frac1x\Big]_1^b = \lim_{b\to\infty}\Big(1-\frac1b\Big) = 1"></div>
+
+<p>Yet the outwardly similar integral \(\int_1^{\infty}\frac{1}{x}\,dx = \lim_{b\to\infty}\big[\ln x\big]_1^b = \lim_{b\to\infty}\ln b = \infty\) diverges, even though \(1/x\to0\) just as \(1/x^2\) does. The integrand shrinking to zero is not enough on its own — <em>how fast</em> it shrinks decides whether infinitely much of it still adds up to a finite total. That razor's edge between convergence and divergence is exactly where the taxonomy of infinite series, met in the companion Taylor-series essay, picks up the same question in a different guise.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Interactive Lab</h1>
+<div class="subtitle">watch the rectangles hug the curve, and watch the Riemann sum collapse onto the exact integral as n grows</div>
+
+<h2>Lab 1 — Rectangles to Area</h2>
+<p>Pick a function, drag the upper limit \(b\) (the lower limit is fixed at \(a=0\)), drag the rectangle count \(n\), and choose which point of each subinterval supplies the sampled height. The canvas shades every rectangle — gold above the axis, red below it — and draws the true curve on top, so the overshoot and undershoot from Panel I's ascii diagram are visible directly. Watch the Riemann sum readout close in on the exact integral (computed via FTC Part 2) as \(n\) grows.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">y = f(x), WITH RIEMANN RECTANGLES</div>
+      <canvas id="cvRiemann" width="560" height="360" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Function f(x)</label>
+      <select id="fnSelect">
+        <option value="0">x²</option>
+        <option value="1">sin(x)</option>
+        <option value="2">x³ − 2x + 2</option>
+        <option value="3">eˣ / 4</option>
+        <option value="4">√x</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Sample point</label>
+      <select id="modeSelect">
+        <option value="left">left endpoint</option>
+        <option value="mid" selected>midpoint</option>
+        <option value="right">right endpoint</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>b (upper limit)</label>
+      <input type="range" id="bSlider" min="0.3" max="4" step="0.05" value="2">
+      <span class="readout" id="bReadout">2.00</span>
+    </div>
+    <div class="control-row">
+      <label>n (rectangles)</label>
+      <input type="range" id="nSlider" min="1" max="60" step="1" value="8">
+      <span class="readout" id="nReadout">8</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">RIEMANN SUM S(P)</div>
+      <div class="v" id="sumOut">…</div>
+    </div>
+    <div class="block">
+      <div class="k">EXACT ∫ (FTC)</div>
+      <div class="v" id="exactOut">…</div>
+    </div>
+    <div class="block">
+      <div class="k">|ERROR|</div>
+      <div class="v" id="errorOut">…</div>
+    </div>
+    <div class="block" style="flex:1 1 100%;">
+      <div class="k">RIEMANN SUM FORMULA</div>
+      <div class="v" id="liveFormula">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--accent)"></span> curve f(x)</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> rectangle, f(x_i*) ≥ 0</span>
+    <span><span class="swatch" style="background:var(--red)"></span> rectangle, f(x_i*) &lt; 0</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> sample point</span>
+  </div>
+</div>
+
+<h2>Lab 2 — Convergence of the Riemann Sum</h2>
+<p>Using the same function, limit \(b\), and sample-point rule selected above, this table and pair of charts double \(n\) six times in a row and track two things at once: how far the Riemann sum still is from the true integral, and how the sum itself is sliding toward that exact value.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">|ERROR| vs n</div>
+      <canvas id="cvErrInt" width="320" height="220" style="width:100%;max-width:320px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">RIEMANN SUM → EXACT ∫</div>
+      <canvas id="cvConvInt" width="320" height="220" style="width:100%;max-width:320px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>n</th><th>Δx</th><th>Riemann sum</th><th>exact ∫</th><th>error</th></tr></thead>
+      <tbody id="convBodyInt"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--red)"></span> Riemann sum / error</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> exact integral</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>For midpoint sampling, the error shrinks roughly like \(1/n^2\) — doubling \(n\) quarters the error, visibly faster than the \(1/n\) convergence typical of left or right sampling. That asymmetry is not a coincidence: the midpoint rule cancels its own first-order error automatically (the overshoot on the rising half of each subinterval and the undershoot on the falling half nearly balance), a preview of the tradeoffs numerical-integration methods are built around.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>Worked Examples</h1>
+<div class="subtitle">two integrals built entirely from the limit definition, then two more checked against Panel IV's shortcuts</div>
+
+<h2>From the definition: ∫₀¹ x² dx</h2>
+<p>Partition \([0,1]\) into \(n\) equal pieces, so \(\Delta x = \frac1n\), and sample at the right endpoint of each piece, \(x_i = \frac{i}{n}\). The Riemann sum is:</p>
+<div class="katex-display" data-katex="S(P) = \sum_{i=1}^{n} \left(\frac{i}{n}\right)^2 \cdot \frac1n = \frac{1}{n^3}\sum_{i=1}^n i^2"></div>
+<p>The sum of the first \(n\) squares has a closed form, \(\sum_{i=1}^n i^2 = \frac{n(n+1)(2n+1)}{6}\), so:</p>
+<div class="katex-display" data-katex="S(P) = \frac{1}{n^3}\cdot\frac{n(n+1)(2n+1)}{6} = \frac{(n+1)(2n+1)}{6n^2} = \frac{2n^2+3n+1}{6n^2}"></div>
+<p>As \(n\to\infty\), the lower-order terms \(3n\) and \(1\) become irrelevant next to \(2n^2\), leaving \(\frac{2n^2}{6n^2}=\frac13\):</p>
+<div class="katex-display" data-katex="\int_0^1 x^2\,dx = \lim_{n\to\infty}\frac{2n^2+3n+1}{6n^2} = \frac13"></div>
+<p>Checking against FTC Part 2 with the power-rule antiderivative from Panel IV: \(\left[\frac{x^3}{3}\right]_0^1 = \frac13 - 0 = \frac13\) — matching exactly, as it must.</p>
+
+<h2>From the definition, in general: ∫ₐᵇ x dx</h2>
+<p>This time leave the endpoints unspecified. Partition \([a,b]\) into \(n\) equal pieces, \(\Delta x=\frac{b-a}{n}\), and sample at the right endpoint \(x_i = a+i\Delta x\):</p>
+<div class="katex-display" data-katex="S(P) = \sum_{i=1}^n (a+i\Delta x)\Delta x = a(b-a) + \Delta x^2\sum_{i=1}^n i = a(b-a) + \left(\frac{b-a}{n}\right)^2\cdot\frac{n(n+1)}{2}"></div>
+<p>Simplifying the second term and letting \(n\to\infty\), the factor \(\frac{n+1}{n}\to1\):</p>
+<div class="katex-display" data-katex="S(P) = a(b-a) + \frac{(b-a)^2}{2}\cdot\frac{n+1}{n} \;\longrightarrow\; a(b-a) + \frac{(b-a)^2}{2} = \frac{b^2-a^2}{2}"></div>
+<p>Which is exactly FTC Part 2's prediction, \(\left[\frac{x^2}{2}\right]_a^b = \frac{b^2-a^2}{2}\) — the same triangle-area formula geometry gives for free, extracted here purely from the limit of a sum.</p>
+
+<h2>Applying the rules: ∫ 2x cos(x²) dx</h2>
+<p>This is the aftermath of a chain rule — an outer function \(\cos(\cdot)\)'s antiderivative territory, wrapped around an inner function \(x^2\) whose own derivative, \(2x\), is sitting right beside it. Panel IV's substitution rule applies directly with \(u=x^2\), \(du=2x\,dx\):</p>
+<div class="katex-display" data-katex="\int 2x\cos(x^2)\,dx = \int \cos(u)\,du = \sin(u) + C = \sin(x^2) + C"></div>
+<p>No limit computation is needed a second time — Panel IV already did that work once, symbolically, for every composition of this shape.</p>
+
+<h2>Applying the rules: ∫ x eˣ dx</h2>
+<p>A product of two unrelated function families — algebraic and exponential — calls for integration by parts. Choosing \(u=x\) (it simplifies when differentiated) and \(dv=e^x\,dx\) gives \(du=dx\) and \(v=e^x\):</p>
+<div class="katex-display" data-katex="\int x e^x\,dx = xe^x - \int e^x\,dx = xe^x - e^x + C"></div>
+<p>Try it in Panel VI's Lab 1 conceptually: with \(f(x)=xe^x\), dragging \(n\) upward should make the Riemann sum readout close in on \(\big[xe^x-e^x\big]_0^b\) for whatever \(b\) is selected — the same kind of numerical confirmation carried out explicitly for \(x^2\) above.</p>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="t8">
+<h1>Where This Leads</h1>
+<div class="subtitle">area becomes volume, rates become differential equations, and the loop back to the derivative closes</div>
+
+<h2>Multiple integrals: accumulating over area and volume</h2>
+<p>Nothing in Panel II's construction was secretly one-dimensional — a partition, a sample point, a sum, a shrinking limit. Replace the interval \([a,b]\) with a two-dimensional region and the subintervals with small patches of area, and the exact same machinery accumulates a quantity spread across a plane instead of a line: the <strong>double integral</strong>. Replace the patches with small blocks of volume and it accumulates density into mass across three-dimensional space: the <strong>triple integral</strong>. The companion double-integral essay develops what accumulation means in two dimensions from exactly this starting point, and the triple-integral essay carries it into physical mass and density. When the region itself is easier to describe in curved coordinates than in a rectangular grid, the factor that keeps area or volume honest under that change of coordinates is the Jacobian determinant — the same object the derivative essay's closing panel introduced as the multivariable derivative, now doing double duty as an area-scaling correction inside an integral, worked out in full in the companion integration-techniques essay.</p>
+
+<h2>Differential equations: running FTC in the most direct way possible</h2>
+<p>FTC says integration undoes differentiation. The most immediate use of that fact solves the simplest possible differential equation, \(\frac{dy}{dx}=f(x)\): integrate both sides, and \(y\) is recovered up to the one constant of integration that antidifferentiation can never pin down on its own. The companion differential-equations essay takes on the far richer cases where the rate depends on \(y\) itself, not just on \(x\) — where the accumulation and the accumulated quantity feed back into each other.</p>
+
+<h2>Taylor series: the integral as the exact leftover term</h2>
+<p>The derivative essay's Taylor approximation, \(f(a+h)\approx f(a)+f'(a)h+\frac{h^2}{2}f''(a)\), is only ever approximate — but FTC turns the error in that approximation into an exact integral rather than a vague "small leftover." Applying FTC Part 2 repeatedly (integrating \(f''\), then \(f'''\), and so on) expresses the gap between a function and its polynomial approximation as \(R_n(x) = \int_a^x f^{(n+1)}(t)\,\frac{(x-t)^n}{n!}\,dt\) — the integral form of the Taylor remainder. The companion Taylor-series essay develops what happens as more and more terms are added, and this is precisely where that expansion's error term comes from.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>Every idea in this essay is one continuous thread: a total with no constant rate to multiply by, rescued by watching what a perfectly ordinary sum of finitely many rectangles approaches as those rectangles narrow to nothing and multiply without bound. The Riemann sum, the Fundamental Theorem, every integration rule, and every failure mode in Panel V are all restatements of that single rescue — the very same rescue, run in reverse, that built the derivative in the first place.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6','t7','t8'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawRiemann();
+  drawConvergenceInt();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ---------- shared helpers ----------
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function fmtN(n, d){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+
+// ============ LAB 1: RECTANGLES TO AREA ============
+const FNS = [
+  { label:'x²',        f: x=>x*x,                          F: x=>x**3/3 },
+  { label:'sin x',      f: x=>Math.sin(x),                  F: x=>-Math.cos(x) },
+  { label:'x³−2x+2',    f: x=>x**3 - 2*x + 2,                F: x=>x**4/4 - x*x + 2*x },
+  { label:'eˣ/4',       f: x=>Math.exp(x)/4,                 F: x=>Math.exp(x)/4 },
+  { label:'√x',         f: x=>x>=0 ? Math.sqrt(x) : NaN,      F: x=>x>=0 ? (2/3)*Math.pow(x,1.5) : NaN },
+];
+
+let S = { fnIdx:0, a:0, b:2, n:8, mode:'mid' };
+
+function exactIntegral(){
+  const {fnIdx, a, b} = S;
+  return FNS[fnIdx].F(b) - FNS[fnIdx].F(a);
+}
+
+function riemannSum(){
+  const {fnIdx, a, b, n, mode} = S;
+  const f = FNS[fnIdx].f;
+  const dx = (b-a)/n;
+  let sum = 0;
+  for(let i=0;i<n;i++){
+    const x0 = a+i*dx, x1 = a+(i+1)*dx;
+    const xs = mode==='left' ? x0 : mode==='right' ? x1 : (x0+x1)/2;
+    sum += f(xs)*dx;
+  }
+  return sum;
+}
+
+function sampleX(i, dx){
+  const {a, mode} = S;
+  const x0 = a+i*dx, x1 = a+(i+1)*dx;
+  return mode==='left' ? x0 : mode==='right' ? x1 : (x0+x1)/2;
+}
+
+const fnSelect = document.getElementById('fnSelect');
+const modeSelect = document.getElementById('modeSelect');
+const bSlider = document.getElementById('bSlider');
+const nSlider = document.getElementById('nSlider');
+const bReadout = document.getElementById('bReadout');
+const nReadout = document.getElementById('nReadout');
+const sumOut = document.getElementById('sumOut');
+const exactOut = document.getElementById('exactOut');
+const errorOut = document.getElementById('errorOut');
+const liveFormula = document.getElementById('liveFormula');
+const cvRiemann = document.getElementById('cvRiemann');
+const rctx = cvRiemann.getContext('2d');
+
+fnSelect.addEventListener('change', ()=>{ S.fnIdx = +fnSelect.value; drawRiemann(); drawConvergenceInt(); });
+modeSelect.addEventListener('change', ()=>{ S.mode = modeSelect.value; drawRiemann(); drawConvergenceInt(); });
+bSlider.addEventListener('input', ()=>{ S.b = +bSlider.value; bReadout.textContent = S.b.toFixed(2); drawRiemann(); drawConvergenceInt(); });
+nSlider.addEventListener('input', ()=>{ S.n = +nSlider.value; nReadout.textContent = S.n; drawRiemann(); });
+
+function drawRiemann(){
+  const {fnIdx, a, b, n} = S;
+  const f = FNS[fnIdx].f;
+
+  const W0 = cvRiemann.width, H0 = cvRiemann.height;
+  rctx.clearRect(0,0,W0,H0);
+  rctx.fillStyle = cssVar('--bg-elevated');
+  rctx.fillRect(0,0,W0,H0);
+
+  const xMin = a - Math.max(0.3,(b-a)*0.15), xMax = b + Math.max(0.3,(b-a)*0.15);
+  let yVals = [0];
+  for(let i=0;i<=200;i++){ const v = f(a+(b-a)*i/200); if(Number.isFinite(v)) yVals.push(v); }
+  let yMin = Math.min(0, ...yVals) - 0.6;
+  let yMax = Math.max(0.5, ...yVals) + 0.6;
+
+  const marginL=42, marginR=18, marginT=18, marginB=30;
+  const plotW = W0-marginL-marginR, plotH = H0-marginT-marginB;
+  const xs = wx => marginL + (wx-xMin)/(xMax-xMin)*plotW;
+  const ys = wy => marginT + (1-(wy-yMin)/(yMax-yMin))*plotH;
+
+  // grid + axes
+  rctx.strokeStyle = cssVar('--border'); rctx.lineWidth=1;
+  for(let gx=Math.ceil(xMin); gx<=Math.floor(xMax); gx++){ rctx.beginPath(); rctx.moveTo(xs(gx),marginT); rctx.lineTo(xs(gx),marginT+plotH); rctx.stroke(); }
+  for(let gy=Math.ceil(yMin); gy<=Math.floor(yMax); gy++){ rctx.beginPath(); rctx.moveTo(marginL,ys(gy)); rctx.lineTo(marginL+plotW,ys(gy)); rctx.stroke(); }
+
+  // rectangles
+  const dx = (b-a)/n;
+  const accentC = cssVar('--accent'), redC = cssVar('--red'), blueC = cssVar('--blue');
+  for(let i=0;i<n;i++){
+    const x0 = a+i*dx, x1 = a+(i+1)*dx;
+    const xv = sampleX(i, dx);
+    const h = f(xv);
+    if(!Number.isFinite(h)) continue;
+    const cx0 = xs(x0), cx1 = xs(x1);
+    const cyTop = ys(Math.max(0,h)), cyBot = ys(Math.min(0,h));
+    rctx.globalAlpha = 0.32;
+    rctx.fillStyle = h>=0 ? accentC : redC;
+    rctx.fillRect(cx0, cyTop, Math.max(1,cx1-cx0), Math.max(1,cyBot-cyTop));
+    rctx.globalAlpha = 1;
+    rctx.strokeStyle = h>=0 ? accentC : redC;
+    rctx.lineWidth = 1;
+    rctx.strokeRect(cx0, cyTop, cx1-cx0, cyBot-cyTop);
+  }
+
+  // axes on top of rectangles
+  rctx.strokeStyle = cssVar('--ink-faint'); rctx.lineWidth=1.2;
+  if(yMin<=0 && yMax>=0){ rctx.beginPath(); rctx.moveTo(marginL,ys(0)); rctx.lineTo(marginL+plotW,ys(0)); rctx.stroke(); }
+  if(xMin<=0 && xMax>=0){ rctx.beginPath(); rctx.moveTo(xs(0),marginT); rctx.lineTo(xs(0),marginT+plotH); rctx.stroke(); }
+
+  // curve
+  rctx.strokeStyle = cssVar('--ink'); rctx.lineWidth=2.2; rctx.lineJoin='round';
+  rctx.beginPath();
+  let started=false;
+  for(let i=0;i<=500;i++){
+    const wx = xMin+(xMax-xMin)*i/500, wy = f(wx);
+    if(!Number.isFinite(wy)){ started=false; continue; }
+    const sx=xs(wx), sy=ys(Math.max(yMin, Math.min(yMax, wy)));
+    if(!started){ rctx.moveTo(sx,sy); started=true; } else rctx.lineTo(sx,sy);
+  }
+  rctx.stroke();
+
+  // sample points
+  for(let i=0;i<n;i++){
+    const xv = sampleX(i, dx);
+    const h = f(xv);
+    if(!Number.isFinite(h)) continue;
+    rctx.fillStyle = blueC;
+    rctx.beginPath(); rctx.arc(xs(xv), ys(h), 2.6, 0, 7); rctx.fill();
+  }
+
+  updateStatsInt();
+}
+
+function updateStatsInt(){
+  const sum = riemannSum();
+  const exact = exactIntegral();
+  const err = Math.abs(sum-exact);
+
+  sumOut.textContent = fmtN(sum,4);
+  exactOut.textContent = fmtN(exact,4);
+  errorOut.textContent = fmtN(err,4);
+
+  const dx = (S.b-S.a)/S.n;
+  const tex = `S(P) = \\sum_{i=1}^{${S.n}} f(x_i^{*})\\,\\Delta x_i, \\quad \\Delta x = ${dx.toFixed(4)}`;
+  katex.render(tex, liveFormula, {displayMode:true, throwOnError:false});
+}
+
+// ============ LAB 2: CONVERGENCE ============
+const cvErrInt = document.getElementById('cvErrInt'), ectx2 = cvErrInt.getContext('2d');
+const cvConvInt = document.getElementById('cvConvInt'), cctx2 = cvConvInt.getContext('2d');
+const convBodyInt = document.getElementById('convBodyInt');
+const NS = [2,4,8,16,32,64];
+
+function riemannSumFor(n){
+  const {fnIdx, a, b, mode} = S;
+  const f = FNS[fnIdx].f;
+  const dx = (b-a)/n;
+  let sum = 0;
+  for(let i=0;i<n;i++){
+    const x0 = a+i*dx, x1 = a+(i+1)*dx;
+    const xv = mode==='left' ? x0 : mode==='right' ? x1 : (x0+x1)/2;
+    sum += f(xv)*dx;
+  }
+  return sum;
+}
+
+function drawConvergenceInt(){
+  const exact = exactIntegral();
+  const sums = NS.map(n => riemannSumFor(n));
+  const errs = sums.map(s => Math.abs(s-exact));
+
+  const cAccentErr = cssVar('--red'), cBlue = cssVar('--blue'), cBg = cssVar('--bg-elevated'),
+        cGrid = cssVar('--border'), cText = cssVar('--ink-faint');
+
+  // --- error chart ---
+  const W1=cvErrInt.width, H1=cvErrInt.height, p={t:16,r:16,b:32,l:40};
+  ectx2.clearRect(0,0,W1,H1); ectx2.fillStyle=cBg; ectx2.fillRect(0,0,W1,H1);
+  const maxN = Math.max(...NS);
+  const finiteErrs = errs.filter(Number.isFinite);
+  const maxE = (finiteErrs.length ? Math.max(...finiteErrs) : 1) * 1.1 || 1;
+  const pt1 = (nv,ev) => [ p.l+(nv/maxN)*(W1-p.l-p.r), p.t+(1-ev/maxE)*(H1-p.t-p.b) ];
+
+  ectx2.strokeStyle=cGrid; ectx2.lineWidth=1;
+  const [,zy]=pt1(0,0); ectx2.beginPath(); ectx2.moveTo(p.l,zy); ectx2.lineTo(W1-p.r,zy); ectx2.stroke();
+
+  ectx2.strokeStyle=cAccentErr; ectx2.lineWidth=2; ectx2.beginPath();
+  NS.forEach((n,i)=>{ if(!Number.isFinite(errs[i]))return; const [cx,cy]=pt1(n,errs[i]); i===0?ectx2.moveTo(cx,cy):ectx2.lineTo(cx,cy); });
+  ectx2.stroke();
+  NS.forEach((n,i)=>{ if(!Number.isFinite(errs[i]))return; const [cx,cy]=pt1(n,errs[i]); ectx2.fillStyle=cAccentErr; ectx2.beginPath(); ectx2.arc(cx,cy,3,0,7); ectx2.fill(); });
+  ectx2.fillStyle=cText; ectx2.font='10px JetBrains Mono, monospace'; ectx2.textAlign='center';
+  ectx2.fillText('n grows →', W1-p.r-30, H1-p.b+16);
+
+  // --- convergence chart ---
+  const W2=cvConvInt.width, H2=cvConvInt.height;
+  cctx2.clearRect(0,0,W2,H2); cctx2.fillStyle=cBg; cctx2.fillRect(0,0,W2,H2);
+  const finiteSums = sums.filter(Number.isFinite);
+  const minA = Math.min(exact, ...(finiteSums.length?finiteSums:[exact])) - 0.15;
+  const maxA = Math.max(exact, ...(finiteSums.length?finiteSums:[exact])) + 0.15;
+  const pt2 = (nv,av) => [ p.l+(nv/maxN)*(W2-p.l-p.r), p.t+(1-(av-minA)/(maxA-minA))*(H2-p.t-p.b) ];
+
+  const [,ey]=pt2(0,exact);
+  cctx2.strokeStyle=cBlue; cctx2.lineWidth=1.4; cctx2.setLineDash([4,4]);
+  cctx2.beginPath(); cctx2.moveTo(p.l,ey); cctx2.lineTo(W2-p.r,ey); cctx2.stroke(); cctx2.setLineDash([]);
+  cctx2.fillStyle=cBlue; cctx2.textAlign='left'; cctx2.font='10px JetBrains Mono, monospace'; cctx2.fillText('exact', p.l+2, ey-4);
+
+  cctx2.strokeStyle=cAccentErr; cctx2.lineWidth=2; cctx2.beginPath();
+  NS.forEach((n,i)=>{ if(!Number.isFinite(sums[i]))return; const [cx,cy]=pt2(n,sums[i]); i===0?cctx2.moveTo(cx,cy):cctx2.lineTo(cx,cy); });
+  cctx2.stroke();
+  NS.forEach((n,i)=>{ if(!Number.isFinite(sums[i]))return; const [cx,cy]=pt2(n,sums[i]); cctx2.fillStyle=cAccentErr; cctx2.beginPath(); cctx2.arc(cx,cy,3,0,7); cctx2.fill(); });
+
+  // --- table ---
+  convBodyInt.innerHTML = NS.map((n,i)=>{
+    const dx = (S.b-S.a)/n;
+    return `<tr>
+      <td>${n}</td>
+      <td>${dx.toFixed(5)}</td>
+      <td>${fmtN(sums[i],5)}</td>
+      <td>${fmtN(exact,5)}</td>
+      <td>${fmtN(errs[i],5)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---------- init ----------
+drawRiemann();
+drawConvergenceInt();
+</script>
+</body>
+</html>
