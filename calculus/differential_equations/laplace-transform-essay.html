@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laplace Transform — What a Transform Is, and Why It Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre-wrap; }
+.matrix-display .block .v.ok{ color:var(--green); }
+.matrix-display .block .v.bad{ color:var(--red); }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+.swatch.dash{ height:2px; border-radius:0; margin-top:5px; }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); white-space:nowrap; }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">LAPLACE TRANSFORM</div>
+  <button class="tab-btn active" data-tab="t1">I · What a Transform Actually Is</button>
+  <button class="tab-btn" data-tab="t2">II · How Laplace Got There</button>
+  <button class="tab-btn" data-tab="t3">III · Building the Transform</button>
+  <button class="tab-btn" data-tab="t4">IV · Why It Works</button>
+  <button class="tab-btn" data-tab="t5">V · The s-Plane</button>
+  <button class="tab-btn" data-tab="t6">VI · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t7">VII · Where This Leads</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>What a Transform Actually Is</h1>
+<div class="subtitle">why re-describing a problem, without solving anything yet, can be the entire trick</div>
+
+<h2>The word "transform" is doing real work, not decoration</h2>
+<p>Before any integral appears, it's worth being honest about how strange the whole enterprise sounds. You have a function of time, \(f(t)\) — a perfectly ordinary object, a curve, a signal, a voltage rising and falling. Someone proposes: multiply it by a decaying exponential, add up the result over all of time, and call the total \(F(s)\), a completely different-looking object, a function not of time but of some new variable \(s\). Why would throwing away \(f(t)\)'s actual shape in favor of one number per \(s\) ever be progress? The answer has nothing special to do with Laplace, or exponentials, or even calculus — it's an instance of the single oldest trick in mathematics, and seeing that trick in its bare form first is what makes everything downstream feel inevitable rather than clever.</p>
+
+<div class="callout definition">
+<span class="callout-label">Working definition — a transform</span>
+<p>A <strong>transform</strong> is a rule that takes an object living in one description (call the space of such objects \(A\)) and re-expresses it, without losing any information, as an object in a second description (\(B\)) — chosen specifically because some operation that is hard to perform on objects in \(A\) becomes easy to perform on their images in \(B\). Using a transform to solve a problem always has the same three-step shape: <strong>transform</strong> the hard problem into \(B\), <strong>solve</strong> it there using whatever \(B\) makes easy, then <strong>invert</strong> the transform to read the answer back in the language you actually started in.</p>
+</div>
+
+<p>You already have working examples of this, long before any Laplace transform enters the picture. A <strong>logarithm</strong> is a transform: it converts multiplication, a genuinely laborious operation to perform by hand on large numbers, into addition, a trivial one. \(\log(ab) = \log a + \log b\) is not a curious identity — it's the entire reason slide rules and log tables were, for three centuries, the fastest way humans had to multiply. Nobody using a log table cared about logarithms for their own sake; they cared that hard multiplication became easy addition in the transformed world, and that \(10^{(\cdot)}\) — the inverse transform — converts the easy answer back.</p>
+
+<div class="ascii">   HARD operation in A                   EASY operation in B
+
+     a  ×  b                    log         log a  +  log b
+      \    /                  ───────►         \      /
+       \  /                                      \    /
+        ?                                       (just add)
+        │                                           │
+        │  ◄──────────────────  exp  ◄──────────────┘
+        ▼
+      a·b   ← read the real answer back in A, having never
+              multiplied two large numbers by hand at all</div>
+
+<p>A change of basis in linear algebra is the same move, one level more abstract: a vector's coordinates look complicated relative to one basis and diagonal-simple relative to another, and diagonalizing a matrix is nothing but choosing the basis (the eigenbasis) in which "apply this linear map" becomes "multiply each coordinate by its own single number." Sheet music is the same move again: a sound wave, as raw air pressure against time, is nearly unreadable by eye; re-expressed as pitch and duration, the same information becomes something a musician can act on instantly. In every case, nothing about the underlying object changed — only the coordinates used to describe it, chosen so that the operation you actually care about stops being hard.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — what makes a transform "good" for a job</span>
+<p>A transform earns its keep only relative to one specific hard operation. Logarithms are the right transform for multiplication and a useless one for addition (which was already easy). An eigenbasis is the right transform for "apply this matrix repeatedly" and irrelevant if all you ever do is add vectors. This essay is about the transform that is exactly right for one particular hard operation: <strong>differentiation</strong> — the operation at the heart of every linear differential equation, which is exactly why the companion <em>Differential Equations</em> essay reaches for it. Panel IV will show precisely what makes it the right tool: the new description is built entirely out of the one family of functions that differentiation itself treats as trivially as multiplication treats logarithms.</p>
+</div>
+
+<p>Hold that three-step shape — transform, solve, invert — in mind. Every remaining panel is filling in one specific instance of it: what the transform \(\mathcal L\) actually is, why Laplace was led to something with exactly this shape, why it makes differentiation easy, and how to read an answer back out once you have one.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>How Laplace Got There</h1>
+<div class="subtitle">he wasn't building a differential-equation solver — he was trying to read a whole sequence's future off a handful of algebra</div>
+
+<h2>A historical correction worth making up front</h2>
+<p>The tool taught in every engineering course as "the Laplace transform" — feed it an initial-value problem, get back an algebraic equation — is not, historically, something Pierre-Simon Laplace built for that purpose. He never solved a spring–mass–damper circuit with it. What he did build, and use relentlessly for decades in his work on probability, is the deeper idea this whole essay is really about: that bundling an entire sequence of numbers into a single function can convert hard operations on the sequence's <em>structure</em> into ordinary algebra on that function. Seeing that idea in its original, simpler, discrete form is the most honest way to answer "how did he think of it" — because it's the form he actually thought in.</p>
+
+<h2>Generating functions: Laplace's real tool</h2>
+<p>Suppose you have a sequence of numbers \(u_0, u_1, u_2, \dots\) — say, a sequence of probabilities, or the terms of a recurrence. Laplace's method, which he called the <strong>méthode des fonctions génératrices</strong>, was to stop treating the sequence as a list and instead package the whole thing into one power series:</p>
+<div class="katex-display" data-katex="G(t) = \sum_{n=0}^\infty u_n\,t^n"></div>
+<p>This is precisely the object the companion <em>Taylor Series</em> essay's closing panel calls a <strong>generating function</strong> — a formal power series whose coefficients are the sequence you actually care about, with no claim yet that the sum converges to anything geometric. The entire value of \(G(t)\) is that a relationship connecting the terms \(u_n\) to their neighbors — a <strong>recurrence</strong>, the discrete cousin of a differential equation — turns into a relationship you can solve for \(G(t)\) with nothing but cross-multiplication.</p>
+
+<h3>Watching it work: the same example the Taylor essay closed with</h3>
+<p>Take the Fibonacci recurrence, \(F_{n+2}=F_{n+1}+F_n\), \(F_0=0,\ F_1=1\), and form \(G(t)=\sum_{n\ge0}F_nt^n\). Multiply \(G\) by \(t\) and by \(t^2\) and subtract, lining every term up by its power of \(t\):</p>
+<div class="katex-display" data-katex="G(t)-tG(t)-t^2G(t) = F_0 + (F_1-F_0)t + \sum_{n\ge2}\big(F_n-F_{n-1}-F_{n-2}\big)t^n"></div>
+<p>Every coefficient in that last sum is exactly zero, by the recurrence itself — that's what the recurrence <em>says</em>. What survives is just the initial data: \(F_0=0\) and \(F_1-F_0=1\), so the whole right-hand side collapses to the single term \(t\). Hence \(G(t)(1-t-t^2)=t\), and</p>
+<div class="katex-display" data-katex="G(t) = \frac{t}{1-t-t^2}"></div>
+<p>No recursion was ever run. The infinite recursive rule, and the two starting values, were traded for one rational function, found by solving a single linear equation for \(G\). That trade — recursive structure in, algebra out — is the whole idea, in its original discrete home.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the mechanism underneath the trade</span>
+<p>What actually did the work is how \(G(t)\) responds to <em>shifting</em> the sequence's index. If \(v_n=u_{n+1}\), then \(\sum_n v_nt^n = \dfrac{G(t)-u_0}{t}\) — shift the index by one, and on the generating-function side that's nothing but "subtract the first term, then divide by \(t\)." A recurrence is a rule about shifted copies of a sequence; a generating function converts every shift into that one piece of algebra, and a linear recurrence, built from nothing but shifts and additions, is turned into a linear equation for \(G\) with no exceptions and no cleverness required per problem.</p>
+</div>
+
+<h2>The bridge to continuous time</h2>
+<p>Here is the reasoning — reconstructed in modern language, not a transcription of Laplace's own manuscripts, but built from exactly the mathematical content he was using — that leads from this discrete tool to the continuous one bearing his name. Ask the natural next question: differentiation, \(f\mapsto f'\), is the continuous-time cousin of a discrete shift — both measure "how the next instant differs from this one." If a discrete shift became clean algebra under \(\sum u_nt^n\), what does the continuous analogue of that same sum need to look like for differentiation to become equally clean algebra?</p>
+<p>Rewrite the generating function's building block. Since \(t^n=e^{n\ln t}\), introduce \(s:=-\ln t\), so that \(t=e^{-s}\) and \(t^n=e^{-ns}\). The generating function becomes</p>
+<div class="katex-display" data-katex="G(t) = \sum_{n=0}^\infty u_n\,t^n = \sum_{n=0}^\infty u_n\,e^{-ns}"></div>
+<p>— a sum, over the discrete instants \(n=0,1,2,\dots\), of each value \(u_n\) weighted by a decaying probe \(e^{-ns}\), one probe per instant. Now let the discrete index \(n\) become a continuous time \(t\), the sequence \(u_n\) become a function \(f(t)\), and the sum become the continuous accounting device a sum turns into once its steps shrink to zero — an integral:</p>
+<div class="katex-display" data-katex="\sum_{n} u_n\,e^{-ns} \;\;\xrightarrow[\text{continuum limit}]{}\;\; \int_0^\infty f(t)\,e^{-st}\,dt"></div>
+<p>That integral is the Laplace transform. Panel III builds it properly from here; the point of this derivation is that it isn't handed down from nowhere — it's the direct continuous shadow of the exact device Laplace already had in hand for sequences, arrived at by asking what a "generating function" has to look like once the thing being generated stops being discrete.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — this bridge is still in daily use, under a different name</span>
+<p>The identical construction, run in reverse discipline, is exactly how the <strong>Z-transform</strong> of discrete-time signal processing relates to the Laplace transform of continuous-time systems: \(X(z)=\sum_n x[n]z^{-n}\) is literally a generating function, and setting \(z=e^{sT}\) recovers the Laplace transform of a signal sampled every \(T\) seconds, in the limit \(T\to0\). Panel VII returns to this. The loop closes: Laplace's tool for sequences, generalized to continuous time, and the discrete tool engineers use today for sampled data, are the same idea walked in opposite directions.</p>
+</div>
+
+<h2>Two more threads, for the honest record</h2>
+<p>The exponential-kernel integral itself is older than this specific application. Decades before Laplace's major probability memoirs, <strong>Leonhard Euler</strong>, in the mid-1700s, had already used integrals of the form \(\int e^{sx}\varphi(x)\,dx\) as a direct solving device for linear differential equations — substituting an integral representation for an unknown solution and turning the differential equation into a simpler equation for \(\varphi\). Laplace's distinctive contribution was applying a strikingly similar integral to an unrelated problem — extracting whole probability distributions from generating functions — and doing so with such range and persistence that the tool became identified with his name.</p>
+
+<p>The version taught today — transform an entire initial value problem in one step, look up the answer in a table, invert — is later still. It comes from <strong>Oliver Heaviside</strong>'s <em>operational calculus</em> of the 1880s–90s: a bag of symbolic tricks for solving electrical circuit equations by treating \(d/dt\) as an ordinary algebraic symbol \(p\), used with great practical success and no rigorous justification, to the considerable irritation of contemporary mathematicians. It was only in the following decades — through the work of mathematicians including Thomas Bromwich and Gustav Doetsch, who showed that Heaviside's symbolic tricks were secretly shadows of Laplace's older integral — that the method was placed on rigorous footing and permanently took Laplace's name.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — a different tool with the same name</span>
+<p>Do not confuse the Laplace transform with <strong>Laplace's method</strong>, a separate technique (also his) for approximating integrals of the form \(\int e^{M\phi(x)}\,dx\) for large \(M\) by a saddle-point argument. Same mathematician, same taste for exponential integrals, two genuinely different tools.</p>
+</div>
+
+<p>So: how did Laplace think to discover it? Not in the form taught today, and not aimed at differential equations at all. What he discovered, and used over and over, was the master idea one level beneath it — that packaging an entire discrete structure into a single generating function converts operations on that structure into algebra. Panel III takes that idea in its continuous form and builds it rigorously.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>Building the Transform</h1>
+<div class="subtitle">why e⁻ˢᵗ, why start the clock at zero, and what convergence is quietly demanding</div>
+
+<h2>The definition</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — the Laplace transform</span>
+<div class="katex-display" data-katex="\mathcal L\{f\}(s) = F(s) = \int_0^\infty f(t)\,e^{-st}\,dt"></div>
+<p>defined for every \(s\) at which this improper integral converges. The restriction to \(t\ge0\) — the <strong>one-sided</strong> or <strong>unilateral</strong> convention — is deliberate: it matches the initial-value-problem picture of the companion <em>Differential Equations</em> essay directly, where a process has a definite start at \(t=0\) and nothing before that instant is in question.</p>
+</div>
+
+<h2>Reading the integral as a probe</h2>
+<p>Think of \(e^{-st}\), for real \(s\), as a measuring device rather than a mere factor: a decaying weight that you lay on top of \(f(t)\) before totaling the area underneath. As \(s\) increases, the probe decays faster, damping out whatever \(f\) is doing far out in time. That damping is doing genuine work: many functions of real interest — \(f(t)=t\), \(f(t)=e^{2t}\), \(f(t)=t^5\sin t\) — have no finite ordinary improper integral \(\int_0^\infty f(t)\,dt\) on their own, yet multiplying by a strong enough decaying probe tames every one of them into a convergent total. The Laplace transform doesn't ask "what's the total amount of \(f\)?" — a question that's often meaningless — it asks "how much of \(f\) survives being weighted down by a probe that fades at rate \(s\)?", and that question has a sensible answer for a huge class of functions, for every \(s\) large enough.</p>
+
+<h2>Two transforms, computed directly from the definition</h2>
+<p><strong>The unit step</strong>, \(f(t)=1\):</p>
+<div class="katex-display" data-katex="\mathcal L\{1\}(s) = \int_0^\infty e^{-st}\,dt = \left[-\frac{e^{-st}}{s}\right]_0^\infty = 0-\left(-\frac1s\right) = \frac1s \qquad (s&gt;0)"></div>
+<p>The upper limit vanishes only because \(s>0\) makes \(e^{-st}\to0\) as \(t\to\infty\); for \(s\le0\) the probe never decays and the integral simply doesn't converge — there's no algebra trick that fixes this, the area genuinely is infinite.</p>
+<p><strong>The pure exponential</strong>, \(f(t)=e^{at}\):</p>
+<div class="katex-display" data-katex="\mathcal L\{e^{at}\}(s) = \int_0^\infty e^{at}e^{-st}\,dt = \int_0^\infty e^{-(s-a)t}\,dt = \frac{1}{s-a} \qquad (s&gt;a)"></div>
+<p>the identical computation as the step, with \(s\) replaced by \(s-a\) — sensible, since the probe \(e^{-st}\) now has to out-race \(f\)'s own growth rate \(a\), not just hold its own against a constant.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — abscissa of convergence</span>
+<p>If \(|f(t)|\le Me^{at}\) for every \(t\ge0\) and some constants \(M,a\), then \(F(s)\) converges absolutely for every \(s\) with \(s&gt;a\). The smallest value of \(a\) for which such a bound holds is the function's <strong>abscissa of convergence</strong>, and \(F\) exists as an honest function precisely on the half-line to the right of it. It is exactly the break-even point where the probe's decay rate stops being able to out-race \(f\)'s own growth.</p>
+</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>A short transform table, with the abscissa each one needs</caption>
+<thead><tr><th>f(t)</th><th>F(s) = ℒ{f}(s)</th><th>converges for</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>1/s</td><td>s &gt; 0</td></tr>
+<tr><td>t</td><td>1/s²</td><td>s &gt; 0</td></tr>
+<tr><td>tⁿ</td><td>n!/s^(n+1)</td><td>s &gt; 0</td></tr>
+<tr><td>e^(at)</td><td>1/(s−a)</td><td>s &gt; a</td></tr>
+<tr><td>sin(bt)</td><td>b/(s²+b²)</td><td>s &gt; 0</td></tr>
+<tr><td>cos(bt)</td><td>s/(s²+b²)</td><td>s &gt; 0</td></tr>
+<tr><td>e^(at)sin(bt)</td><td>b/((s−a)²+b²)</td><td>s &gt; a</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — back to Panel I's general picture</span>
+<p>\(F(s)\), read this way, is a complete record of the answer to one question, asked once for every possible decay rate \(s\): <em>if I sift the whole history of \(f\) through a probe tuned to fade at rate \(s\), how much comes through, in total?</em> One number per probe, and — this is the nontrivial claim, taken up properly in Panel IV — that whole family of numbers turns out to determine \(f\) completely, the same way a function's coordinates in any genuine basis determine it completely.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Why It Works</h1>
+<div class="subtitle">the one algebraic fact — d/dt eˢᵗ = s·eˢᵗ — that the entire machine is built out of</div>
+
+<h2>The fact underneath everything</h2>
+<div class="callout insight">
+<span class="callout-label">Insight — the payoff of this whole essay</span>
+<p>Differentiate a pure exponential and you get the same exponential back, merely rescaled:</p>
+<div class="katex-display" data-katex="D\big[e^{st}\big] = \frac{d}{dt}e^{st} = s\,e^{st}"></div>
+<p>Exponentials are <strong>eigenfunctions</strong> of the differentiation operator \(D=d/dt\), with eigenvalue \(s\). Differentiating \(e^{st}\) doesn't reshape it, doesn't lower its degree, doesn't turn it into a different kind of function at all — it just multiplies it by a number. No other elementary family does this as cleanly. Contrast this with the companion <em>Taylor Series</em> essay's Panel VI, which showed \(D\) acting on the monomial basis \(\{1,x,x^2,\dots\}\): there, \(D\) is <em>nilpotent</em> — it eventually kills every polynomial, strictly lowering degree each time it's applied. On the exponential family, \(D\) is not nilpotent at all; it's <strong>diagonal</strong>. This is exactly the difference between the two essays' operator pictures, and it's the reason they reach for different tools: Taylor series is the right instrument for reading off <em>local</em> information at one point; the Laplace transform is the right instrument for handling differentiation <em>globally</em>, because it's built entirely out of the one family \(D\) treats as trivially as multiplication treats a number.</p>
+</div>
+
+<p>This is Panel I's thesis, cashed in concretely. A good transform is one built from the eigenfunctions of the operation you want to trivialize. If an arbitrary \(f(t)\) could be written as a superposition — a continuous blend — of exponentials \(e^{st}\), each weighted by some amount \(F(s)\), then differentiating the whole blend would do nothing but multiply each individual weight by its own \(s\): a hard operation on the whole function becomes an easy operation performed independently, piece by piece. The Laplace transform is exactly the bookkeeping device that records those weights, and its inverse is exactly the operation of re-assembling the blend. (Reassembling it explicitly is the job of the Bromwich inversion integral, a contour integral in the complex \(s\)-plane; this essay doesn't derive it, the same way the companion <em>Differential Equations</em> essay never needed to — in practice, inversion is done by partial fractions and a table, exactly as Panel III's table is meant to be used.)</p>
+
+<h2>Deriving the derivative rule, properly</h2>
+<p>State what needs proving: transforming \(f'\) should come out to be \(s\) times \(F(s)\), the eigenvalue-rescaling promised above — plus, possibly, some correction. Compute it directly from the definition, using integration by parts with \(u=e^{-st}\), \(dv=f'(t)\,dt\), so \(du=-se^{-st}\,dt\), \(v=f(t)\):</p>
+<div class="katex-display" data-katex="\mathcal L\{f'\}(s) = \int_0^\infty f'(t)e^{-st}\,dt = \Big[f(t)e^{-st}\Big]_0^\infty - \int_0^\infty f(t)\big(-se^{-st}\big)\,dt"></div>
+<p>Assuming \(s\) is past \(f\)'s abscissa of convergence, so that \(f(t)e^{-st}\to0\) as \(t\to\infty\), the boundary term at infinity vanishes, leaving only its value at \(t=0\):</p>
+<div class="katex-display" data-katex="\mathcal L\{f'\}(s) = \big(0 - f(0)\big) + s\int_0^\infty f(t)e^{-st}\,dt = sF(s) - f(0)"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — what the boundary term actually is</span>
+<p>The pure eigenvalue rescaling, \(s\cdot F(s)\), is what differentiation would do to a signal that was <em>already</em> a single clean exponential extending back to \(t=-\infty\) with no beginning. A general \(f(t)\), by contrast, genuinely starts somewhere — it has a value \(f(0)\) at the instant the clock begins — and \(-f(0)\) is exactly the bookkeeping charge for that fact: the one piece of information the eigenvalue-rescaling alone cannot see, because it only knows how to describe steady, ongoing exponential behavior, not a sudden beginning. This is the precise mechanism behind a fact the companion <em>Differential Equations</em> essay states but doesn't derive — that transforming an equation "bakes the initial conditions directly into the algebra." It isn't a convenient extra feature bolted onto the transform; it's the unavoidable leftover of turning differentiation into multiplication for a function that has a first instant at all.</p>
+</div>
+
+<p>Iterating the rule on \(f'\) itself gives the second-derivative rule immediately, with no new integration required:</p>
+<div class="katex-display" data-katex="\mathcal L\{f''\}(s) = s\,\mathcal L\{f'\}(s) - f'(0) = s\big(sF(s)-f(0)\big)-f'(0) = s^2F(s) - sf(0) - f'(0)"></div>
+<p>— exactly the formula the companion essay quotes, now derived rather than asserted, and by an argument that generalizes to any order by the same one-line induction.</p>
+
+<h2>Why an entire linear ODE collapses to algebra</h2>
+<p>A linear differential equation with constant coefficients, \(a_ny^{(n)}+\cdots+a_1y'+a_0y=g(t)\), is nothing but a <strong>polynomial in \(D\)</strong> applied to \(y\), set equal to \(g\). Transform both sides: every \(D^k\) becomes "multiply by \(s^k\)," plus a fixed handful of boundary terms built entirely from the initial data \(y(0),y'(0),\dots\). The entire differential equation — an object that instructs you to combine a function with several of its own derivatives — becomes one polynomial equation in \(s\) for the single unknown \(Y(s)\), solvable by division, exactly as Panel II's Fibonacci recurrence became one algebraic equation for \(G(t)\).</p>
+
+<div class="callout note">
+<span class="callout-label">Note — the same recipe as diagonalizing a matrix</span>
+<p>This is not a new trick relative to the rest of the subject — it's the identical recipe the companion essay's own Panel VI uses to solve a linear system \(\mathbf Y'=A\mathbf Y\): find the basis (there, eigenvectors of \(A\); here, the exponentials \(e^{st}\)) in which the operator you're fighting acts diagonally, solve the now-trivial diagonal problem, then transform back. A system matrix acting on vectors and the derivative operator acting on functions are different flavors of the same obstacle, solved by the same maneuver — locate the eigenbasis, and the hard operation becomes multiplication.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>The s-Plane</h1>
+<div class="subtitle">every pole of F(s) is a leftover fingerprint of one exponential that never fully blended away</div>
+
+<h2>Poles are not a computational accident</h2>
+<p>After the algebra in Panel IV, \(Y(s)\) typically comes out as a ratio of polynomials in \(s\). Partial fractions — already used in the companion essay's worked examples — break it into simple pieces \(\dfrac{A}{s-p}\), and Panel III's table reads each piece backward instantly:</p>
+<div class="katex-display" data-katex="\frac{A}{s-p} \quad\longleftrightarrow\quad A\,e^{pt}"></div>
+<p>So the <strong>poles</strong> of \(Y(s)\) — the values of \(s\) where its denominator vanishes — are not bookkeeping artifacts of the algebra. They are, quite literally, the exponents that appear in the time-domain solution. This is the single fact that makes it possible to read qualitative, long-term behavior directly off an algebraic object, without ever computing the inverse transform explicitly.</p>
+
+<div class="ascii">                    Im(s)
+                      │
+        pole at            │
+        p = -1+3i  ●        │        ●  pole at p = 2+i
+        (decaying,          │        (growing,
+         oscillating)       │         oscillating)
+                    ╲        │
+                     ╲       │
+   ──────────────────●───────┼───────────────●──────── Re(s)
+                p=-2          │           p=0.5
+              (pure decay,    │        (pure growth,
+               no oscillation)│        no oscillation)
+                              │
+                     ●────────┼── p = 2i  (undying oscillation,
+                    -2i       │             marginal — Re(p)=0)
+
+     LEFT half-plane: every term decays        RIGHT half-plane:
+     — this is what "stable" means             every term grows without bound</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Reading a pole's location as a time-domain shape</caption>
+<thead><tr><th>Pole location</th><th>Time-domain term</th><th>Behavior as t→∞</th></tr></thead>
+<tbody>
+<tr><td>Re(p) &lt; 0, Im(p) = 0</td><td>A·e^(pt), plain decay</td><td>→ 0</td></tr>
+<tr><td>Re(p) &lt; 0, Im(p) ≠ 0</td><td>decaying oscillation</td><td>→ 0, ringing</td></tr>
+<tr><td>Re(p) = 0, Im(p) ≠ 0</td><td>pure sin/cos</td><td>sustained forever, marginal</td></tr>
+<tr><td>Re(p) = 0, Im(p) = 0</td><td>constant (p=0)</td><td>flat</td></tr>
+<tr><td>Re(p) &gt; 0</td><td>growing (possibly oscillating)</td><td>→ ∞</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Complex poles always arrive in conjugate pairs when \(f(t)\) is real-valued, because the coefficients of the underlying polynomial in \(s\) are real; a lone pole at \(p=\sigma+i\omega\) is always accompanied by one at \(\sigma-i\omega\), and the pair combines into a real, decaying or growing sinusoid \(e^{\sigma t}\cos(\omega t+\varphi)\) — never a complex-valued time signal.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — the same stability criterion, met twice in this repository</span>
+<p>"Every eigenvalue has negative real part ⟹ stable" is exactly the criterion the companion <em>Differential Equations</em> essay states for a linear system \(\mathbf Y'=A\mathbf Y\), using the eigenvalues of the matrix \(A\). It is not a coincidence that the identical left-half-plane condition governs pole locations here: the Laplace transform of \(e^{At}\) (that essay's matrix exponential) has poles exactly at the eigenvalues of \(A\). Two different-looking pictures — a matrix's eigenvalues, and a transfer function's poles — are the same fact, viewed from two directions.</p>
+</div>
+
+<h2>Fourier as the boundary case</h2>
+<p>Restrict \(s\) to the imaginary axis, \(s=i\omega\), and the decaying probe \(e^{-st}\) stops decaying at all — \(e^{-i\omega t}=\cos\omega t - i\sin\omega t\) is a pure, undying oscillation. Evaluating \(F(s)\) along that one vertical line,</p>
+<div class="katex-display" data-katex="F(i\omega) = \int_0^\infty f(t)\,e^{-i\omega t}\,dt"></div>
+<p>no longer asks "how much of \(f\) survives a decaying probe," but "how much of \(f\) resonates with a pure tone of frequency \(\omega\)" — this is the <strong>Fourier transform</strong>, the frequency spectrum of \(f\). It is available directly, with no extra work, exactly when the region of convergence reaches all the way to the imaginary axis — that is, when \(f\)'s abscissa of convergence is \(\le0\). The imaginary axis is the one line in the \(s\)-plane separating decay from growth, and it is simultaneously the one line where "decay rate" stops meaning anything and "frequency" is all that's left.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Interactive Lab</h1>
+<div class="subtitle">pick a function and a probe rate s, then watch whether the running area settles down or runs away</div>
+
+<p>Choose \(f(t)\), then drag \(s\). The left canvas plots \(f(t)\) in <span style="color:var(--accent)">gold</span> against the decaying probe \(e^{-st}\) in <span style="color:var(--blue)">dashed blue</span> — this is literally what gets multiplied together. The right canvas plots the resulting integrand \(f(t)e^{-st}\) in <span style="color:var(--green)">green</span> and the running total \(\int_0^T f(t)e^{-st}\,dt\), plotted as a function of \(T\), in <span style="color:var(--purple)">purple</span> — that running total is \(F(s)\) in the making. When \(s\) sits past the abscissa of convergence, a <span style="color:var(--accent)">dashed gold</span> line marks the closed-form target \(F(s)\), and the purple curve should visibly home in on it. Push \(s\) down toward, or past, the abscissa, and watch that convergence fail.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">f(t)  &amp;  THE PROBE e⁻ˢᵗ</div>
+      <canvas id="cvL1" width="460" height="300" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">INTEGRAND  &amp;  RUNNING INTEGRAL ∫₀ᵀ f(t)e⁻ˢᵗdt</div>
+      <canvas id="cvL2" width="460" height="300" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Function f(t)</label>
+      <select id="lfnSelect">
+        <option value="step" selected>u(t) = 1  (step)</option>
+        <option value="decay">e^(−2t)</option>
+        <option value="growth">e^(1.2t)</option>
+        <option value="ramp">t</option>
+        <option value="sin3">sin(3t)</option>
+        <option value="dsin">e^(−t)·sin(4t)</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>probe rate s</label>
+      <input type="range" id="lsSlider" min="-1.5" max="3" step="0.05" value="1.2">
+      <span class="readout" id="lsReadout">1.20</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">PROBE RATE s</div><div class="v" id="lsOut">1.20</div></div>
+    <div class="block"><div class="k">ABSCISSA OF CONVERGENCE a</div><div class="v" id="laOut">0.00</div></div>
+    <div class="block"><div class="k">CONVERGES? (s &gt; a)</div><div class="v" id="lConvOut">…</div></div>
+    <div class="block"><div class="k">CLOSED-FORM F(s)</div><div class="v" id="lFOut">…</div></div>
+    <div class="block"><div class="k">RUNNING ∫ AT T=Tmax</div><div class="v" id="lRunOut">…</div></div>
+    <div class="block"><div class="k">|RUNNING − F(s)|</div><div class="v" id="lErrOut">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--accent)"></span> f(t)</span>
+    <span><span class="swatch dash" style="background:var(--blue)"></span> probe e⁻ˢᵗ</span>
+    <span><span class="swatch" style="background:var(--green)"></span> integrand f(t)e⁻ˢᵗ</span>
+    <span><span class="swatch" style="background:var(--purple)"></span> running integral</span>
+    <span><span class="swatch dash" style="background:var(--accent)"></span> target F(s)</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — things worth trying</span>
+<p>Start with <code>e^(1.2t)</code> (abscissa \(a=1.2\)) at the default \(s=2.4\): the probe out-decays the growth, and the purple curve settles cleanly onto the gold dashed target. Now drag \(s\) down past \(1.2\) — the blue probe can no longer keep up with \(f\)'s own growth, the green integrand stops shrinking, and the purple running total climbs without bound instead of leveling off: convergence failing, in real time, exactly at the abscissa Panel III named. Try <code>sin(3t)</code> next and watch the running integral oscillate while it converges — a reminder that "converges" doesn't require the integrand to be well-behaved, only that its accumulated total settles down.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>Where This Leads</h1>
+<div class="subtitle">Fourier, the Z-transform, transfer functions, and one line to carry away</div>
+
+<h2>Fourier, in full</h2>
+<p>Panel V's boundary case generalizes: letting \(t\) range over all of \(\mathbb R\) instead of just \(t\ge0\), and evaluating along the whole imaginary axis, gives the full <strong>Fourier transform</strong>, \(\hat f(\omega)=\int_{-\infty}^{\infty}f(t)e^{-i\omega t}\,dt\) — the complete frequency spectrum of a signal with no notion of "starting at zero." Everything Panel IV built survives the trip: differentiation still becomes multiplication (by \(i\omega\) now, instead of \(s\)), because the underlying reason is unchanged — pure oscillations \(e^{i\omega t}\) are still eigenfunctions of \(D\), just restricted to the eigenvalues that lie exactly on the imaginary axis.</p>
+
+<h2>The Z-transform, closing Panel II's loop</h2>
+<p>Panel II's bridge runs both directions. Sample a continuous signal every \(T\) seconds and form its generating function in the sample index — \(X(z)=\sum_n x[n]z^{-n}\) — and you have the <strong>Z-transform</strong>, the tool digital filters and discrete control systems are built on, related to the Laplace transform by \(z=e^{sT}\) exactly as Panel II derived in reverse. Laplace's own tool for sequences and probabilities, generalized to continuous time by one substitution, and then re-discretized for digital computation by the inverse substitution — the whole arc, discrete to continuous and back to discrete, is one idea, walked in a circle.</p>
+
+<h2>Transfer functions: the s-plane as an engineering language</h2>
+<p>For a linear, time-invariant system driven by an input \(x(t)\) and producing output \(y(t)\), the ratio \(H(s)=Y(s)/X(s)\) — the <strong>transfer function</strong> — completely characterizes the system, independent of any particular input: Panel V's pole picture applied to \(H(s)\) alone tells you whether the system is stable, how fast it settles, and whether it rings, before a single specific signal is ever run through it. This is the language circuit design, control theory, and signal processing are conducted in almost exclusively — not because engineers care about integrals, but because the pole picture answers the questions they actually have.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — companion essays</span>
+<p>This essay leaned throughout on two companions worth reading alongside it: the <em>Differential Equations</em> essay, whose own Panel VI introduces the transform's mechanics — the derivative rule, the shift theorem, the convolution theorem, and fully worked initial-value problems — material this essay deliberately did not repeat; and the <em>Taylor Series</em> essay, for the generating-function idea in Panel II and the operator language (\(D\) as a linear map, diagonal versus nilpotent) that Panel IV's "why it works" argument is built from directly.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>A transform is nothing but a change of coordinates, chosen so a hard operation becomes an easy one; the Laplace transform is the specific change of coordinates built entirely out of the one family of functions — the exponentials — that differentiation treats as mere multiplication; and Laplace himself arrived at its ancestor not by chasing differential equations at all, but by asking, again and again in the mathematics of chance, what a whole sequence's future looks like once it's rewritten as a single algebraic object.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6','t7'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawLaplace();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ---------- shared helpers ----------
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function fmtN(n, d){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+
+// ============ INTERACTIVE LAB: THE LAPLACE INTEGRAL ============
+const LFNS = {
+  step:   { label:'u(t) = 1', f:t=>1,                              a:0,    F:s=> 1/s,                         Tmax:6, y1:[-0.5,2],   y2:[-0.3,1.6] },
+  decay:  { label:'e^(−2t)',  f:t=>Math.exp(-2*t),                 a:-2,   F:s=> 1/(s+2),                     Tmax:4, y1:[-0.5,1.5], y2:[-0.3,1.6] },
+  growth: { label:'e^(1.2t)', f:t=>Math.exp(1.2*t),                a:1.2,  F:s=> 1/(s-1.2),                   Tmax:4, y1:[-1,6],     y2:[-0.3,1.6] },
+  ramp:   { label:'t',        f:t=>t,                              a:0,    F:s=> 1/(s*s),                     Tmax:6, y1:[-1,6],     y2:[-0.3,1.3] },
+  sin3:   { label:'sin(3t)',  f:t=>Math.sin(3*t),                  a:0,    F:s=> 3/(s*s+9),                   Tmax:6, y1:[-1.5,1.5], y2:[-1,1.6] },
+  dsin:   { label:'e^(−t)sin(4t)', f:t=>Math.exp(-t)*Math.sin(4*t),a:-1,   F:s=> 4/((s+1)*(s+1)+16),          Tmax:6, y1:[-1.2,1.2], y2:[-1,1.6] }
+};
+
+let LL = { fn:'step', s:1.2 };
+
+const lfnSelect = document.getElementById('lfnSelect');
+const lsSlider = document.getElementById('lsSlider');
+const lsReadout = document.getElementById('lsReadout');
+const cvL1 = document.getElementById('cvL1');
+const cvL2 = document.getElementById('cvL2');
+const ctx1 = cvL1.getContext('2d');
+const ctx2 = cvL2.getContext('2d');
+const lsOut = document.getElementById('lsOut');
+const laOut = document.getElementById('laOut');
+const lConvOut = document.getElementById('lConvOut');
+const lFOut = document.getElementById('lFOut');
+const lRunOut = document.getElementById('lRunOut');
+const lErrOut = document.getElementById('lErrOut');
+
+function onLFnChange(){
+  const cfg = LFNS[LL.fn];
+  const min = cfg.a - 1.5, max = cfg.a + 3, def = cfg.a + 1.2;
+  lsSlider.min = min.toFixed(2); lsSlider.max = max.toFixed(2); lsSlider.step = 0.05;
+  LL.s = def;
+  lsSlider.value = LL.s;
+  lsReadout.textContent = LL.s.toFixed(2);
+  drawLaplace();
+}
+lfnSelect.addEventListener('change', ()=>{ LL.fn = lfnSelect.value; onLFnChange(); });
+lsSlider.addEventListener('input', ()=>{ LL.s = +lsSlider.value; lsReadout.textContent = LL.s.toFixed(2); drawLaplace(); });
+
+function plotCurve(ctx, xs, ys, yMin, yMax, points, color, dashed){
+  ctx.strokeStyle = color; ctx.lineWidth = dashed ? 1.6 : 2.1; ctx.lineJoin='round';
+  if(dashed) ctx.setLineDash([6,4]); else ctx.setLineDash([]);
+  ctx.beginPath(); let started=false;
+  points.forEach(([wx,wy])=>{
+    if(!Number.isFinite(wy) || wy<yMin-0.3 || wy>yMax+0.3){ started=false; return; }
+    const sx=xs(wx), sy=ys(Math.max(yMin,Math.min(yMax,wy)));
+    if(!started){ ctx.moveTo(sx,sy); started=true; } else ctx.lineTo(sx,sy);
+  });
+  ctx.stroke(); ctx.setLineDash([]);
+}
+
+function drawLaplace(){
+  const cfg = LFNS[LL.fn];
+  const s = LL.s, a = cfg.a;
+  const Tmax = cfg.Tmax;
+  const N = 400;
+  const dt = Tmax/N;
+
+  const tArr=[], fArr=[], probeArr=[], integArr=[], runArr=[];
+  let acc = 0;
+  for(let i=0;i<=N;i++){
+    const t = i*dt;
+    const fv = cfg.f(t);
+    const pv = Math.exp(-s*t);
+    const iv = fv*pv;
+    if(i>0){ const prevIv = integArr[i-1]; acc += 0.5*(prevIv+iv)*dt; }
+    tArr.push(t); fArr.push(fv); probeArr.push(pv); integArr.push(iv); runArr.push(acc);
+  }
+
+  const converges = s > a;
+  const Fval = converges ? cfg.F(s) : NaN;
+
+  // ---- canvas 1: f(t) & probe ----
+  drawPanel(ctx1, cvL1, tArr, [
+    {vals:fArr, color:cssVar('--accent'), dashed:false},
+    {vals:probeArr, color:cssVar('--blue'), dashed:true}
+  ], 0, Tmax, cfg.y1[0], cfg.y1[1]);
+
+  // ---- canvas 2: integrand & running integral (+ target line) ----
+  drawPanel(ctx2, cvL2, tArr, [
+    {vals:integArr, color:cssVar('--green'), dashed:false},
+    {vals:runArr, color:cssVar('--purple'), dashed:false}
+  ], 0, Tmax, cfg.y2[0], cfg.y2[1], converges ? Fval : null);
+
+  // ---- readouts ----
+  lsOut.textContent = s.toFixed(2);
+  laOut.textContent = a.toFixed(2);
+  lConvOut.textContent = converges ? 'yes' : 'no';
+  lConvOut.className = 'v ' + (converges ? 'ok' : 'bad');
+  lFOut.textContent = converges ? fmtN(Fval,4) : 'diverges';
+  lFOut.className = 'v ' + (converges ? 'ok' : 'bad');
+  const runFinal = runArr[runArr.length-1];
+  lRunOut.textContent = fmtN(runFinal,4);
+  lErrOut.textContent = converges ? fmtN(Math.abs(runFinal-Fval),4) : '—';
+}
+
+function drawPanel(ctx, canvas, tArr, series, xMin, xMax, yMin, yMax, targetLine){
+  const W=canvas.width, H=canvas.height;
+  const marginL=42, marginR=14, marginT=14, marginB=28;
+  const plotW=W-marginL-marginR, plotH=H-marginT-marginB;
+  const xs = wx => marginL + (wx-xMin)/(xMax-xMin)*plotW;
+  const ys = wy => marginT + (1-(wy-yMin)/(yMax-yMin))*plotH;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = cssVar('--bg-elevated'); ctx.fillRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle = cssVar('--border'); ctx.lineWidth=1;
+  const gxStep = xMax<=6 ? 1 : 2;
+  for(let gx=0; gx<=xMax; gx+=gxStep){ ctx.beginPath(); ctx.moveTo(xs(gx),marginT); ctx.lineTo(xs(gx),marginT+plotH); ctx.stroke(); }
+  for(let gy=Math.ceil(yMin); gy<=Math.floor(yMax); gy++){ ctx.beginPath(); ctx.moveTo(marginL,ys(gy)); ctx.lineTo(marginL+plotW,ys(gy)); ctx.stroke(); }
+  ctx.strokeStyle = cssVar('--ink-faint'); ctx.lineWidth=1.2;
+  if(yMin<=0 && yMax>=0){ ctx.beginPath(); ctx.moveTo(marginL,ys(0)); ctx.lineTo(marginL+plotW,ys(0)); ctx.stroke(); }
+  ctx.beginPath(); ctx.moveTo(xs(0),marginT); ctx.lineTo(xs(0),marginT+plotH); ctx.stroke();
+
+  // target line, if provided
+  if(targetLine!==null && targetLine!==undefined && Number.isFinite(targetLine) && targetLine>=yMin && targetLine<=yMax){
+    ctx.strokeStyle = cssVar('--accent'); ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(marginL,ys(targetLine)); ctx.lineTo(marginL+plotW,ys(targetLine)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // series
+  series.forEach(sr=>{
+    const points = tArr.map((t,i)=>[t, sr.vals[i]]);
+    plotCurve(ctx, xs, ys, yMin, yMax, points, sr.color, sr.dashed);
+  });
+}
+
+// ---------- init ----------
+onLFnChange();
+</script>
+
+</body>
+</html>
