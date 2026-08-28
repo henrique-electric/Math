@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector Fields — Flow, Conservation, and the Line Integral</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">VECTOR FIELDS</div>
+  <button class="tab-btn active" data-tab="t1">I · What Is a Vector Field</button>
+  <button class="tab-btn" data-tab="t2">II · Integrating Along a Path</button>
+  <button class="tab-btn" data-tab="t3">III · Conservative Fields</button>
+  <button class="tab-btn" data-tab="t4">IV · Testing for a Potential</button>
+  <button class="tab-btn" data-tab="t5">V · Circulation &amp; Green's Theorem</button>
+  <button class="tab-btn" data-tab="t6">VI · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t7">VII · The Big Picture</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Vector Fields</h1>
+<div class="subtitle">a function that hands back an arrow instead of a number — and the two families of arrows that organize everything that follows</div>
+
+<h2>From a number at each point to an arrow at each point</h2>
+<p>A scalar field is the familiar kind of function: at every point of the plane it hands you back a single number. Temperature \(T(x,y)\) on a weather map is a scalar field — at each spot, one number, a color on the map. A <strong>vector field</strong> asks a different question at each point: not "how much," but "how much, and in which direction." Wind doesn't just have a speed at each location — it has a direction. Gravity near a planet doesn't just have a strength — it points somewhere. At every point, instead of a single number, you get an <em>arrow</em>.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — vector field</span>
+<p>A vector field on a region \(D\subseteq\mathbb R^2\) is a function \(\mathbf F:D\to\mathbb R^2\) assigning to each point \((x,y)\) a vector</p>
+<div class="katex-display" data-katex="\mathbf F(x,y) = \big(P(x,y),\,Q(x,y)\big) = P(x,y)\,\mathbf i + Q(x,y)\,\mathbf j"></div>
+<p>where \(P\) and \(Q\), the <strong>components</strong>, are ordinary scalar functions of \((x,y)\). Nothing here is exotic — a vector field is just <em>two</em> scalar fields, glued together and read as one arrow rather than two separate numbers. The three-dimensional version is identical in spirit: \(\mathbf F(x,y,z)=\big(P,Q,R\big)\).</p>
+</div>
+
+<p>Concrete pictures worth keeping in mind: the velocity of wind at every point of the atmosphere, the velocity of water at every point of a river, the gravitational pull at every point around a planet, the electric field around a charge, and — the purely mathematical example that turns out to run the whole show — the gradient of a hill's height function, \(\nabla h\), an arrow at every point telling you which way is steepest uphill and by how much.</p>
+
+<h3>Drawing a vector field</h3>
+<p>You can't draw the arrow at literally every point — there are infinitely many. The convention is to sample a grid of points, and at each one draw a short arrow starting there, pointing in the direction of \(\mathbf F\) at that point, with a length representing (often only roughly, for legibility) its magnitude. This is the picture the interactive lab in Panel VI draws for you directly.</p>
+
+<div class="ascii">   GRADIENT FIELD  ∇f                       ROTATIONAL FIELD
+
+        <span class="hl">↖ ↑ ↗</span>                                  → ↘ ↓
+        <span class="hl">← · →</span>     level curves of f:            ↑  ·  ↓    every arrow is
+        <span class="hl">↙ ↓ ↘</span>     concentric circles            ← ↖ ←    tangent to a circle
+                                                        centered at the swirl
+   every arrow crosses a level
+   curve at a right angle, pointing
+   toward higher (or lower) values</div>
+
+<h3>Two families worth recognizing on sight</h3>
+<p>Almost every vector field you'll meet is some blend of two archetypes. Learning to recognize them by eye is worth more than any formula in this essay.</p>
+
+<p><strong>Family 1 — gradient fields.</strong> If \(f(x,y)\) is a scalar function (think: a height, a temperature, a potential), its gradient \(\nabla f = (f_x,f_y)\) is itself a vector field. At every point, \(\nabla f\) points in the direction \(f\) increases fastest, its length measures how steep that increase is, and — this is the picture to hold onto — it is always <strong>perpendicular to the level curve of \(f\) through that point</strong>. Take \(f(x,y)=x^2+y^2\), a bowl-shaped surface. Its level curves are concentric circles, and \(\nabla f=(2x,2y)\) is a field of arrows pointing straight outward, radially, growing longer farther from the center — exactly perpendicular to those circles everywhere.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Picture a topographic map's contour lines. Water doesn't flow <em>along</em> a contour line — a contour line is a path of constant elevation, so flowing along it does no downhill work at all. Water flows <em>across</em> contour lines, perpendicular to them, straight down the steepest available slope. That's not a coincidence or a metaphor: a gradient field's arrows are, quite literally, always perpendicular to the level curves of its potential, for exactly this reason.</p>
+</div>
+
+<p><strong>Family 2 — rotational fields.</strong> Take \(\mathbf F(x,y)=(-y,x)\). At the point \((1,0)\) it points straight up, \((0,1)\); a quarter-turn away at \((0,1)\) it points straight left, \((-1,0)\). At every point, the arrow is perpendicular to the line from the origin to that point — tangent to the circle through it — producing a swirling, pinwheel pattern with no center of "outflow" anywhere. Fields like this arise from rotating fluid, from the magnetic field circling a current-carrying wire, from anything with a genuine sense of spin built in.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — why these two families matter so much</span>
+<p>Family 1 fields are called <strong>conservative</strong>, and they turn out to make integration along a path almost embarrassingly easy — Panel III shows why. Family 2 fields are, generically, <strong>not</strong> conservative, and integrating along a path in them behaves in a genuinely different way — Panels II and V work out exactly how. Learning to tell these two families apart at a glance, and knowing precisely how to integrate honestly along a path in either case, is the entire content of this essay.</p>
+</div>
+
+<h3>Flow lines</h3>
+<p>One more piece of intuition, used implicitly throughout: a <strong>flow line</strong> (or streamline) of \(\mathbf F\) is a curve that is, at every one of its points, tangent to \(\mathbf F\) there. Picture a leaf dropped into a river — the path it traces out is a flow line of the water's velocity field. Vector fields aren't studied in isolation; the natural question to ask of one is always "what happens as something moves through it, along some path?" That question — made precise — is exactly the subject of Panel II.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Integrating Along a Path</h1>
+<div class="subtitle">work, one small step at a time — the same chop-sample-sum-limit maneuver, now dotted against a direction</div>
+
+<h2>The physical question that forces this definition</h2>
+<p>Start with the simplest possible case, from introductory physics: a <em>constant</em> force \(\mathbf F\) pushes an object through a <em>straight</em> displacement \(\mathbf d\). The work done is</p>
+<div class="katex-display" data-katex="W = \mathbf F\cdot\mathbf d"></div>
+<p>Only the component of \(\mathbf F\) <em>along</em> the direction of motion contributes; a force perpendicular to the motion does zero work, however strong it is. But real fields vary from point to point, and real paths curve. The line integral is nothing more than what happens when you force this one idea — dot the field against the direction of travel — to survive both of those complications at once.</p>
+
+<h2>Building it from scratch</h2>
+<p>Let \(C\) be a curve from point \(A\) to point \(B\), traced out by a parametrization \(\mathbf r(t)=(x(t),y(t))\) for \(t\in[a,b]\), with \(\mathbf r(a)=A\), \(\mathbf r(b)=B\). Chop \([a,b]\) into small pieces \(a=t_0\lt t_1\lt\dots\lt t_n=b\). Over the \(i\)-th piece, the actual displacement along the curve is</p>
+<div class="katex-display" data-katex="\Delta\mathbf r_i = \mathbf r(t_i)-\mathbf r(t_{i-1}) \approx \mathbf r'(t_i^*)\,\Delta t_i"></div>
+<p>for some sample time \(t_i^*\) in that subinterval — a mean-value-theorem-flavored approximation, exact in the limit as \(\Delta t_i\to0\). Because the piece is tiny, \(\mathbf F\) is nearly constant along it, so the incremental work done over that one small arc is well-approximated by the constant-force formula above, applied locally:</p>
+<div class="katex-display" data-katex="\text{work on piece } i \;\approx\; \mathbf F(\mathbf r(t_i^*))\cdot \Delta\mathbf r_i \;\approx\; \mathbf F(\mathbf r(t_i^*))\cdot \mathbf r'(t_i^*)\,\Delta t_i"></div>
+<p>Sum over every piece, and let the partition refine so the norm \(\max_i\Delta t_i\to0\):</p>
+
+<div class="ascii">   A curve C, chopped into small arcs, each dotted against F
+
+   A = r(t0)                                              B = r(tn)
+     •───•───•───•─ ... ─•───•───•
+             Δr_i ≈ r'(t_i*) Δt_i        sampled with  <span class="hl">F(r(t_i*))</span>
+
+   incremental work on piece i   ≈  F(r(t_i*)) · Δr_i
+   total work, summed and refined  =  Σ F(r(t_i*))·r'(t_i*) Δt_i  →  ∫ F(r(t))·r'(t) dt</div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the line integral of a vector field</span>
+<div class="katex-display" data-katex="\int_C \mathbf F\cdot d\mathbf r \;=\; \int_a^b \mathbf F(\mathbf r(t))\cdot \mathbf r'(t)\,dt \;=\; \int_a^b \Big[P(x(t),y(t))\,x'(t) + Q(x(t),y(t))\,y'(t)\Big]dt"></div>
+<p>The same integral is often written in <strong>differential form</strong>, since \(dx=x'(t)\,dt\) and \(dy=y'(t)\,dt\):</p>
+<div class="katex-display" data-katex="\int_C \mathbf F\cdot d\mathbf r \;=\; \int_C P\,dx + Q\,dy"></div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the same recurring maneuver behind every integral you've ever computed — chop, sample, multiply, sum, take a limit — just applied to something new: instead of multiplying a height by a width, or a height by a patch of area, each infinitesimal contribution here is a <em>dot product</em> between the field and the direction the curve happens to be heading at that instant. The definition isn't inventing a new kind of limit; it's re-running the familiar one with a new kind of "multiply."</p>
+</div>
+
+<h3>A worked example</h3>
+<p>Let \(\mathbf F(x,y)=(-y,x)\), the swirl field from Panel I, and let \(C\) be the unit circle traced once counterclockwise: \(\mathbf r(t)=(\cos t,\sin t)\), \(t\in[0,2\pi]\), so \(\mathbf r'(t)=(-\sin t,\cos t)\). Then</p>
+<div class="katex-display" data-katex="\mathbf F(\mathbf r(t))\cdot\mathbf r'(t) = (-\sin t)(-\sin t) + (\cos t)(\cos t) = \sin^2 t+\cos^2 t = 1 \;\implies\; \int_C \mathbf F\cdot d\mathbf r = \int_0^{2\pi} 1\,dt = 2\pi"></div>
+<p>Read the geometry behind that number: at every point of the circle, \(\mathbf F\) is tangent to the circle and pointing the <em>same way you're traveling</em> — so every infinitesimal piece of work is positive, and they all add up rather than cancel. Reverse the direction of travel — same circle, clockwise — and \(\mathbf r'(t)\) flips sign, so the whole integral flips sign too: \(-2\pi\).</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — orientation matters</span>
+<p>Unlike an ordinary arc-length integral of a scalar function, \(\int_C f\,ds\), which doesn't care which way you traverse \(C\), the line integral of a vector field is <strong>orientation-dependent</strong>: reversing the direction of travel negates the answer, \(\int_{-C}\mathbf F\cdot d\mathbf r = -\int_C \mathbf F\cdot d\mathbf r\). This is one of the most common sources of sign errors — always fix a direction of travel before computing.</p>
+</div>
+
+<h3>What survives, for free, from being a sum of dot products</h3>
+<p>Because the line integral is built as a limit of sums, it inherits several facts immediately, with no extra machinery: <strong>linearity</strong> in \(\mathbf F\); <strong>additivity</strong> over a curve split into consecutive pieces, \(\int_{C_1+C_2}\mathbf F\cdot d\mathbf r = \int_{C_1}\mathbf F\cdot d\mathbf r+\int_{C_2}\mathbf F\cdot d\mathbf r\); and <strong>independence from the choice of parametrization</strong>, provided the new parametrization traces the same curve in the same direction, only possibly at a different speed — a quick chain-rule check confirms the extra speed factor introduced by reparametrizing cancels exactly, the same way it does in an ordinary 1D substitution.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>Conservative Fields</h1>
+<div class="subtitle">when the field is secretly a slope map, the line integral collapses to two numbers: where you started, and where you ended</div>
+
+<h2>A puzzle from the last example</h2>
+<p>Panel II's worked example should feel slightly unsettling. The swirl field pushed something all the way around a loop, back to <em>exactly</em> where it started — and yet the total work done was \(2\pi\), not zero. If \(\mathbf F\) were a real physical force, that looks like getting energy for free just by going in a circle. Some fields, it turns out, never let that happen: send them around any closed loop at all, and the net work is always exactly zero. These are the <strong>conservative</strong> fields, and understanding why they behave this way — and exactly how much easier they are to integrate — is the payoff of this panel.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — conservative vector field</span>
+<p>\(\mathbf F\) is <strong>conservative</strong> on a domain \(D\) if there exists a scalar function \(f\) (a <strong>potential function</strong>) such that</p>
+<div class="katex-display" data-katex="\mathbf F = \nabla f \qquad \text{throughout } D"></div>
+<p>In other words: a conservative field is precisely a gradient field, the first family from Panel I, now given a name that reflects what it's about to earn.</p>
+</div>
+
+<h2>The Fundamental Theorem for Line Integrals</h2>
+<p>Suppose \(\mathbf F=\nabla f\) throughout an open, connected region containing a piecewise-smooth curve \(C\) running from \(A\) to \(B\). Then</p>
+<div class="katex-display" data-katex="\int_C \nabla f\cdot d\mathbf r \;=\; f(B)-f(A)"></div>
+
+<h3>Where this comes from — literally the chain rule, once</h3>
+<p>Let \(g(t)=f(\mathbf r(t))\), the value of \(f\) at time \(t\) along the curve. By the multivariable chain rule,</p>
+<div class="katex-display" data-katex="g'(t) = \nabla f(\mathbf r(t))\cdot \mathbf r'(t) = \mathbf F(\mathbf r(t))\cdot\mathbf r'(t)"></div>
+<p>— which is exactly the integrand sitting inside Panel II's definition. So</p>
+<div class="katex-display" data-katex="\int_C \mathbf F\cdot d\mathbf r = \int_a^b \mathbf F(\mathbf r(t))\cdot\mathbf r'(t)\,dt = \int_a^b g'(t)\,dt = g(b)-g(a) = f(B)-f(A)"></div>
+<p>by the ordinary, single-variable Fundamental Theorem of Calculus, applied to the one-variable function \(g\). Nothing new was invented here — this is <em>the</em> Fundamental Theorem of Calculus, recognized after being fed through the chain rule exactly once.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — where the name comes from</span>
+<p>Physics defines force as \(\mathbf F=-\nabla U\) for a potential energy \(U\) (the sign is a convention, not a new idea). The theorem then says the work done by the force is \(W=\int_C\mathbf F\cdot d\mathbf r = -\big(U(B)-U(A)\big)=-\Delta U\). Since the work-energy theorem gives \(W=\Delta(\text{kinetic energy})\), combining the two says \(\Delta(\text{KE})+\Delta U=0\) — total mechanical energy is <em>conserved</em>. The line-integral property proved above (path independence, coming next) isn't the origin of the name "conservative" — it's the mathematical shadow that energy conservation casts onto the geometry of paths.</p>
+</div>
+
+<h3>Two immediate corollaries</h3>
+<p>Both follow from the theorem with no further work:</p>
+<div class="katex-display" data-katex="\textbf{Path independence: } \int_C \mathbf F\cdot d\mathbf r \text{ depends only on } A \text{ and } B, \text{ never on the route } C \text{ between them}"></div>
+<div class="katex-display" data-katex="\textbf{Zero circulation: } \oint_C \mathbf F\cdot d\mathbf r = f(A)-f(A) = 0 \text{ for every closed loop } C"></div>
+<p>This is exactly why the swirl field's loop integral of \(2\pi\) was possible in the first place: that field is <em>not</em> conservative (Panel IV confirms this directly), so nothing here forbids a nonzero answer. For a genuinely conservative field, that same computation is guaranteed, in advance, to come out to zero — for <em>every</em> closed loop, not just the ones you happen to check.</p>
+
+<h3>A worked example — the payoff, made concrete</h3>
+<p>Take \(\mathbf F(x,y)=(2xy+3,\,x^2-4y)\) (Panel IV verifies this is conservative and derives its potential in full). One valid potential is \(f(x,y)=x^2y+3x-2y^2\). To find \(\int_C \mathbf F\cdot d\mathbf r\) from \(A=(0,0)\) to \(B=(1,2)\) along <em>any</em> path at all — a straight line, a spiral, anything — the theorem says:</p>
+<div class="katex-display" data-katex="\int_C \mathbf F\cdot d\mathbf r = f(1,2)-f(0,0) = \big(1^2\cdot 2+3\cdot 1-2\cdot 2^2\big) - 0 = (2+3-8) - 0 = -3"></div>
+<p>No parametrization, no antiderivatives of a single-variable integral, no reference to the shape of \(C\) at all — just two evaluations of \(f\). This is the "embarrassingly easy" case promised back in Panel I.</p>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Testing for a Potential</h1>
+<div class="subtitle">a two-line arithmetic check that almost decides everything, and the topological catch that keeps it from being the whole story</div>
+
+<h2>From path-independence to an actual potential</h2>
+<p>Panel III showed conservative \(\implies\) path-independent. The converse is also true, and constructing it explicitly is worth doing once, because the construction is itself illuminating.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — three equivalent statements</span>
+<p>On a connected open domain \(D\), the following are equivalent: (1) \(\mathbf F\) is conservative on \(D\); (2) \(\int_C\mathbf F\cdot d\mathbf r\) is the same for every path \(C\) between any fixed pair of endpoints in \(D\); (3) \(\oint_C\mathbf F\cdot d\mathbf r=0\) for every closed loop \(C\) in \(D\). (2) and (3) are the same fact stated two ways: two paths sharing endpoints, one run forward and the other in reverse, concatenate into a single closed loop, and the loop's integral is exactly the difference of the two paths' integrals.</p>
+</div>
+
+<p>Given path-independence, fix a base point \(O\) in \(D\) and define</p>
+<div class="katex-display" data-katex="f(x,y) \;:=\; \int_O^{(x,y)} \mathbf F\cdot d\mathbf r \qquad \text{(along any path from } O \text{ to } (x,y) \text{ in } D\text{)}"></div>
+<p>which is well-defined precisely because the answer can't depend on which path you chose. To check \(\partial f/\partial x = P\): compare \(f(x+h,y)\) to \(f(x,y)\) by choosing the path to \((x+h,y)\) to be <em>any</em> path to \((x,y)\), followed by a short horizontal segment of length \(h\). The difference \(f(x+h,y)-f(x,y)\) is then just the line integral over that one short horizontal piece, which by continuity of \(P\) is \(\approx P(x,y)\cdot h\) for small \(h\). Dividing by \(h\) and letting \(h\to0\) gives exactly \(\partial f/\partial x = P\); the symmetric argument with a vertical segment gives \(\partial f/\partial y=Q\). Hence \(\nabla f = (P,Q)=\mathbf F\).</p>
+
+<div class="callout note">
+<span class="callout-label">Note</span>
+<p>This is the multivariable cousin of the other half of the ordinary Fundamental Theorem of Calculus — "\(f(x)=\int_a^x g(t)\,dt\) has \(f'=g\)" — now with paths standing in for intervals. It only works because path-independence lets "the integral accumulated so far" be treated as a genuine function of the endpoint alone, with no leftover dependence on the route to keep track of.</p>
+</div>
+
+<h2>The practical test: matching cross-partials</h2>
+<p>Constructing a potential by integrating along arbitrary paths is correct but impractical. There is a fast arithmetic shortcut. If \(\mathbf F=(P,Q)=\nabla f\) and \(f\) has continuous second partial derivatives, then \(P=f_x\) and \(Q=f_y\), and mixed partial derivatives of a smooth function don't care about order (Clairaut's theorem):</p>
+<div class="katex-display" data-katex="\frac{\partial P}{\partial y} = \frac{\partial^2 f}{\partial y\,\partial x} = \frac{\partial^2 f}{\partial x\,\partial y} = \frac{\partial Q}{\partial x}"></div>
+
+<div class="callout definition">
+<span class="callout-label">The cross-partials test</span>
+<p>If \(\mathbf F=(P,Q)\) is conservative (with reasonably smooth \(P,Q\)), then necessarily \(\dfrac{\partial P}{\partial y}=\dfrac{\partial Q}{\partial x}\) everywhere on the domain. So: if the two sides ever disagree at some point, \(\mathbf F\) is <strong>definitely not</strong> conservative. For the swirl field \(\mathbf F=(-y,x)\): \(\partial P/\partial y = -1\) while \(\partial Q/\partial x = 1\) — they disagree everywhere, confirming what the nonzero loop integral in Panel II already showed.</p>
+</div>
+
+<p>The condition is necessary; whether it's also <em>sufficient</em> depends on the shape of the domain:</p>
+
+<div class="callout note">
+<span class="callout-label">Definition — simply connected</span>
+<p>A connected open region \(D\) is <strong>simply connected</strong> if every closed loop drawn in \(D\) can be continuously shrunk down to a single point without ever leaving \(D\). A disk qualifies; the whole plane qualifies. A disk with a single point removed does <em>not</em> — a loop encircling the missing point is snagged on the hole and can't shrink past it. An annulus fails for the same reason.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Sufficiency — with a hypothesis that matters</span>
+<p>If \(D\) is <strong>simply connected</strong> and \(\partial P/\partial y=\partial Q/\partial x\) everywhere on \(D\), then \(\mathbf F\) <em>is</em> conservative on \(D\). The proof is deferred to Panel V, where Green's theorem makes it a two-line argument — and the "simply connected" hypothesis turns out to be exactly load-bearing, not fine print, as the example below shows.</p>
+</div>
+
+<h3>Constructing the potential explicitly</h3>
+<p>Given \(P,Q\) that pass the test, integrate \(P\) with respect to \(x\) (holding \(y\) fixed) to get \(f\) up to an unknown function of \(y\) alone, then pin that unknown down by matching \(\partial f/\partial y\) against \(Q\):</p>
+<div class="katex-display" data-katex="f(x,y)=\int P\,dx + g(y), \qquad \text{solve } \frac{\partial f}{\partial y}=Q \text{ for } g(y)"></div>
+<p>Applied to \(\mathbf F=(2xy+3,\,x^2-4y)\) from Panel III (cross-partials: \(\partial P/\partial y=2x=\partial Q/\partial x\), so the test passes):</p>
+<div class="katex-display" data-katex="f=\int(2xy+3)\,dx = x^2y+3x+g(y), \qquad \frac{\partial f}{\partial y}=x^2+g'(y) \stackrel{!}{=} x^2-4y \implies g'(y)=-4y \implies g(y)=-2y^2+C"></div>
+<p>giving \(f(x,y)=x^2y+3x-2y^2+C\) — precisely the potential used, without derivation, back in Panel III.</p>
+
+<h3>The catch: curl zero is not enough when the domain has a hole</h3>
+<p>Consider the <strong>vortex field</strong>, defined everywhere except the origin:</p>
+<div class="katex-display" data-katex="\mathbf F(x,y) = \left(\frac{-y}{x^2+y^2},\ \frac{x}{x^2+y^2}\right), \qquad D = \mathbb R^2\setminus\{(0,0)\}"></div>
+<p>A direct (if slightly tedious) computation shows the cross-partials agree <em>everywhere</em> on \(D\):</p>
+<div class="katex-display" data-katex="\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x}=\frac{y^2-x^2}{(x^2+y^2)^2}"></div>
+<p>The test passes at every single point where \(\mathbf F\) is even defined. And yet — parametrizing the unit circle exactly as in Panel II's worked example, \(\mathbf r(t)=(\cos t,\sin t)\) gives \(\mathbf F(\mathbf r(t))=(-\sin t,\cos t)\), so \(\mathbf F(\mathbf r(t))\cdot\mathbf r'(t)=1\), and</p>
+<div class="katex-display" data-katex="\oint_{\text{unit circle}} \mathbf F\cdot d\mathbf r = \int_0^{2\pi} 1\,dt = 2\pi \;\ne\; 0"></div>
+<p>So \(\mathbf F\) is <strong>not</strong> conservative on \(D\), despite passing the cross-partials test at every point of \(D\). There is no contradiction with the boxed sufficiency claim above — that claim explicitly required \(D\) to be simply connected, and \(D=\mathbb R^2\setminus\{0\}\) is exactly the standard example of a domain that isn't: the unit circle can't be shrunk to a point without sliding across the missing origin.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — what's actually going on</span>
+<p>This \(\mathbf F\) is \(\nabla\theta\), where \(\theta=\operatorname{atan2}(y,x)\) is the polar angle. <em>Locally</em> — say, anywhere away from the negative \(x\)-axis — \(\theta\) is a perfectly good, single-valued, smooth function, and \(\nabla\theta=\mathbf F\) exactly there: a local potential genuinely exists almost everywhere. But \(\theta\) cannot be made single-valued on <em>all</em> of \(D\) at once: walk once counterclockwise around the origin, and \(\theta\) climbs by a full \(2\pi\), landing you back at the same point but at a "different" angle value than you left with. There's no way to choose one consistent global branch — and the nonzero loop integral is exactly what's detecting that failure.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Circulation &amp; Green's Theorem</h1>
+<div class="subtitle">what a nonzero loop integral is measuring, built up literally from a grid of tiny squares</div>
+
+<h2>Circulation</h2>
+<p>The value of \(\oint_C\mathbf F\cdot d\mathbf r\) around a closed curve \(C\) is called the <strong>circulation</strong> of \(\mathbf F\) around \(C\) — physically, the net tendency of the field to sweep something around that loop. Drop a tiny paddle-wheel into a fluid whose velocity field has nonzero circulation around some point, and the wheel will actually spin; drop it into a field with zero circulation there, and it won't, however fast the fluid nearby happens to be moving in a straight line.</p>
+
+<h2>Curl, built from a single tiny rectangle</h2>
+<p>To see exactly what a field's local swirliness comes from, take a tiny axis-aligned rectangle with corners \((x,y)\), \((x+\Delta x,y)\), \((x+\Delta x,y+\Delta y)\), \((x,y+\Delta y)\), traversed counterclockwise, and add up the four straight-line contributions directly, using a first-order Taylor approximation of \(P,Q\) across the tiny rectangle:</p>
+<div class="katex-display" data-katex="\text{bottom: } P(x,y)\,\Delta x \qquad \text{right: } \big[Q(x,y)+Q_x\,\Delta x\big]\Delta y"></div>
+<div class="katex-display" data-katex="\text{top (leftward): } -\big[P(x,y)+P_y\,\Delta y\big]\Delta x \qquad \text{left (downward): } -Q(x,y)\,\Delta y"></div>
+<p>Add all four. The zeroth-order terms — \(P(x,y)\Delta x\) from the bottom edge against \(-P(x,y)\Delta x\) from the top, and \(Q(x,y)\Delta y\) from the right against \(-Q(x,y)\Delta y\) from the left — cancel <em>exactly</em>. Only the first-order variation across the rectangle survives:</p>
+<div class="katex-display" data-katex="\oint_{\text{tiny rectangle}} \mathbf F\cdot d\mathbf r \;\approx\; \big(Q_x - P_y\big)\,\Delta x\,\Delta y"></div>
+
+<div class="callout definition">
+<span class="callout-label">Definition — (2D scalar) curl</span>
+<div class="katex-display" data-katex="\operatorname{curl}\mathbf F \;:=\; \frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}"></div>
+<p>Curl is exactly the quantity discovered above: <strong>circulation per unit area</strong>, in the limit of a shrinking loop. It isn't a formula to memorize — it's the honest leftover once a tiny loop's own zeroth-order contribution cancels against itself.</p>
+</div>
+
+<h2>From tiny squares to Green's theorem, by telescoping</h2>
+<p>Tile a region \(D\) with a fine grid of these small counterclockwise rectangles, and sum the circulation around <em>every single one</em>. Any edge shared between two neighboring interior cells gets traversed once by each of the two cells that share it — and, because both cells are oriented counterclockwise, in <strong>opposite directions</strong>. Those two contributions cancel exactly. The only edges that survive the sum are the ones lying on the outer boundary of \(D\), which belong to just one cell each.</p>
+
+<div class="ascii">   interior shared edges are walked twice, in opposite directions → cancel
+
+    ┌──→──┬──→──┬──→──┐
+    ↑     ↓↑    ↓↑    ↓        <span class="hl">↓↑ pairs on every shared edge cancel</span>
+    ├──→──┼──→──┼──→──┤
+    ↑     ↓↑    ↓↑    ↓
+    └──→──┴──→──┴──→──┘
+
+    only the OUTER boundary survives  →  Σ(tiny loop circulations)  =  <span class="hl2">∮_{∂D} F·dr</span></div>
+
+<p>So the sum of all the tiny-loop circulations collapses down to the circulation around \(D\)'s outer boundary alone, \(\oint_{\partial D}\mathbf F\cdot d\mathbf r\). But that same sum is also, by the boxed result above, approximately \(\sum(\operatorname{curl}\mathbf F)\cdot\Delta A_{\text{cell}}\) — which is exactly the Riemann-sum definition of a double integral, converging as the grid refines to \(\iint_D \operatorname{curl}\mathbf F\,dA\). Equate the two:</p>
+
+<div class="callout definition">
+<span class="callout-label">Green's theorem</span>
+<div class="katex-display" data-katex="\oint_{\partial D} \mathbf F\cdot d\mathbf r \;=\; \oint_{\partial D} P\,dx+Q\,dy \;=\; \iint_D \left(\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}\right) dA"></div>
+<p>(\(\partial D\) traversed counterclockwise — positively oriented, with \(D\) always on the left.)</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This telescoping-cancellation argument is exactly the same idea used to build a large 1D sum from small ones and watch shared endpoints cancel — just run one dimension up, where what cancels at each shared boundary is a directed edge instead of a single point.</p>
+</div>
+
+<h3>Closing the loop on Panel IV's deferred proof</h3>
+<p>Green's theorem is precisely the missing piece. Suppose \(D\) is simply connected and \(\operatorname{curl}\mathbf F=0\) throughout \(D\). Take any closed loop \(C\) inside \(D\): because \(D\) is simply connected, \(C\) bounds some region \(R\) entirely contained in \(D\) (this is essentially what "simply connected" buys you). Then</p>
+<div class="katex-display" data-katex="\oint_C \mathbf F\cdot d\mathbf r = \iint_R \operatorname{curl}\mathbf F\,dA = \iint_R 0\,dA = 0"></div>
+<p>Zero circulation on every closed loop is exactly path-independence (Panel IV), which is exactly conservativeness. That completes the sufficiency claim deferred earlier — and note precisely where simple-connectedness was used: to guarantee the region \(R\) bounded by \(C\) never has to leave \(D\).</p>
+
+<div class="callout note">
+<span class="callout-label">Note — reconciling the vortex field</span>
+<p>Revisit Panel IV's vortex field on \(D=\mathbb R^2\setminus\{0\}\): \(\operatorname{curl}\mathbf F=0\) everywhere it's defined, but the unit circle's <em>interior</em> — the disk it would naturally bound — contains the missing origin, so that disk is <em>not</em> entirely contained in \(D\). Green's theorem's hypothesis fails for exactly that loop, so the argument above simply doesn't apply, and the nonzero circulation found earlier is no contradiction at all.</p>
+</div>
+
+<h2>Non-conservative fields still integrate — they just remember the path</h2>
+<p>None of this means a non-conservative field's line integral is broken or ill-defined; Panel II already computed one directly, by definition, with no shortcut needed. What Green's theorem adds is a <em>second</em>, entirely different shortcut — specifically for closed loops — that trades a possibly awkward boundary integral for a (often much easier) area integral, whether or not the field is conservative anywhere.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — forward glance: area from a boundary integral</span>
+<p>Choosing \(P=-y/2,\ Q=x/2\) gives \(\operatorname{curl}\mathbf F = \tfrac12-(-\tfrac12)=1\) everywhere, so Green's theorem turns into a formula for plain <em>area</em> in terms of a boundary integral alone:</p>
+<div class="katex-display" data-katex="\text{Area}(D) = \frac12\oint_{\partial D}\big(x\,dy-y\,dx\big)"></div>
+<p>— the working principle behind the "shoelace formula" for polygon area, and a genuinely useful, non-conservative-flavored payoff of the same theorem.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Interactive Lab</h1>
+<div class="subtitle">drag the three points and watch conservativeness, path-independence, and Green's theorem show up in the same three numbers</div>
+
+<p>Pick a field below. <strong>A</strong> (start) and <strong>B</strong> (end) define a straight path; <strong>C</strong> defines a second, bent path through <strong>A → C → B</strong>. Drag any of the three points anywhere on the canvas and watch every readout update live.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">drag A, B, C</div>
+      <canvas id="fieldCanvas" width="460" height="460" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Field F(x,y)</label>
+      <select id="fieldSelect">
+        <option value="radial">(x, y) — radial, conservative</option>
+        <option value="saddle">(y, x) — saddle, conservative</option>
+        <option value="swirl">(−y, x) — swirl, NOT conservative</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">∫ A→B (straight)</div>
+      <div class="v" id="lbDirect">…</div>
+    </div>
+    <div class="block">
+      <div class="k">∫ A→C→B (via C)</div>
+      <div class="v" id="lbViaC">…</div>
+    </div>
+    <div class="block">
+      <div class="k">DIFFERENCE (measured)</div>
+      <div class="v" id="lbDiff">…</div>
+    </div>
+    <div class="block">
+      <div class="k">curl F × area(A,C,B) — Green prediction</div>
+      <div class="v" id="lbPredicted">…</div>
+    </div>
+    <div class="block">
+      <div class="k">f(B) − f(A), if conservative</div>
+      <div class="v" id="lbPotential">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> field arrows</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> path A→B</span>
+    <span><span class="swatch" style="background:var(--purple)"></span> path A→C→B</span>
+    <span><span class="swatch" style="background:var(--green)"></span> A</span>
+    <span><span class="swatch" style="background:var(--red)"></span> B</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> C</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>For the two conservative fields, drag <strong>C</strong> anywhere at all — the "via C" value never drifts from the "straight" value beyond numerical noise, the measured difference stays pinned near zero, and it matches <code>f(B) − f(A)</code> every time: that's path independence and the gradient theorem, live. Switch to the swirl field, and the instant C leaves the line AB, a real gap opens between the two path values — and it isn't arbitrary: it tracks <code>curl F × area(A,C,B)</code> closely, which is Green's theorem confirming itself on the closed triangle A→C→B→A in real time.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>The Big Picture</h1>
+<div class="subtitle">two different collapses from a boundary-less integral down to boundary data — and why that's the same trick, twice</div>
+
+<h2>Two "collapses," one shape</h2>
+<p>Step back from the specific formulas. The gradient theorem (Panel III) took an integral <em>along an entire curve</em> and collapsed it down to information at just the curve's two endpoints. Green's theorem (Panel V) took an integral <em>over an entire two-dimensional region</em> and collapsed it down to information along just the region's boundary curve. Both are instances of a single pattern, and so, it turns out, is the very first Fundamental Theorem of Calculus you ever learned:</p>
+
+<div class="ascii">   1D  FTC:            ∫_a^b f&#39;(x) dx        =  f(b) − f(a)         boundary of [a,b] = {a, b}
+
+   Gradient theorem:   ∫_C  ∇f · dr          =  f(B) − f(A)         boundary of curve C = {A, B}
+
+   Green&#39;s theorem:    ∬_D  curl F  dA       =  ∮_{∂D} F · dr        boundary of region D = curve ∂D
+
+              same shape every time:  ∫(a derivative-like quantity) over a piece
+                                    =  (the original quantity) evaluated on just its boundary</div>
+
+<div class="katex-display" data-katex="\int_a^b f'(x)\,dx = f(b)-f(a), \qquad \int_C \nabla f\cdot d\mathbf r = f(B)-f(A), \qquad \iint_D \operatorname{curl}\mathbf F\,dA = \oint_{\partial D}\mathbf F\cdot d\mathbf r"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is not a coincidence of notation. All three are special cases of a single, far more general fact — the generalized Stokes' theorem — which says, roughly, that integrating a "derivative" of something over a region always equals integrating the original thing over just the region's edge. The classical Stokes' theorem (curl, over a curved surface in 3D) and the Divergence theorem are the next two instances up the dimensional ladder; none of them require a new idea beyond the one built by hand in this essay, only more bookkeeping.</p>
+</div>
+
+<h2>A practical checklist</h2>
+<p>Faced with an unfamiliar line integral, the questions worth asking, in order:</p>
+<p><strong>1. Is the field conservative?</strong> Check the cross-partials (Panel IV); if they match and the domain is simply connected, find the potential by direct antidifferentiation and just subtract its values at the two endpoints (Panel III). Done — the shape of the path never mattered.</p>
+<p><strong>2. If not, is the curve closed?</strong> If so, and the region it bounds lies entirely inside the domain where \(\mathbf F\) is defined, Green's theorem (Panel V) trades the line integral for a double integral of \(\operatorname{curl}\mathbf F\) — often the easier computation by far.</p>
+<p><strong>3. Otherwise</strong> — an open curve, a genuinely non-conservative field — there is no shortcut, and none is needed: parametrize the curve and compute \(\int_a^b \mathbf F(\mathbf r(t))\cdot\mathbf r'(t)\,dt\) directly, exactly as defined from scratch in Panel II. That definition never stopped being true; it's simply the fallback every shortcut in this essay was built to avoid falling back on.</p>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6','t7'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawField();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ INTERACTIVE LAB ============
+const cv = document.getElementById('fieldCanvas');
+const ctx = cv.getContext('2d');
+const fieldSelect = document.getElementById('fieldSelect');
+const lbDirect = document.getElementById('lbDirect');
+const lbViaC = document.getElementById('lbViaC');
+const lbDiff = document.getElementById('lbDiff');
+const lbPredicted = document.getElementById('lbPredicted');
+const lbPotential = document.getElementById('lbPotential');
+
+const RANGE = 3;
+const SIZE = 460;
+
+const FIELDS = {
+  radial: { F:(x,y)=>[x,y], pot:(x,y)=>0.5*(x*x+y*y), curl:0 },
+  saddle: { F:(x,y)=>[y,x], pot:(x,y)=>x*y, curl:0 },
+  swirl:  { F:(x,y)=>[-y,x], pot:null, curl:2 }
+};
+
+let A = {x:-2.0, y:-1.4};
+let B = {x: 2.0, y: 1.0};
+let C = {x: 0.3, y: 2.2};
+let dragTarget = null;
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function worldToScreen(x,y){
+  const s = SIZE/(2*RANGE);
+  return [SIZE/2 + x*s, SIZE/2 - y*s];
+}
+function screenToWorld(px,py){
+  const s = SIZE/(2*RANGE);
+  return [(px-SIZE/2)/s, (SIZE/2-py)/s];
+}
+
+function lineIntegralSegment(F,P0,P1,N){
+  N = N || 300;
+  const dx = P1.x-P0.x, dy = P1.y-P0.y;
+  let sum = 0;
+  for(let i=0;i<N;i++){
+    const t = (i+0.5)/N;
+    const x = P0.x+t*dx, y = P0.y+t*dy;
+    const v = F(x,y);
+    sum += (v[0]*dx + v[1]*dy)/N;
+  }
+  return sum;
+}
+
+function shoelaceSigned(pts){
+  let s = 0;
+  for(let i=0;i<pts.length;i++){
+    const p = pts[i], q = pts[(i+1)%pts.length];
+    s += p.x*q.y - q.x*p.y;
+  }
+  return s/2;
+}
+
+function drawArrow(x1,y1,x2,y2,color){
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const ang = Math.atan2(y2-y1,x2-x1);
+  const hl = 5;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-hl*Math.cos(ang-0.4), y2-hl*Math.sin(ang-0.4));
+  ctx.lineTo(x2-hl*Math.cos(ang+0.4), y2-hl*Math.sin(ang+0.4));
+  ctx.closePath(); ctx.fill();
+}
+
+function drawPoint(p,color,label){
+  const [sx,sy] = worldToScreen(p.x,p.y);
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(sx,sy,7,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = cssVar('--bg'); ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = cssVar('--ink');
+  ctx.font = '12px "JetBrains Mono", monospace';
+  ctx.fillText(label, sx+10, sy-8);
+}
+
+function drawField(){
+  const field = FIELDS[fieldSelect.value];
+  ctx.clearRect(0,0,SIZE,SIZE);
+  ctx.fillStyle = cssVar('--bg-elevated');
+  ctx.fillRect(0,0,SIZE,SIZE);
+
+  // grid
+  ctx.strokeStyle = cssVar('--border');
+  ctx.lineWidth = 1;
+  for(let g=-RANGE; g<=RANGE; g++){
+    let [x1,y1] = worldToScreen(g,-RANGE), [x2,y2] = worldToScreen(g,RANGE);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    [x1,y1] = worldToScreen(-RANGE,g); [x2,y2] = worldToScreen(RANGE,g);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  // axes
+  ctx.strokeStyle = cssVar('--ink-faint'); ctx.lineWidth = 1.2;
+  let [ax1,ay1] = worldToScreen(-RANGE,0), [ax2,ay2] = worldToScreen(RANGE,0);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+  [ax1,ay1] = worldToScreen(0,-RANGE); [ax2,ay2] = worldToScreen(0,RANGE);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+
+  // quiver: fixed-length direction arrows
+  const step = 0.6;
+  const arrowLen = 13;
+  for(let gx=-2.4; gx<=2.4+1e-9; gx+=step){
+    for(let gy=-2.4; gy<=2.4+1e-9; gy+=step){
+      const v = field.F(gx,gy);
+      const mag = Math.hypot(v[0],v[1]) || 1e-9;
+      const ux = v[0]/mag, uy = v[1]/mag;
+      const [sx,sy] = worldToScreen(gx,gy);
+      const ex = sx+ux*arrowLen, ey = sy-uy*arrowLen;
+      drawArrow(sx,sy,ex,ey, cssVar('--ink-faint'));
+    }
+  }
+
+  // path A -> C -> B (dashed, purple)
+  ctx.setLineDash([6,4]);
+  ctx.strokeStyle = cssVar('--purple'); ctx.lineWidth = 2.2;
+  let [p1x,p1y] = worldToScreen(A.x,A.y), [p2x,p2y] = worldToScreen(C.x,C.y), [p3x,p3y] = worldToScreen(B.x,B.y);
+  ctx.beginPath(); ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.lineTo(p3x,p3y); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // path A -> B (solid, accent)
+  drawArrow(p1x,p1y,p3x,p3y, cssVar('--accent'));
+
+  // points
+  drawPoint(A, cssVar('--green'), 'A');
+  drawPoint(B, cssVar('--red'), 'B');
+  drawPoint(C, cssVar('--blue'), 'C');
+
+  recompute();
+}
+
+function fmt(n){ return (Math.abs(n)<1e-9 ? 0 : n).toFixed(4); }
+
+function recompute(){
+  const field = FIELDS[fieldSelect.value];
+  const direct = lineIntegralSegment(field.F, A, B);
+  const viaC = lineIntegralSegment(field.F, A, C) + lineIntegralSegment(field.F, C, B);
+  const diff = viaC - direct;
+  const area = shoelaceSigned([A,C,B]);
+  const predicted = field.curl * area;
+
+  lbDirect.textContent = fmt(direct);
+  lbViaC.textContent = fmt(viaC);
+  lbDiff.textContent = fmt(diff);
+  lbPredicted.textContent = fmt(predicted) + '  (curl=' + field.curl + ')';
+  lbPotential.textContent = field.pot ? fmt(field.pot(B.x,B.y)-field.pot(A.x,A.y)) : 'n/a — not conservative';
+}
+
+function pickTarget(px,py){
+  const pts = [['A',A],['B',B],['C',C]];
+  for(const [name,p] of pts){
+    const [sx,sy] = worldToScreen(p.x,p.y);
+    if(Math.hypot(sx-px, sy-py) < 14) return name;
+  }
+  return null;
+}
+
+function eventToCanvasXY(e){
+  const rect = cv.getBoundingClientRect();
+  const scaleX = SIZE/rect.width, scaleY = SIZE/rect.height;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return [(clientX-rect.left)*scaleX, (clientY-rect.top)*scaleY];
+}
+
+function onDown(e){
+  const [px,py] = eventToCanvasXY(e);
+  dragTarget = pickTarget(px,py);
+  if(dragTarget) e.preventDefault();
+}
+function onMove(e){
+  if(!dragTarget) return;
+  e.preventDefault();
+  const [px,py] = eventToCanvasXY(e);
+  let [wx,wy] = screenToWorld(px,py);
+  wx = Math.max(-RANGE+0.05, Math.min(RANGE-0.05, wx));
+  wy = Math.max(-RANGE+0.05, Math.min(RANGE-0.05, wy));
+  const target = dragTarget==='A' ? A : dragTarget==='B' ? B : C;
+  target.x = wx; target.y = wy;
+  drawField();
+}
+function onUp(){ dragTarget = null; }
+
+cv.addEventListener('mousedown', onDown);
+cv.addEventListener('mousemove', onMove);
+window.addEventListener('mouseup', onUp);
+cv.addEventListener('touchstart', onDown, {passive:false});
+cv.addEventListener('touchmove', onMove, {passive:false});
+cv.addEventListener('touchend', onUp);
+fieldSelect.addEventListener('change', drawField);
+
+drawField();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convergence of Sequences — The ε–N Definition, Monotonicity, and Completeness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#07110f; --bg-elevated:#0d1a17; --bg-card:#11221e;
+  --border:#1d3830; --border-soft:#152922;
+  --ink:#dcf1ea; --ink-dim:#93b6ab; --ink-faint:#5c8074;
+  --accent:#4fd8bf; --accent-dim:#329c89;
+  --blue:#6f9bc9; --green:#7fbf8f; --red:#d17a7a; --purple:#b389d9;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#eef8f5; --bg-elevated:#e1f0ea; --bg-card:#f8fdfb;
+  --border:#c0ddd2; --border-soft:#d3e9e0;
+  --ink:#0d241d; --ink-dim:#38594e; --ink-faint:#688b7f;
+  --accent:#0e8f76; --accent-dim:#279d84;
+  --blue:#3a5f8a; --green:#3f7d55; --red:#a1453a; --purple:#6a4d94;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(7,17,15,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(238,248,245,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:840px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+h4{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+ul, ol{ margin:0 0 16px 26px; color:var(--ink-dim); }
+li{ margin-bottom:8px; }
+a{ color:var(--accent); }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; max-width:100%; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{ font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right; }
+.mini-toggle{
+  font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s;
+}
+.mini-toggle.on{ color:var(--accent); border-color:var(--accent-dim); }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+.info-line{
+  font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin-top:14px;
+  padding:10px 14px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+}
+.info-line .v{ color:var(--accent); }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+td.mono, th.mono{ font-family:var(--mono); }
+td.yes{ color:var(--green); font-weight:600; font-family:var(--mono); }
+td.no{ color:var(--red); font-weight:600; font-family:var(--mono); }
+
+/* ---- formal proof list ---- */
+.proof-list{ counter-reset:pline; list-style:none; margin:18px 0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.proof-list li{ counter-increment:pline; display:flex; gap:14px; padding:10px 16px; border-bottom:1px solid var(--border-soft); font-family:var(--mono); font-size:13.5px; align-items:baseline; background:var(--bg-card); }
+.proof-list li:nth-child(even){ background:var(--bg-elevated); }
+.proof-list li:last-child{ border-bottom:none; }
+.proof-list li::before{ content:counter(pline); color:var(--ink-faint); min-width:18px; text-align:right; }
+.proof-list .pf-stmt{ flex:1; color:var(--ink); }
+.proof-list .pf-just{ color:var(--accent); font-size:12px; white-space:nowrap; }
+@media(max-width:640px){ .proof-list li{ flex-wrap:wrap; } .proof-list .pf-just{ margin-left:32px; } }
+
+/* ---- dual comparison grid ---- */
+.dual-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0; margin:22px 0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.dual-grid > div{ padding:16px 20px; }
+.dual-grid > div:first-child{ border-right:1px solid var(--border); background:var(--bg-card); }
+.dual-grid h4{ margin-bottom:8px; }
+@media(max-width:640px){ .dual-grid{grid-template-columns:1fr;} .dual-grid>div:first-child{border-right:none;border-bottom:1px solid var(--border);} }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">SEQUENCE CONVERGENCE</div>
+  <button class="tab-btn active" data-tab="s1">I · The ε–N Definition</button>
+  <button class="tab-btn" data-tab="s2">II · Uniqueness &amp; Boundedness</button>
+  <button class="tab-btn" data-tab="s3">III · Monotone Convergence</button>
+  <button class="tab-btn" data-tab="s4">IV · Bolzano–Weierstrass</button>
+  <button class="tab-btn" data-tab="s5">V · Cauchy &amp; Completeness</button>
+  <button class="tab-btn" data-tab="s6">VI · Deep Intuition</button>
+  <button class="tab-btn" data-tab="s7">VII · Worked Examples</button>
+  <button class="tab-btn" data-tab="s8">VIII · Interactive Lab</button>
+  <button class="tab-btn" data-tab="s9">IX · Summary &amp; Reference</button>
+  <button class="theme-toggle" id="themeToggle">☀ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="s1">
+<h1>Sequences and the ε–N Definition</h1>
+<div class="subtitle">why "gets closer and closer" needed a rule at all, and what that rule turns out to say</div>
+
+<h2>A sequence is just a function on ℕ</h2>
+<p>Strip away the dots-and-arrow notation \(a_1, a_2, a_3, \dots\) and a sequence is nothing more exotic than a function \(a:\mathbb{N}\to\mathbb{R}\), with \(a(n)\) conventionally written \(a_n\). That reframing matters: "does \(a_n\) converge" is not a new species of question requiring new machinery — it is the single most important special case of "what does a function do as its input grows," restricted to a function whose domain happens to be the natural numbers instead of an interval of reals.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — sequence</span>
+<p>A <strong>sequence of real numbers</strong> is a function \(a:\mathbb{N}\to\mathbb{R}\). Its values are written \(a_1, a_2, a_3, \dots\), and the whole sequence is denoted \((a_n)_{n=1}^{\infty}\), or just \((a_n)\).</p>
+</div>
+
+<h2>Why "gets closer and closer" isn't good enough on its own</h2>
+<p>What actually needs defining is the word "converges." Informally: \(a_n\to L\) means the terms get closer and closer to \(L\) as \(n\) grows. That sentence is evocative and completely useless for proving anything — "closer and closer" has no numerical content, and a sequence can wiggle, overshoot, and correct itself indefinitely while still deserving to be called convergent. (The historical struggle to get this exactly right — from Newton's and Leibniz's originally shaky infinitesimals through Cauchy and Weierstrass's 19th-century fix — is its own story, told in full in the <a href="../philosophy/calculus-philosophy.html">philosophy of calculus essay</a> elsewhere on this site; this panel only needs the destination.)</p>
+
+<h2>The ε–N definition</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — convergence of a sequence (Weierstrass-style)</span>
+<p>The sequence \((a_n)\) <strong>converges</strong> to \(L\) if: for every \(\varepsilon>0\), there exists a natural number \(N_0\) such that \(n\ge N_0\) implies \(|a_n-L|<\varepsilon\). We write \(a_n\to L\), or \(\displaystyle\lim_{n\to\infty}a_n = L\). If no such \(L\) exists, the sequence <strong>diverges</strong>.</p>
+</div>
+
+\[ \forall\varepsilon>0,\ \exists N_0\in\mathbb{N} : n\ge N_0 \implies |a_n-L|<\varepsilon \]
+
+<p>Parse the quantifiers in order. \(\forall\varepsilon>0\) — the statement must hold for every positive tolerance, without exception: for \(\varepsilon=1\), for \(\varepsilon=10^{-9}\), for every other positive real. \(\exists N_0\) — a single index answers the challenge; \(N_0\) is allowed, and expected, to depend on \(\varepsilon\), typically growing without bound as \(\varepsilon\) shrinks toward 0. The implication must hold for <em>every</em> later index, not just one; a single term escaping the band, however far out, breaks it for that \(N_0\). This is precisely the ε–δ definition of a function limit — worked in full in the companion <a href="limits_formal.html">Formal Limit essay</a> — specialized to a function whose domain is \(\mathbb{N}\) and whose "input approaches \(\infty\)" replaces "input approaches \(c\)."</p>
+
+<h2>Worked example — proving a limit rigorously</h2>
+<p>Claim: \(\displaystyle\lim_{n\to\infty}\frac{n}{n+1} = 1\).</p>
+<ol class="proof-list">
+<li><span class="pf-stmt">Let ε &gt; 0 be given.</span><span class="pf-just">challenger moves first</span></li>
+<li><span class="pf-stmt">Choose N₀ = ⌈1/ε⌉.</span><span class="pf-just">defender's response</span></li>
+<li><span class="pf-stmt">Suppose n ≥ N₀.</span><span class="pf-just">assume the challenger's window is respected</span></li>
+<li><span class="pf-stmt">|n/(n+1) − 1| = |(n−(n+1))/(n+1)| = 1/(n+1)</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">n ≥ N₀ = ⌈1/ε⌉ ⟹ n+1 &gt; 1/ε ⟹ 1/(n+1) &lt; ε</span><span class="pf-just">since n ≥ 1/ε, by assumption</span></li>
+<li><span class="pf-stmt">∴ |n/(n+1) − 1| &lt; ε</span><span class="pf-just">chained together</span></li>
+</ol>
+<p>Because a valid \(N_0\) was produced for an <em>arbitrary</em> \(\varepsilon\), the defender wins the game no matter what the challenger picks, and the limit is proven rigorously — no picture, no appeal to "gets closer and closer," just two finite numbers and an inequality. Panel VI unpacks exactly this challenge–response picture in far more depth, and the companion <a href="../series/series_formal.html">Formal Convergence of Series</a> essay is this entire definition applied to one specific kind of sequence — the partial-sum sequence \(S_n=a_1+\cdots+a_n\).</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="s2">
+<h1>Uniqueness, Boundedness, and the Algebra of Limits</h1>
+<div class="subtitle">the three cheapest theorems in the subject, and why each one is nearly free once the definition is in hand</div>
+
+<h2>Uniqueness of the limit</h2>
+<p>The definition never asserted that \(L\) is the <em>only</em> number \(a_n\) could converge to — that has to be proved, and the proof is short enough to state in full, because it is the cleanest illustration of the ε/2-splitting technique that recurs throughout this subject.</p>
+<ol class="proof-list">
+<li><span class="pf-stmt">Suppose aₙ → L and aₙ → L′ with L ≠ L′.</span><span class="pf-just">for contradiction</span></li>
+<li><span class="pf-stmt">Let ε = |L−L′|/2 &gt; 0.</span><span class="pf-just">a fixed positive gap, halved</span></li>
+<li><span class="pf-stmt">∃N₁ : n≥N₁ ⟹ |aₙ−L| &lt; ε, and ∃N₂ : n≥N₂ ⟹ |aₙ−L′| &lt; ε.</span><span class="pf-just">definition, applied twice</span></li>
+<li><span class="pf-stmt">Let N = max(N₁,N₂). For n≥N: |L−L′| ≤ |L−aₙ|+|aₙ−L′| &lt; ε+ε = |L−L′|.</span><span class="pf-just">triangle inequality</span></li>
+<li><span class="pf-stmt">|L−L′| &lt; |L−L′| is a contradiction.</span><span class="pf-just">a number is never less than itself</span></li>
+<li><span class="pf-stmt">∴ L = L′. Limits, when they exist, are unique.</span><span class="pf-just">contradiction resolved</span></li>
+</ol>
+
+<h2>Convergent implies bounded</h2>
+<div class="callout definition">
+<span class="callout-label">Theorem</span>
+<p>If \((a_n)\) converges, then \((a_n)\) is <strong>bounded</strong>: there exists \(M\) such that \(|a_n|\le M\) for every \(n\).</p>
+</div>
+<p>Take \(\varepsilon=1\) in the definition: some \(N_0\) guarantees \(|a_n-L|<1\), hence \(|a_n|<|L|+1\), for every \(n\ge N_0\). That handles the entire infinite tail in one stroke. What remains — \(a_1,\dots,a_{N_0-1}\) — is a <em>finite</em> list, and any finite list of real numbers trivially has a largest absolute value. Take \(M\) to be the larger of that finite maximum and \(|L|+1\), and every term, early or late, satisfies \(|a_n|\le M\).</p>
+<div class="callout warning">
+<span class="callout-label">Warning — the converse is false</span>
+<p>\((-1)^n\) is bounded and never converges. Boundedness is a consequence of convergence, never a substitute for it — Panel IV returns to exactly this example to show what boundedness alone still buys you.</p>
+</div>
+
+<h2>The algebra of limits</h2>
+<p>If \(a_n\to A\) and \(b_n\to B\), each of the following holds, and each is provable directly from the ε–N definition:</p>
+<div class="tbl-wrap">
+<table>
+<caption>Limit laws for sequences (assuming both individual limits exist)</caption>
+<thead><tr><th>Law</th><th>Statement</th></tr></thead>
+<tbody>
+<tr><td>Sum</td><td class="mono">aₙ + bₙ → A + B</td></tr>
+<tr><td>Product</td><td class="mono">aₙ · bₙ → A · B</td></tr>
+<tr><td>Constant multiple</td><td class="mono">c · aₙ → c · A</td></tr>
+<tr><td>Quotient</td><td class="mono">aₙ / bₙ → A / B&nbsp;&nbsp;(provided B ≠ 0)</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The sum rule is the cleanest to see in full, since it is exactly the same ε/2-splitting move used for uniqueness above.</p>
+<div class="dual-grid">
+<div>
+<h4>Setup — splitting the error budget</h4>
+<p style="margin-bottom:0;">Given \(\varepsilon>0\), apply the definition to \((a_n)\) with tolerance \(\varepsilon/2\), getting \(N_1\), and to \((b_n)\) with tolerance \(\varepsilon/2\), getting \(N_2\). Let \(N_0=\max(N_1,N_2)\).</p>
+</div>
+<div>
+<h4>Payoff — the triangle inequality closes it</h4>
+<p style="margin-bottom:0;">For \(n\ge N_0\): \(|(a_n+b_n)-(A+B)|\le|a_n-A|+|b_n-B|<\varepsilon/2+\varepsilon/2=\varepsilon\). Two half-sized errors combine into one full-sized, still-arbitrary \(\varepsilon\).</p>
+</div>
+</div>
+
+<h2>The squeeze (sandwich) theorem</h2>
+<p>If \(a_n\le b_n\le c_n\) for all \(n\) past some point, and \(a_n\to L\) and \(c_n\to L\), then \(b_n\to L\) as well. This is often the only practical route to a limit when \(b_n\) itself has no clean closed form — \(\sin(n)/n\), for instance, is trapped between \(-1/n\) and \(1/n\), both of which converge to 0.</p>
+
+<h2>A divergence disproof: (−1)ⁿ has no limit</h2>
+<p>Rather than test every candidate \(L\) individually, disprove convergence to <em>any</em> \(L\) at once: for the fixed choice \(\varepsilon=1\), no \(L\) and no \(N_0\) can possibly work.</p>
+<ol class="proof-list">
+<li><span class="pf-stmt">Fix any candidate L and take ε = 1.</span><span class="pf-just">covers every candidate at once</span></li>
+<li><span class="pf-stmt">For any N₀, take n ≥ N₀ odd, so aₙ = −1 and aₙ₊₁ = 1.</span><span class="pf-just">consecutive terms, past any proposed N₀</span></li>
+<li><span class="pf-stmt">2 = |aₙ − aₙ₊₁| ≤ |aₙ − L| + |L − aₙ₊₁|</span><span class="pf-just">triangle inequality</span></li>
+<li><span class="pf-stmt">If both terms on the right were &lt; 1, their sum would be &lt; 2 — contradicting the left side.</span><span class="pf-just">arithmetic</span></li>
+<li><span class="pf-stmt">∴ no N₀ forces both consecutive terms inside the band, for any L.</span><span class="pf-just">no candidate survives</span></li>
+</ol>
+<p>No real number \(L\) satisfies the ε–N definition for \((-1)^n\). The sequence diverges.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="s3">
+<h1>The Monotone Convergence Theorem</h1>
+<div class="subtitle">the theorem where completeness of ℝ first does visible, load-bearing work</div>
+
+<h2>Bounded and climbing</h2>
+<p>Restrict to an increasing sequence: \(a_1\le a_2\le a_3\le\cdots\). Picture it as a staircase that can only climb, never step back down. If that staircase never climbs past some fixed ceiling, intuition says it has to be "settling in" against the highest step it can actually reach.</p>
+
+<div class="ascii">   a₁    a₂     a₃       a₄         a₅  a₆ a₇ ...              <span class="hl">L = sup{aₙ}</span>
+   |-----|------|--------|----------|---|--|------------------|
+   climbing, never stepping back down                    ceiling, never crossed
+
+   Choose ε.  L−ε is <span class="hl2">not</span> an upper bound (L is the LEAST one)  →  some a_N₀ &gt; L−ε
+   Past N₀, monotonicity keeps every later term ≥ a_N₀ &gt; L−ε, and every term ≤ L.
+   So every aₙ, n≥N₀, is squeezed into (L−ε, L] ⊂ (L−ε, L+ε).</div>
+
+<div class="callout definition">
+<span class="callout-label">Theorem — monotone convergence</span>
+<p>Every bounded, monotonic sequence of real numbers converges — to its supremum, if increasing, or its infimum, if decreasing.</p>
+</div>
+
+<h2>Proving it from completeness</h2>
+<p>Claim: if \((a_n)\) is increasing and bounded above, then \(a_n\to L\) where \(L=\sup\{a_n:n\in\mathbb{N}\}\).</p>
+<ol class="proof-list">
+<li><span class="pf-stmt">L exists because {aₙ} is non-empty and bounded above.</span><span class="pf-just">least-upper-bound property</span></li>
+<li><span class="pf-stmt">Let ε &gt; 0. Since L is the LEAST upper bound, L−ε is not an upper bound.</span><span class="pf-just">definition of supremum</span></li>
+<li><span class="pf-stmt">So some term a_N₀ satisfies a_N₀ &gt; L−ε.</span><span class="pf-just">L−ε failing to bound the set</span></li>
+<li><span class="pf-stmt">For n ≥ N₀: aₙ ≥ a_N₀ &gt; L−ε (monotonicity), and aₙ ≤ L &lt; L+ε (L is an upper bound).</span><span class="pf-just">combine both bounds</span></li>
+<li><span class="pf-stmt">∴ L−ε &lt; aₙ ≤ L &lt; L+ε, i.e. |aₙ−L| &lt; ε, for all n ≥ N₀.</span><span class="pf-just">definition of convergence, satisfied</span></li>
+</ol>
+
+<div class="callout insight">
+<span class="callout-label">Insight — where completeness earned its keep</span>
+<p>The entire proof hinges on one line — "\(L\) exists because the set is bounded above." Nothing else is more than algebra and the definition of supremum. That single existence claim is the least-upper-bound property, and it is the only place in the whole argument where \(\mathbb{R}\)'s completeness, rather than \(\mathbb{Q}\)'s ordering, is actually used. See the companion <a href="../../continuous_math/foundations/continuous-math-foundations.html">Continuous Mathematics Foundations</a> essay for where that property itself comes from.</p>
+</div>
+
+<h2>An example where the closed form isn't the point</h2>
+<p>\(\displaystyle\left(1+\frac1n\right)^{n}\to e\): the binomial expansion shows the sequence is increasing, and is term-by-term dominated by \(\sum 1/k!\), itself bounded above by 3. By the theorem, the sequence converges — with the limit <em>defined to be</em> \(e\). Existence is proved first; the value \(e\approx2.71828\) is identified only afterward.</p>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="s4">
+<h1>Subsequences and the Bolzano–Weierstrass Theorem</h1>
+<div class="subtitle">what boundedness alone still guarantees, even when a sequence refuses to settle down</div>
+
+<h2>Subsequences</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — subsequence</span>
+<p>Given \((a_n)\) and a strictly increasing sequence of indices \(n_1<n_2<n_3<\cdots\) in \(\mathbb{N}\), the sequence \((a_{n_k})_{k=1}^{\infty}\) is a <strong>subsequence</strong> of \((a_n)\).</p>
+</div>
+<p>Every subsequence of a convergent sequence converges to the same limit — deleting terms cannot introduce new behavior that was not already forced by the original tail condition. The converse question is more interesting: must a sequence that never settles down still contain a well-behaved piece inside it?</p>
+
+<div class="callout definition">
+<span class="callout-label">Theorem — Bolzano–Weierstrass</span>
+<p>Every bounded sequence of real numbers has a convergent subsequence.</p>
+</div>
+
+<h2>Lion hunting by bisection</h2>
+<p>The classical proof strategy has a nickname worth keeping: <em>lion hunting</em>. A bounded sequence lives entirely inside some interval \([-M,M]\). Split it in half. Since the sequence has infinitely many terms and only two halves to distribute them into, at least one half must still contain infinitely many terms — the infinite pigeonhole principle. Keep that half, split it again, and repeat forever.</p>
+
+<div class="ascii">   Start:  [ -M ................................... M ]   infinitely many terms live here
+
+   Split:  [ -M ............ 0 ][ 0 ............... M ]
+                <span class="hl">↑ keep whichever half still holds infinitely many terms ↑</span>
+
+   Split again:            [ .. | .. ]
+                                <span class="hl">↑ repeat forever, halving the width each time ↑</span>
+
+   Nested intervals, width → 0, each still holding infinitely many terms of the sequence.
+   <span class="hl2">Their intersection is a single point c</span> — pick one term per interval → a subsequence → c.</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — where completeness reappears, quietly</span>
+<p>This bisection produces a nested, shrinking family of closed intervals with widths halving toward 0. The <strong>nested interval property</strong> — that such a family always has exactly one point in its intersection — is itself a direct consequence of the least-upper-bound property. Boundedness makes escape to infinity impossible; completeness guarantees the piling-up point is an actual real number rather than a gap in the line.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — bounded and divergent still isn't empty-handed</span>
+<p>\((-1)^n\) is bounded, so Bolzano–Weierstrass guarantees a convergent subsequence — and indeed the even-indexed terms alone converge to 1, the odd-indexed terms alone to \(-1\). Divergence of the whole sequence and convergence of a piece of it are entirely compatible facts. Note precisely what the theorem does and does not claim: it never says the sequence itself converges.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="s5">
+<h1>Cauchy Sequences and Completeness</h1>
+<div class="subtitle">certifying a limit exists without ever naming it — and why that trick only works over ℝ</div>
+
+<h2>A criterion with no candidate required</h2>
+<p>The ε–N definition has a real practical limitation: to even write it down, a candidate value \(L\) must already be in hand. For sequences defined recursively, or arising as approximations with no closed form, no such candidate is obvious in advance. Cauchy's criterion removes the requirement entirely, by asking a purely internal question: do the terms eventually stop moving relative to <em>each other</em>?</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — Cauchy sequence</span>
+<p>\((a_n)\) is a <strong>Cauchy sequence</strong> if: for every \(\varepsilon>0\), there exists \(N_0\) such that for all \(m,n\ge N_0\), \(|a_m-a_n|<\varepsilon\).</p>
+</div>
+
+<div class="callout definition">
+<span class="callout-label">Theorem — Cauchy's criterion for sequences</span>
+<p>A sequence of real numbers converges if and only if it is a Cauchy sequence.</p>
+</div>
+
+<p>Convergent \(\implies\) Cauchy is an easy ε/2-split, identical in spirit to the algebra-of-limits proof in Panel II. Cauchy \(\implies\) convergent is the deep direction, and it is exactly equivalent to the statement that \(\mathbb{R}\) is <strong>complete</strong>.</p>
+
+<h2>Why the hard direction needs completeness</h2>
+<div class="callout warning">
+<span class="callout-label">Warning — internal consistency alone isn't enough, over ℚ</span>
+<p>The decimal truncations of \(\sqrt2\) — \(1,\ 1.4,\ 1.41,\ 1.414,\ 1.4142,\dots\) — form a sequence whose terms bunch closer and closer together: exactly the Cauchy condition. Yet considered strictly as a sequence of <em>rational</em> numbers required to converge to a rational limit, it converges to nothing: \(\sqrt2\) is irrational, so no rational target exists for it to land on. Being internally consistent (Cauchy) and actually converging come apart the instant the number system has gaps in it — \(\mathbb{R}\) is built (Dedekind cuts, or classes of Cauchy sequences of rationals, detailed in the companion <a href="../../continuous_math/foundations/continuous-math-foundations.html">Continuous Mathematics Foundations</a> essay) specifically so this failure cannot happen.</p>
+</div>
+
+<h2>The proof chain, unpacked</h2>
+<p>The proof that a Cauchy sequence of reals converges is not one idea but three, chained together — and no new axiom is needed at the last step, only the triangle inequality doing the same error-budget-splitting trick seen throughout this essay.</p>
+<ol class="proof-list">
+<li><span class="pf-stmt">Cauchy ⟹ bounded — past some N₀, later terms sit within 1 of a_N₀; the finitely many earlier terms are automatically bounded.</span><span class="pf-just">link 1</span></li>
+<li><span class="pf-stmt">Bounded ⟹ a convergent subsequence exists, say aₙₖ → L, by Bolzano–Weierstrass.</span><span class="pf-just">link 2 · Panel IV</span></li>
+<li><span class="pf-stmt">Cauchy + one convergent piece ⟹ the whole sequence converges to L: aₙ is close to some aₙₖ (Cauchy), which is close to L (subsequence).</span><span class="pf-just">link 3 · triangle inequality</span></li>
+</ol>
+<p>The reason this chain is worth feeling, not just reading, is that it shows completeness manifesting in two different guises — first as "bounded sets have suprema" (inside Bolzano–Weierstrass) and then as "Cauchy sequences have somewhere to land" (the conclusion itself) — and shows those two guises are, underneath, the same fact wearing different clothes.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="s6">
+<h1>Deep Intuition — Why, Not Just What</h1>
+<div class="subtitle">the picture underneath every ε and every N₀, and why completeness is the one fact doing all the work</div>
+
+<h2>The challenge–response game</h2>
+<p>The single clearest way to feel the ε–N definition is as a game between an adversarial <strong>Challenger</strong> and a <strong>Defender</strong>. The Challenger's move is \(\varepsilon\): a tolerance band, \((L-\varepsilon,L+\varepsilon)\), around the claimed limit \(L\) — a demand that says, "make the sequence land inside this band." The Defender's move is \(N_0\): an index past which every single term, with no exceptions, is guaranteed to sit inside that band.</p>
+<div class="callout insight">
+<span class="callout-label">Insight — the definition as a game</span>
+<p>\(a_n\to L\) means: the Defender always wins. No matter how small the Challenger makes \(\varepsilon\), the Defender can always name an \(N_0\) that works. If there is even one \(\varepsilon\) for which no \(N_0\) works — however small the escapes, however far out they occur — the sequence does not converge to \(L\).</p>
+</div>
+<h3>Why the Challenger moves first</h3>
+<p>The order — \(\varepsilon\) first, \(N_0\) second — is not stylistic. Reversing it would demand a single \(N_0\) that works for every \(\varepsilon\) simultaneously, meaning the sequence would have to stop moving entirely past \(N_0\), not merely settle down arbitrarily close. That is a wildly stronger claim, true only of eventually-constant sequences. The actual definition asks only that the wiggle room shrink toward zero as \(\varepsilon\) shrinks, never that it vanish outright — and letting the Challenger fix \(\varepsilon\) first is exactly what encodes that weaker, correct demand.</p>
+
+<h2>The neighborhood picture</h2>
+<p>Reframe the same definition topologically: for every open interval around \(L\), however small, all but finitely many terms of the sequence lie inside it. The finitely-many-exceptions phrasing makes something vivid that the symbols can obscure: convergence places <em>zero</em> constraint on how the sequence behaves early on. The first million terms can do anything at all, and none of it matters, because convergence is entirely a statement about tails, never about beginnings.</p>
+<div class="callout insight">
+<span class="callout-label">Insight — a useful reframing</span>
+<p>"\(a_n\to L\)" and "every neighborhood of \(L\) contains all but finitely many terms of the sequence" are logically identical statements. \(N_0\) is precisely the boundary past which the finite exception list is closed and the terms are permanently trapped.</p>
+</div>
+
+<h2>Why uniqueness and boundedness are forced</h2>
+<p>Picture two candidate limits \(L\) and \(L'\) as the centers of two tolerance bands shrunk down to radius \(|L-L'|/2\) — small enough that the bands do not touch. A convergent sequence must eventually live entirely inside one band, and if it also converged to the other candidate, some term would have to sit in two disjoint intervals simultaneously — a plain impossibility for a single real number. Uniqueness is not an extra axiom bolted onto the definition; it falls straight out of the fact that a point cannot occupy two places that do not overlap.</p>
+<p>Boundedness is forced the same way: a convergent tail is trapped inside a band of fixed width forever, so escaping to infinity is only ever available to the finitely many terms that come before the trap closes — and a finite collection of real numbers can never be unbounded, no matter how wild its individual values are.</p>
+
+<h2>The staircase picture, once more</h2>
+<p>Panel III proves monotone convergence formally; the intuition underneath is worth isolating on its own. "Settling in against the highest reachable step" is exactly the definition of a supremum — so the staircase picture only becomes a theorem once a bounded set of reals is <em>guaranteed</em> to have a supremum that is itself a real number.</p>
+<div class="callout warning">
+<span class="callout-label">Warning — why this can fail over ℚ, approximating √2</span>
+<p>Define \(a_1=1\) and \(a_{n+1}=(a_n+2/a_n)/2\) — Newton's method chasing \(\sqrt2\). Truncated to rationals, this sequence is bounded above by 2, with every hallmark of the staircase picture present. If the "supremum" it settles against were required to be rational, there would be nothing there — \(\sqrt2\) is irrational, so no rational ceiling exists for the staircase to press up against. Over \(\mathbb{R}\) the hole is filled by construction, and the staircase always finds real ground to stand on.</p>
+</div>
+
+<h2>Cauchy sequences — consistency without a destination</h2>
+<p>The ε–N definition asks "does the sequence approach a specific place." The Cauchy condition asks something quieter: "do the terms eventually stop moving relative to each other," with no candidate limit named or needed. The genuinely deep fact is that, over the real numbers, those two questions turn out to have the exact same answer — and that equivalence is not free, it is precisely what completeness buys, as the decimal-truncations-of-\(\sqrt2\) example in Panel V shows failing the instant the number system has gaps in it.</p>
+
+<div class="callout insight">
+<span class="callout-label">One line to carry away</span>
+<p>Every idea across this essay is downstream of a single fact: \(\mathbb{R}\) has no missing points. The ε–N definition turns "approaches" into two finite numbers and a checkable relationship; uniqueness and boundedness fall out of that relationship for free; monotone convergence turns "bounded and climbing" into "convergent" because a ceiling always has real ground beneath it to settle on; Bolzano–Weierstrass turns "merely bounded" into "a convergent piece exists" because infinitely many points in finite space must pile up somewhere real; and Cauchy's criterion turns "internally consistent" into "actually convergent" for the identical reason. Sequence convergence, from top to bottom, is completeness of the real line doing quiet, load-bearing work.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="s7">
+<h1>Worked Examples</h1>
+<div class="subtitle">the standard template, and two cases where the closed form was never the point</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>A working set of examples, by technique</caption>
+<thead><tr><th>Sequence</th><th>Technique</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td class="mono">1/n</td><td>direct ε–N, N₀ = ⌈1/ε⌉+1</td><td>→ 0</td></tr>
+<tr><td class="mono">(2n+1)/(3n+5)</td><td>algebra first, then ε–N</td><td>→ 2/3</td></tr>
+<tr><td class="mono">(1+1/n)ⁿ</td><td>monotone convergence (Panel III)</td><td>→ e, no closed form needed first</td></tr>
+<tr><td class="mono">√(n+1) − √n</td><td>rationalize, then squeeze</td><td>→ 0</td></tr>
+<tr><td class="mono">(−1)ⁿ</td><td>challenge–response disproof (Panel II)</td><td>diverges</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Convergence without ever guessing the limit</h2>
+<p>Define \(a_1=1\) and \(a_{n+1}=(a_n+2/a_n)/2\).</p>
+<ol class="proof-list">
+<li><span class="pf-stmt">a₂ = 1.5, and for n≥2 the sequence decreases while staying above √2 (AM–GM on aₙ and 2/aₙ).</span><span class="pf-just">bounded and eventually monotonic</span></li>
+<li><span class="pf-stmt">By monotone convergence: decreasing + bounded below ⟹ convergent to some L.</span><span class="pf-just">no formula for L assumed in advance</span></li>
+<li><span class="pf-stmt">Taking n→∞ on both sides of the recursion: L = (L+2/L)/2, so L² = 2, so L = √2.</span><span class="pf-just">identity recovered only afterward</span></li>
+</ol>
+<p>Existence first, via completeness; identity second, via algebra on the recursion itself.</p>
+
+<h2>Bounded, divergent, yet not empty-handed</h2>
+<div class="callout insight">
+<span class="callout-label">sin(n) — bounded, no limit, but Bolzano–Weierstrass still applies</span>
+<p>\(-1\le\sin(n)\le1\) trivially, so the sequence is bounded. Since \(\pi\) is irrational, \(\{n\bmod 2\pi\}\) is dense in \([0,2\pi)\), so \(\sin(n)\) returns arbitrarily close to every value in \([-1,1]\) infinitely often — ruling out any single limit. Yet boundedness alone still guarantees convergent subsequences by Bolzano–Weierstrass; density in fact guarantees convergent subsequences toward <em>every</em> point of \([-1,1]\). A sequence can be maximally far from convergent and still be full of convergent pieces.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="s8">
+<h1>Interactive Lab</h1>
+<div class="subtitle">play the Challenger–Defender game yourself: pick a sequence, set ε, and watch N₀ fall out</div>
+
+<p>Pick a family below, then drag ε (the Challenger's demand) and watch the smallest working \(N_0\) (the Defender's response) update live. The shaded band is \((L-\varepsilon,L+\varepsilon)\); terms inside it are highlighted.</p>
+
+<div class="lab">
+<div class="lab-canvases">
+<div class="canvas-wrap">
+<div class="label">aₙ vs. n, with the ε-band around L and the N₀ marker</div>
+<canvas id="cvSeq" width="640" height="320"></canvas>
+</div>
+</div>
+<div class="controls">
+<div class="control-row">
+<label for="seqSelect">Sequence aₙ</label>
+<select id="seqSelect">
+<option value="recip">1/n</option>
+<option value="ratio">n/(n+1)</option>
+<option value="altrecip">(−1)ⁿ/n</option>
+<option value="euler">(1+1/n)ⁿ</option>
+<option value="geo">rⁿ</option>
+<option value="altconst">(−1)ⁿ</option>
+</select>
+</div>
+<div class="control-row" id="paramRow" style="display:none;">
+<label for="paramSlider">ratio r</label>
+<input type="range" id="paramSlider" min="-1.5" max="1.5" step="0.01" value="0.7">
+<span class="readout" id="paramReadout">0.70</span>
+</div>
+<div class="control-row">
+<label for="epsSlider">ε (tolerance)</label>
+<input type="range" id="epsSlider" min="0.005" max="0.5" step="0.005" value="0.05">
+<span class="readout" id="epsReadout">0.050</span>
+</div>
+<div class="control-row">
+<label for="nSlider">N shown</label>
+<input type="range" id="nSlider" min="10" max="400" step="1" value="60">
+<span class="readout" id="nReadout">60</span>
+</div>
+</div>
+<div class="info-line">
+N₀ (defender's move) = <span class="v" id="n0Info">—</span>
+&nbsp;&nbsp;|&nbsp;&nbsp; deviation past N₀ = <span class="v" id="devInfo">—</span>
+&nbsp;&nbsp;|&nbsp;&nbsp; challenge met? <span class="v" id="metInfo">—</span>
+</div>
+<div class="legend">
+<span><span class="swatch" style="background:var(--accent)"></span> inside the ε-band</span>
+<span><span class="swatch" style="background:var(--ink-faint)"></span> outside the ε-band</span>
+<span><span class="swatch" style="background:var(--blue)"></span> N₀ marker</span>
+</div>
+</div>
+
+</section>
+
+<!-- ============ PANEL 9 ============ -->
+<section class="panel" id="s9">
+<h1>The Short Version</h1>
+<div class="subtitle">a compact reference table, a glossary, and where to go for more depth</div>
+
+<h2>The one-paragraph summary</h2>
+<p>A sequence is just a function on \(\mathbb{N}\), and "converges" is made precise by the ε–N definition (Panel I): a challenge–response game the Defender must always be able to win. Uniqueness and boundedness fall out of that game for free (Panel II). Monotone convergence (Panel III) and Bolzano–Weierstrass (Panel IV) turn "bounded" into "convergent" — the first outright, the second at least for some subsequence — because \(\mathbb{R}\)'s completeness guarantees a bounded set always has real ground to settle on. Cauchy's criterion (Panel V) pushes this further, certifying convergence with no candidate limit named at all. Every one of these results, unpacked in Panel VI, is completeness of the real line doing the same quiet work in a different costume.</p>
+
+<h2>Reference table</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Which tool to reach for</caption>
+<thead><tr><th>Tool</th><th>What it needs</th><th>What it certifies</th></tr></thead>
+<tbody>
+<tr><td>ε–N definition</td><td>a candidate value L</td><td>aₙ → L, directly</td></tr>
+<tr><td>Monotone convergence</td><td>monotonic + bounded</td><td>convergence, with no L guessed in advance</td></tr>
+<tr><td>Bolzano–Weierstrass</td><td>bounded (not necessarily monotonic)</td><td>a convergent subsequence, even if aₙ itself diverges</td></tr>
+<tr><td>Cauchy criterion</td><td>nothing external — purely internal</td><td>a limit exists somewhere in ℝ, without naming it</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Glossary</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Terms used throughout this essay</caption>
+<thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Bounded sequence</td><td>some M satisfies |aₙ| ≤ M for every n. Necessary but not sufficient for convergence.</td></tr>
+<tr><td>Monotonic sequence</td><td>non-decreasing or non-increasing throughout. Combined with boundedness, guarantees convergence.</td></tr>
+<tr><td>Subsequence</td><td>terms kept at a strictly increasing set of indices, aₙ₁, aₙ₂, aₙ₃, …</td></tr>
+<tr><td>Cauchy sequence</td><td>terms bunch arbitrarily close to each other, with no reference to any external limit.</td></tr>
+<tr><td>Completeness</td><td>every non-empty subset of ℝ bounded above has a supremum in ℝ. Separates ℝ from ℚ.</td></tr>
+<tr><td>Supremum / infimum</td><td>least upper bound / greatest lower bound. The limit of a bounded monotonic sequence is exactly this.</td></tr>
+<tr><td>Nested interval property</td><td>a family of shrinking, nested closed intervals has exactly one common point. Drives Bolzano–Weierstrass.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Further reading on this site</h2>
+<ul>
+<li><a href="limits_formal.html">The Formal Limit — ε–δ Deep Dive</a> — the function-limit counterpart this essay specializes from.</li>
+<li><a href="../series/series_formal.html">The Formal Convergence of Series</a> — this entire essay applied to one specific sequence, the partial sums.</li>
+<li><a href="../../continuous_math/foundations/continuous-math-foundations.html">Continuous Mathematics Foundations</a> — where completeness, density, and the real line itself are built from scratch.</li>
+<li><a href="../philosophy/calculus-philosophy.html">The Infinite Made Rigorous</a> — the full history behind the limit, from Zeno through Weierstrass.</li>
+</ul>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['s1','s2','s3','s4','s5','s6','s7','s8','s9'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☾ light' : '☀ dark';
+  drawSeq();
+});
+
+// ---------- KaTeX render ----------
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+// ============ INTERACTIVE LAB: aₙ CHALLENGE–DEFENDER GAME ============
+const SCFG = {
+  recip:    { hasParam:false, limit:0,       fn:n=>1/n },
+  ratio:    { hasParam:false, limit:1,       fn:n=>n/(n+1) },
+  altrecip: { hasParam:false, limit:0,       fn:n=>(n%2===0?1:-1)/n },
+  euler:    { hasParam:false, limit:Math.E,  fn:n=>Math.pow(1+1/n,n) },
+  geo:      { hasParam:true,  fn:(n,p)=>Math.pow(p,n) },
+  altconst: { hasParam:false, limit:null,    fn:n=>(n%2===0?1:-1) }
+};
+
+const seqSelect = document.getElementById('seqSelect');
+const paramRow = document.getElementById('paramRow');
+const paramSlider = document.getElementById('paramSlider');
+const paramReadout = document.getElementById('paramReadout');
+const epsSlider = document.getElementById('epsSlider');
+const epsReadout = document.getElementById('epsReadout');
+const nSlider = document.getElementById('nSlider');
+const nReadout = document.getElementById('nReadout');
+const n0Info = document.getElementById('n0Info');
+const devInfo = document.getElementById('devInfo');
+const metInfo = document.getElementById('metInfo');
+
+function currentLimit(type, param){
+  if(type==='geo'){
+    if(Math.abs(param) < 1) return 0;
+    if(Math.abs(param-1) < 1e-9) return 1;
+    return null;
+  }
+  return SCFG[type].limit;
+}
+
+function findN0(terms, L, eps, N){
+  let lastFail = 0;
+  for(let i=0;i<N;i++){ if(Math.abs(terms[i]-L) >= eps) lastFail = i+1; }
+  return lastFail + 1;
+}
+
+const seqCv = document.getElementById('cvSeq');
+const sctx = seqCv.getContext('2d');
+const SEQ_W = seqCv.width, SEQ_H = seqCv.height;
+
+function drawSeq(){
+  const type = seqSelect.value;
+  const cfg = SCFG[type];
+  const param = parseFloat(paramSlider.value);
+  const eps = parseFloat(epsSlider.value);
+  const N = parseInt(nSlider.value,10);
+
+  const terms = new Array(N);
+  for(let i=0;i<N;i++) terms[i] = cfg.hasParam ? cfg.fn(i+1,param) : cfg.fn(i+1);
+  const L = cfg.hasParam ? currentLimit(type,param) : cfg.limit;
+
+  let n0Text='—', devText='—', metText='—', n0Index=null;
+  if(L !== null){
+    const n0 = findN0(terms, L, eps, N);
+    if(n0 <= N){
+      n0Index = n0;
+      n0Text = String(n0);
+      let maxDev = 0;
+      for(let i=n0-1;i<N;i++) maxDev = Math.max(maxDev, Math.abs(terms[i]-L));
+      devText = maxDev.toExponential(2);
+      metText = 'YES — defender wins';
+    } else {
+      n0Text = '> ' + N;
+      metText = 'not yet (raise N shown)';
+      devText = Math.abs(terms[N-1]-L).toExponential(2);
+    }
+  } else {
+    n0Text = 'none';
+    metText = 'NO — sequence diverges';
+    let maxDev = 0;
+    for(let i=Math.floor(N/2);i<N;i++) maxDev = Math.max(maxDev, Math.abs(terms[i]-terms[N-1]));
+    devText = maxDev.toExponential(2);
+  }
+  n0Info.textContent = n0Text;
+  devInfo.textContent = devText;
+  metInfo.textContent = metText;
+  metInfo.style.color = L!==null && n0Index ? cssVar('--green') : (L===null ? cssVar('--red') : cssVar('--accent'));
+
+  // --- canvas ---
+  const W = SEQ_W, H = SEQ_H;
+  const marginL = 54, marginR = 20, marginT = 20, marginB = 34;
+  const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+
+  let yMin = Math.min(0, ...terms), yMax = Math.max(0, ...terms);
+  if(L !== null){ yMin = Math.min(yMin, L-eps); yMax = Math.max(yMax, L+eps); }
+  let pad = (yMax-yMin)*0.12; if(!(pad>0)) pad = 1;
+  yMin -= pad; yMax += pad;
+
+  const xs = n => marginL + (n-1)/Math.max(1,N-1) * plotW;
+  const ys = v => marginT + (1 - (v-yMin)/(yMax-yMin)) * plotH;
+
+  sctx.clearRect(0,0,W,H);
+  sctx.fillStyle = cssVar('--bg-elevated'); sctx.fillRect(0,0,W,H);
+
+  sctx.strokeStyle = cssVar('--border-soft'); sctx.lineWidth = 1;
+  sctx.fillStyle = cssVar('--ink-faint'); sctx.font = '10px JetBrains Mono, monospace';
+  for(let i=0;i<=5;i++){
+    const v = yMin + (yMax-yMin)*i/5, y = ys(v);
+    sctx.beginPath(); sctx.moveTo(marginL,y); sctx.lineTo(marginL+plotW,y); sctx.stroke();
+    sctx.fillText(v.toFixed(2), 4, y+3);
+  }
+  for(let i=0;i<=5;i++){
+    const n = Math.round(1+(N-1)*i/5), x = xs(n);
+    sctx.beginPath(); sctx.moveTo(x,marginT); sctx.lineTo(x,marginT+plotH); sctx.stroke();
+    sctx.fillText(String(n), x-8, marginT+plotH+18);
+  }
+  sctx.strokeStyle = cssVar('--border'); sctx.lineWidth = 1.2;
+  sctx.strokeRect(marginL, marginT, plotW, plotH);
+
+  if(L !== null){
+    sctx.fillStyle = cssVar('--accent-dim'); sctx.globalAlpha = 0.18;
+    const yTop = ys(L+eps), yBot = ys(L-eps);
+    sctx.fillRect(marginL, yTop, plotW, yBot-yTop);
+    sctx.globalAlpha = 1;
+    sctx.strokeStyle = cssVar('--accent'); sctx.lineWidth = 1; sctx.setLineDash([4,3]);
+    sctx.beginPath(); sctx.moveTo(marginL,yTop); sctx.lineTo(marginL+plotW,yTop); sctx.stroke();
+    sctx.beginPath(); sctx.moveTo(marginL,yBot); sctx.lineTo(marginL+plotW,yBot); sctx.stroke();
+    sctx.setLineDash([]);
+    sctx.strokeStyle = cssVar('--red'); sctx.lineWidth = 1.3; sctx.setLineDash([6,4]);
+    sctx.beginPath(); sctx.moveTo(marginL, ys(L)); sctx.lineTo(marginL+plotW, ys(L)); sctx.stroke();
+    sctx.setLineDash([]);
+  }
+
+  if(n0Index && n0Index <= N){
+    sctx.strokeStyle = cssVar('--blue'); sctx.lineWidth = 1.6; sctx.setLineDash([3,3]);
+    const x = xs(n0Index);
+    sctx.beginPath(); sctx.moveTo(x, marginT); sctx.lineTo(x, marginT+plotH); sctx.stroke();
+    sctx.setLineDash([]);
+    sctx.fillStyle = cssVar('--blue'); sctx.font = 'italic 12px Cormorant Garamond, serif';
+    sctx.fillText('N₀', x+4, marginT+14);
+  }
+
+  sctx.strokeStyle = cssVar('--ink-faint'); sctx.lineWidth = 1.3; sctx.globalAlpha = 0.55;
+  sctx.beginPath();
+  for(let i=0;i<N;i++){ const x=xs(i+1), y=ys(terms[i]); if(i===0) sctx.moveTo(x,y); else sctx.lineTo(x,y); }
+  sctx.stroke();
+  sctx.globalAlpha = 1;
+
+  if(N <= 140){
+    for(let i=0;i<N;i++){
+      const inBand = L!==null && Math.abs(terms[i]-L) < eps;
+      sctx.fillStyle = inBand ? cssVar('--accent') : cssVar('--ink-faint');
+      sctx.beginPath(); sctx.arc(xs(i+1), ys(terms[i]), 2.6, 0, 7); sctx.fill();
+    }
+  }
+}
+
+seqSelect.addEventListener('change', ()=>{
+  const cfg = SCFG[seqSelect.value];
+  paramRow.style.display = cfg.hasParam ? '' : 'none';
+  drawSeq();
+});
+paramSlider.addEventListener('input', ()=>{
+  paramReadout.textContent = parseFloat(paramSlider.value).toFixed(2);
+  drawSeq();
+});
+epsSlider.addEventListener('input', ()=>{
+  epsReadout.textContent = parseFloat(epsSlider.value).toFixed(3);
+  drawSeq();
+});
+nSlider.addEventListener('input', ()=>{
+  nReadout.textContent = nSlider.value;
+  drawSeq();
+});
+
+drawSeq();
+</script>
+
+</body>
+</html>

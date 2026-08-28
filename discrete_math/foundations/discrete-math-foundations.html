@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discrete Mathematics — Logic, Sets, and the Rules of Inference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0a0b10; --bg-elevated:#12141c; --bg-card:#161925;
+  --border:#262b3a; --border-soft:#1c2029;
+  --ink:#dde1ee; --ink-dim:#9aa1b8; --ink-faint:#5c6379;
+  --accent:#8ba3f2; --accent-dim:#5a72b0;
+  --blue:#6f9bc9; --green:#6fbf8f; --red:#d17a7a; --purple:#b389d9;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f3f4f9; --bg-elevated:#e9ebf3; --bg-card:#fbfbfe;
+  --border:#cdd1e3; --border-soft:#dde0ec;
+  --ink:#1c2030; --ink-dim:#454b63; --ink-faint:#767c94;
+  --accent:#3a56c9; --accent-dim:#5470b8;
+  --blue:#3a5f8a; --green:#3f7d55; --red:#a1453a; --purple:#6a4d94;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(10,11,16,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(243,244,249,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:840px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+h4{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+ul, ol{ margin:0 0 16px 26px; color:var(--ink-dim); }
+li{ margin-bottom:8px; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{ font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right; }
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block{ min-width:140px; }
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre-line; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+.mini-toggle{
+  font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s;
+}
+.mini-toggle:hover{ color:var(--accent); border-color:var(--accent-dim); }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+td.tt-t, span.tt-t{ color:var(--green); font-weight:600; font-family:var(--mono); }
+td.tt-f, span.tt-f{ color:var(--red); font-weight:600; font-family:var(--mono); }
+td.mono, th.mono{ font-family:var(--mono); }
+
+/* ---- rule cards ---- */
+.rule-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0; }
+.rule-card{ background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; }
+.rule-card .rc-name{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--accent); text-transform:uppercase; margin-bottom:8px; }
+.rule-card .rc-form{ font-family:var(--mono); font-size:13.5px; color:var(--ink); line-height:1.7; white-space:pre-wrap; }
+.rule-card .rc-note{ font-size:.83em; color:var(--ink-faint); margin-top:8px; }
+@media(max-width:640px){ .rule-grid{grid-template-columns:1fr;} }
+
+/* ---- formal proof list ---- */
+.proof-list{ counter-reset:pline; list-style:none; margin:18px 0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.proof-list li{ counter-increment:pline; display:flex; gap:14px; padding:10px 16px; border-bottom:1px solid var(--border-soft); font-family:var(--mono); font-size:13.5px; align-items:baseline; background:var(--bg-card); }
+.proof-list li:nth-child(even){ background:var(--bg-elevated); }
+.proof-list li:last-child{ border-bottom:none; }
+.proof-list li::before{ content:counter(pline); color:var(--ink-faint); min-width:18px; text-align:right; }
+.proof-list .pf-stmt{ flex:1; color:var(--ink); }
+.proof-list .pf-just{ color:var(--accent); font-size:12px; white-space:nowrap; }
+@media(max-width:640px){ .proof-list li{ flex-wrap:wrap; } .proof-list .pf-just{ margin-left:32px; } }
+
+/* ---- chips ---- */
+.chip-row{ display:flex; flex-wrap:wrap; gap:9px; margin:16px 0; }
+.chip{
+  font-family:var(--mono); font-size:14px; padding:8px 15px; border-radius:20px;
+  border:1.5px solid var(--border); background:var(--bg-elevated); color:var(--ink-faint);
+  cursor:pointer; transition:.15s; user-select:none;
+}
+.chip.on{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:600;}
+.chip.p-true{ border-color:var(--green); }
+.chip.p-false{ border-color:var(--red); }
+.chip.on.p-true{ box-shadow: inset 0 0 0 2px var(--green); }
+.chip.on.p-false{ box-shadow: inset 0 0 0 2px var(--red); }
+
+/* ---- dual comparison grid ---- */
+.dual-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0; margin:22px 0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.dual-grid > div{ padding:16px 20px; }
+.dual-grid > div:first-child{ border-right:1px solid var(--border); background:var(--bg-card); }
+@media(max-width:640px){ .dual-grid{grid-template-columns:1fr;} .dual-grid>div:first-child{border-right:none;border-bottom:1px solid var(--border);} }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">DISCRETE MATH</div>
+  <button class="tab-btn active" data-tab="d1">I · Why Discrete Math</button>
+  <button class="tab-btn" data-tab="d2">II · Propositions</button>
+  <button class="tab-btn" data-tab="d3">III · Connectives</button>
+  <button class="tab-btn" data-tab="d4">IV · Equivalence & Laws</button>
+  <button class="tab-btn" data-tab="d5">V · Quantifiers</button>
+  <button class="tab-btn" data-tab="d6">VI · Inference Rules</button>
+  <button class="tab-btn" data-tab="d7">VII · Proof Techniques</button>
+  <button class="tab-btn" data-tab="d8">VIII · Sets</button>
+  <button class="tab-btn" data-tab="d9">IX · Set Algebra</button>
+  <button class="tab-btn" data-tab="d10">X · Relations</button>
+  <button class="tab-btn" data-tab="d11">XI · Functions</button>
+  <button class="tab-btn" data-tab="d12">XII · Interactive Lab</button>
+  <button class="tab-btn" data-tab="d13">XIII · Worked Examples</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="d1">
+<h1>The Mathematics of the Countable</h1>
+<div class="subtitle">why a field obsessed with true/false, membership, and one-to-one correspondences underlies almost everything a computer does</div>
+
+<h2>Continuous change versus discrete structure</h2>
+<p>Calculus, and the essays elsewhere on this site about limits, derivatives, and integrals, are all fundamentally about <strong>continuous</strong> quantities — quantities that can be sliced infinitely finely, where between any two values there is always another value in between. A car's speed changes continuously; a temperature curve has no gaps; the real number line has no "next" number after 3, because 3.0001, 3.00001, and infinitely many others sit in between.</p>
+<p><strong>Discrete mathematics</strong> studies the opposite kind of structure: objects that are separated, countable, and come with a definite "next one." There is a next integer after 3 — it is 4, with nothing of the same kind squeezed in between. A statement is either true or it is false, with no continuum of partial truth in between. A set either contains an element or it does not; there is no fractional membership. A computer's memory holds a definite, countable number of bits, each one either 0 or 1, never something in between.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the light switch and the dimmer</span>
+<p>A dimmer switch is a continuous device: turning the knob a hair's width changes the brightness by a hair's width, and calculus is the mathematics built to describe exactly that kind of smooth response. A plain on/off light switch is a discrete device: there are exactly two states, nothing in between them is reachable, and asking "what is the brightness half a millimeter into the flip?" is not a meaningful question about the switch itself. Discrete mathematics is the mathematics of switches, not dimmers — and it turns out that almost every foundational object in computer science is built, at bottom, out of switches.</p>
+</div>
+
+<h2>What discrete mathematics actually contains</h2>
+<p>"Discrete mathematics" is not one theorem or one technique; it is an umbrella over several interlocking branches that all share the same countable, all-or-nothing character. This essay is a foundations tour through the branches that everything else in the subject leans on.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>The branches this essay builds, and what each one is for</caption>
+<thead><tr><th>Branch</th><th>What it studies</th><th>A representative question</th></tr></thead>
+<tbody>
+<tr><td>Propositional logic</td><td>statements with a definite truth value, and how connectives combine them</td><td>Is <em>"if it rains, the game is cancelled"</em> the same claim as its converse?</td></tr>
+<tr><td>Predicate logic &amp; quantifiers</td><td>statements about <em>every</em> or <em>some</em> member of a domain</td><td>Does <em>"everyone has a friend"</em> mean the same friend for everyone, or a different one each?</td></tr>
+<tr><td>Rules of inference</td><td>which arguments are guaranteed valid, purely from their logical shape</td><td>If premises A and B are both true, does the conclusion have to be true as well?</td></tr>
+<tr><td>Set theory</td><td>collections of objects, and the operations that build new collections from old ones</td><td>How many distinct subsets does a 10-element set have?</td></tr>
+<tr><td>Relations</td><td>how members of one set connect to members of another</td><td>Does "divides evenly into" behave anything like "≤"?</td></tr>
+<tr><td>Functions</td><td>relations that assign exactly one output to each input</td><td>Can two different inputs be forced to produce two different outputs?</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Why this is the grammar underneath computer science</h2>
+<p>None of this is abstract ornamentation kept separate from real computation — it is the vocabulary computation is written in. A digital circuit is a physical device for evaluating a propositional formula: an AND gate <em>is</em> the connective \(\wedge\) built out of transistors, an OR gate is \(\vee\), a NOT gate is \(\neg\), and a modern processor is, underneath everything else, an enormous composition of these gates evaluating enormous formulas billions of times a second. A database query that asks "find every customer who has placed an order" is, syntactically, an existential quantifier: \(\exists\, \text{order}\;(\text{order.customer} = c)\). A type system that refuses to compile a program is a set-membership check in disguise. A recursive function's correctness proof is, almost always, a proof by mathematical induction — the same principle this essay develops in Panel VII to prove a formula about sums of integers.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — "discrete mathematics is the grammar of computer science"</span>
+<p>That phrase, or something close to it, opens nearly every standard discrete mathematics textbook, and it is not marketing — it is a fairly literal description. Every data structure is built from sets, tuples, and relations; every control-flow condition is a propositional formula; every specification of "for every input, the output satisfies…" is a quantified statement; every claim that an algorithm always terminates or always returns the right answer is proved, when it is proved at all, using the inference rules and proof techniques Panels VI and VII build from scratch.</p>
+</div>
+
+<h2>What this essay covers</h2>
+<p>Panels II–VI build propositional and predicate logic from the ground up: what a proposition is, how the five core connectives behave, how to tell two formulas are secretly the same statement, how quantifiers generalize logic to talk about "all" and "some," and which argument forms are guaranteed to preserve truth. Panel VII turns that machinery into the standard toolkit of mathematical proof — direct proof, contraposition, contradiction, cases, and induction. Panels VIII–XI build set theory, relations, and functions, ending with the pigeonhole principle as a capstone example of how far a genuinely simple idea can reach. Panel XII is hands-on: three small interactive tools — a truth-table generator, a Venn-diagram set explorer, and a quantifier explorer over a finite domain — built to let the definitions be tested by hand rather than only read. Panel XIII closes with worked, end-to-end proofs that draw on material from every earlier panel, plus a full reference summary.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="d2">
+<h1>Propositions — Sentences With a Truth Value</h1>
+<div class="subtitle">the single smallest building block every other panel in this essay is built out of</div>
+
+<h2>What counts as a proposition</h2>
+<p>Everything downstream in this essay — every connective, every proof, every rule of inference — is built on top of one very restrictive definition of what counts as a meaningful statement in the first place.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — proposition</span>
+<p>A <strong>proposition</strong> is a declarative sentence that is either true or false — never both, never neither, and never something in between — regardless of whether anyone actually knows which one it is.</p>
+</div>
+
+<p>That last clause matters more than it looks. "There are infinitely many twin primes" is a proposition even though, as of this writing, no one has proven it either way — the sentence is still, in principle, definitely true or definitely false; human ignorance about which one doesn't change that the sentence has exactly one of the two truth values. What actually disqualifies a sentence from being a proposition is not difficulty — it is a structural defect in the sentence itself: it isn't declarative, or its truth value depends on something the sentence hasn't pinned down.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Propositions versus sentences that fail to qualify</caption>
+<thead><tr><th>Sentence</th><th>Proposition?</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>"2 + 2 = 4"</td><td class="tt-t">Yes</td><td>declarative, and definitely true</td></tr>
+<tr><td>"2 + 2 = 5"</td><td class="tt-t">Yes</td><td>declarative, and definitely false — false propositions are still propositions</td></tr>
+<tr><td>"Ottawa is the capital of Canada"</td><td class="tt-t">Yes</td><td>declarative, definitely true, and true independent of who is asking</td></tr>
+<tr><td>"x + 1 = 2"</td><td class="tt-f">No</td><td>truth depends on the unassigned variable x — a <em>predicate</em>, formalized in Panel V, not yet a proposition</td></tr>
+<tr><td>"Close the door."</td><td class="tt-f">No</td><td>an imperative, not declarative — it has no truth value to evaluate</td></tr>
+<tr><td>"Is it raining?"</td><td class="tt-f">No</td><td>an interrogative — a question, not a claim that could be right or wrong</td></tr>
+<tr><td>"This statement is false."</td><td class="tt-f">No</td><td>the liar paradox — assuming it's true makes it false and vice versa, so it satisfies neither disjunct of "true or false"</td></tr>
+<tr><td>"Chocolate ice cream is the best flavor."</td><td class="tt-f">No</td><td>declarative in form, but an opinion with no objective, agreed-upon truth condition</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the liar paradox is not a corner case, it's the whole point of the definition</span>
+<p>"This statement is false" is exactly the sentence the definition of a proposition is built to exclude. If it were true, then what it asserts (that it is false) would hold, making it false — contradiction. If it were false, then what it asserts is not the case, meaning it must be true — also a contradiction. The sentence cannot consistently be assigned either truth value, so under the definition above it simply isn't a proposition at all — it's excluded by fiat, not analyzed as some third truth value. Classical logic, the system this entire essay works in, is built on exactly two truth values and no others; systems that try to accommodate sentences like this one exist (they're called paraconsistent or multi-valued logics), but they are a different, much less commonly used subject.</p>
+</div>
+
+<h2>Propositional variables</h2>
+<p>Rather than writing out full English sentences every time, logic abbreviates propositions with single lowercase letters — conventionally \(p, q, r, s,\dots\) — called <strong>propositional variables</strong> (or sometimes <em>sentential</em> variables). Each one stands for some fixed proposition with a fixed, if possibly unknown, truth value.</p>
+
+<div class="ascii">   Let   p = "It is raining."
+         q = "The ground is wet."
+         r = "7 is a prime number."   (r is true, and always true — no weather involved)
+
+   These are three independent propositions. Nothing so far relates p to q —
+   that relationship, if any, has to be built explicitly using a connective (Panel III).</div>
+
+<h2>Atomic versus compound propositions</h2>
+<p>A proposition built with no connectives at all — just a bare declarative claim like <code>r</code> above — is called <strong>atomic</strong>. A proposition built by combining one or more atomic propositions with logical connectives — <code>¬p</code>, <code>p ∧ q</code>, <code>(p ∨ q) → r</code> — is called <strong>compound</strong>. Panel III is entirely about the five connectives used to build compound propositions out of atomic ones, and about how a compound proposition's truth value is completely determined, mechanically, by the truth values of its atomic pieces — never by anything else.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — atomic vs. compound</span>
+<p>A proposition is <strong>atomic</strong> if it contains no logical connective. A proposition formed by applying a connective to one or more (atomic or compound) propositions is <strong>compound</strong>. Every compound proposition can be broken down, connective by connective, into a unique tree of atomic propositions at its leaves — this is exactly the parse structure a truth table in Panel III is built to evaluate.</p>
+</div>
+
+<h2>Bivalence: the assumption underneath everything that follows</h2>
+<p>The claim that every proposition is <em>either</em> true <em>or</em> false, with no third option, is called the <strong>principle of bivalence</strong>, and classical logic — the system every panel in this essay is written in — simply assumes it outright. It is worth naming explicitly because it is doing real, load-bearing work: every truth table in Panel III has exactly two rows per variable (T and F, nothing else), and every rule of inference in Panel VI is only guaranteed to preserve truth under this exact assumption. Multi-valued logics that relax bivalence exist and are useful in specialized settings — three-valued logics for handling missing data in databases, for instance — but they are a genuinely different formal system, not a footnote to this one.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="d3">
+<h1>Connectives — the Verbs of Logic</h1>
+<div class="subtitle">five operations that build every compound proposition, and the truth table that defines each one completely</div>
+
+<h2>Negation, ¬p</h2>
+<p><strong>Negation</strong> flips a proposition's truth value: \(\neg p\) ("not p") is true exactly when \(p\) is false.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Truth table — negation</caption>
+<thead><tr><th class="mono">p</th><th class="mono">¬p</th></tr></thead>
+<tbody>
+<tr><td class="tt-t mono">T</td><td class="tt-f mono">F</td></tr>
+<tr><td class="tt-f mono">F</td><td class="tt-t mono">T</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Conjunction, p ∧ q</h2>
+<p><strong>Conjunction</strong> ("and") is true only when both operands are true — it is the strictest of the five connectives, in the sense that it has the fewest rows producing T.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Truth table — conjunction</caption>
+<thead><tr><th class="mono">p</th><th class="mono">q</th><th class="mono">p ∧ q</th></tr></thead>
+<tbody>
+<tr><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Disjunction, p ∨ q</h2>
+<p><strong>Disjunction</strong> ("or") is true whenever <em>at least one</em> operand is true — including the case where both are true. This is the <strong>inclusive or</strong>, and it is the default meaning of \(\vee\) throughout mathematics, even though everyday English "or" is genuinely ambiguous between this and the exclusive sense below.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Truth table — disjunction (inclusive or)</caption>
+<thead><tr><th class="mono">p</th><th class="mono">q</th><th class="mono">p ∨ q</th></tr></thead>
+<tbody>
+<tr><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — English "or" is ambiguous; \(\vee\) is not</span>
+<p>"You can have soup or salad" (on a fixed-price menu) almost always means <em>exactly one</em> — that's the <strong>exclusive or</strong>, written \(p\oplus q\), true when exactly one operand is true and false when they agree. "Students who have taken French or Spanish may skip the placement exam" almost always means <em>at least one</em>, inclusively — a student who's taken both certainly qualifies too. Mathematics resolves the ambiguity by fiat: unless stated otherwise, \(\vee\) always means inclusive or. Exclusive or gets its own symbol precisely so a formula never has to rely on context to disambiguate.</p>
+</div>
+
+<h2>The conditional, p → q</h2>
+<p>The <strong>conditional</strong> (or <strong>implication</strong>) \(p\to q\), read "if p then q," is the connective that trips up more beginners than the other four combined — because it is defined to be true in cases that feel intuitively strange at first.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Truth table — the conditional</caption>
+<thead><tr><th class="mono">p</th><th class="mono">q</th><th class="mono">p → q</th></tr></thead>
+<tbody>
+<tr><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Only one row makes \(p\to q\) false: \(p\) true and \(q\) false — the case where the "if" part holds but the promised "then" part fails to follow. Every other combination counts as true, including both rows where \(p\) is false. That last fact has a name.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — vacuous truth</span>
+<p>A conditional \(p\to q\) is <strong>vacuously true</strong> whenever its hypothesis \(p\) is false, regardless of \(q\)'s truth value. "If \(p\) is false" is read as making no promise at all about \(q\) — the conditional was never actually tested, so nothing has occurred to falsify it, and it is scored true by default.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — vacuous truth feels wrong before it feels obvious</span>
+<p>"If pigs can fly, then I am the Pope" is, by the truth table above, a <em>true</em> statement — because "pigs can fly" is false, making the whole conditional vacuously true no matter who is speaking. This is not a quirk to work around; it is exactly the right notion of implication for mathematics to use. Consider "for every integer \(n\), if \(n\) is both even and odd, then \(n=17\)." No integer is both even and odd, so the hypothesis is always false, and the statement is vacuously — but genuinely usefully — true for every \(n\) at once. Vacuous truth is what lets universally quantified conditional statements (Panel V) hold cleanly over an empty or impossible case, instead of needing a special exception carved out for it.</p>
+</div>
+
+<h3>Equivalent English phrasings of p → q</h3>
+<p>Mathematical English has an unusually large number of idioms that all mean exactly \(p\to q\), and mixing them up is one of the most common translation errors when converting a word problem into a formula.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Phrasings that all mean p → q</caption>
+<thead><tr><th>English phrasing</th><th>Symbolic form</th></tr></thead>
+<tbody>
+<tr><td>"If p, then q"</td><td class="mono">p → q</td></tr>
+<tr><td>"p implies q"</td><td class="mono">p → q</td></tr>
+<tr><td>"p only if q"</td><td class="mono">p → q</td></tr>
+<tr><td>"q if p"</td><td class="mono">p → q</td></tr>
+<tr><td>"q whenever p"</td><td class="mono">p → q</td></tr>
+<tr><td>"p is sufficient for q"</td><td class="mono">p → q</td></tr>
+<tr><td>"q is necessary for p"</td><td class="mono">p → q</td></tr>
+<tr><td>"q follows from p"</td><td class="mono">p → q</td></tr>
+<tr><td>"p unless ¬q"</td><td class="mono">p → q</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The two idioms that reverse students most reliably are "necessary" and "sufficient." Being told \(p\) is <strong>sufficient</strong> for \(q\) means \(p\) alone is enough to guarantee \(q\) — that's \(p\to q\) exactly. Being told \(q\) is <strong>necessary</strong> for \(p\) means \(p\) cannot hold without \(q\) also holding — which is again just \(p\to q\), phrased from the other direction. "Being a square is sufficient for being a rectangle" and "being a rectangle is necessary for being a square" are the same fact stated two ways, and both translate to <code>square(x) → rectangle(x)</code>.</p>
+
+<h2>The biconditional, p ↔ q</h2>
+<p>The <strong>biconditional</strong> \(p\leftrightarrow q\), read "p if and only if q" (often abbreviated <strong>iff</strong>), is true exactly when \(p\) and \(q\) share the same truth value — both true, or both false.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Truth table — the biconditional</caption>
+<thead><tr><th class="mono">p</th><th class="mono">q</th><th class="mono">p ↔ q</th></tr></thead>
+<tbody>
+<tr><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>\(p\leftrightarrow q\) is exactly \((p\to q)\wedge(q\to p)\) — "p if and only if q" really does mean "p implies q, and q implies p," both directions at once, which is why proving a biconditional in mathematics almost always means proving two separate conditionals (Panel VII returns to this explicitly).</p>
+
+<h2>Converse, inverse, and contrapositive</h2>
+<p>Starting from a conditional \(p\to q\), three related conditionals can be built by negating and/or swapping its two parts. Only one of the three is guaranteed to share the original's truth value in every case.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>The four related conditionals</caption>
+<thead><tr><th>Name</th><th>Form</th><th>Relationship to p → q</th></tr></thead>
+<tbody>
+<tr><td>Original</td><td class="mono">p → q</td><td>—</td></tr>
+<tr><td>Converse</td><td class="mono">q → p</td><td><strong>not</strong> logically equivalent to the original</td></tr>
+<tr><td>Inverse</td><td class="mono">¬p → ¬q</td><td><strong>not</strong> logically equivalent to the original</td></tr>
+<tr><td>Contrapositive</td><td class="mono">¬q → ¬p</td><td><strong>logically equivalent</strong> to the original — always, in every row</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — confusing a conditional with its converse is one of the oldest fallacies in logic</span>
+<p>"If it is a dog, then it is a mammal" is true. Its converse, "if it is a mammal, then it is a dog," is false — cats are mammals too. The two statements are not interchangeable, and treating them as if they were is called <strong>affirming the consequent</strong> when it shows up inside an argument (formalized as a named fallacy in Panel VI). Notice, though, that the inverse of the original — "if it is not a dog, then it is not a mammal" — is exactly the converse's contrapositive, so the inverse and the converse always share a truth value with each other, even though neither shares one with the original. Only the contrapositive is safe to substitute for the original conditional; Panel VII's proof-by-contraposition technique exists precisely because that equivalence is guaranteed.</p>
+</div>
+
+<h2>Precedence — reading a formula with no parentheses</h2>
+<p>Just as \(2+3\times4\) means \(2+(3\times4)\) rather than \((2+3)\times4\) because multiplication binds tighter than addition, logical connectives have a standard order of operations, from tightest-binding to loosest.</p>
+
+<div class="ascii">   TIGHTEST                                                          LOOSEST
+   ¬   >   ∧   >   ∨   >   →   >   ↔
+
+   Example:  ¬p ∧ q → r  ∨  s   parses as   ((¬p) ∧ q) → (r ∨ s)
+
+   Reading order, left to right:
+     1. ¬p        negate p first — tightest binding
+     2. (¬p) ∧ q  then conjoin with q
+     3. r ∨ s     then, independently, disjoin r and s
+     4. [(¬p)∧q] → [r∨s]   finally, the loosest connective — the conditional — joins the two halves</div>
+
+<div class="callout note">
+<span class="callout-label">Note — when in doubt, parenthesize anyway</span>
+<p>Different textbooks occasionally disagree about whether ∧ or ∨ should bind tighter when both appear with no parentheses at all, and every professional mathematician still adds parentheses the instant a formula could plausibly be misread. Precedence rules exist so that <code>¬p ∧ q</code> can be written without ambiguity, not as an excuse to omit parentheses from a genuinely complicated formula — treat them the way you'd treat "righty tighty, lefty loosey": a fine rule of thumb, not a substitute for actually checking.</p>
+</div>
+
+<h2>Other useful connectives, and functional completeness</h2>
+<p>Beyond the five core connectives, three more show up often enough to deserve names, particularly in the design of digital circuits.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Three additional connectives</caption>
+<thead><tr><th>Name</th><th>Symbol</th><th>Reads as</th><th>True when…</th></tr></thead>
+<tbody>
+<tr><td>Exclusive or (XOR)</td><td class="mono">p ⊕ q</td><td>"p or q, not both"</td><td>exactly one of p, q is true</td></tr>
+<tr><td>NAND</td><td class="mono">p ↑ q</td><td>"not both"</td><td>not (p ∧ q) — false only when both are true</td></tr>
+<tr><td>NOR</td><td class="mono">p ↓ q</td><td>"neither"</td><td>not (p ∨ q) — true only when both are false</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — NAND alone can build every other connective</span>
+<p>Every one of the eight connectives on this page — including NAND itself — can be rebuilt using only NAND gates chained together: \(\neg p \equiv p\uparrow p\), and \(p\wedge q \equiv (p\uparrow q)\uparrow(p\uparrow q)\), and every other connective follows from those two. A set of connectives with this property is called <strong>functionally complete</strong>. This is not a cute parlor trick — it is the reason real digital hardware can be built almost entirely out of a single repeated component (the NAND gate) rather than needing five or six different physical gate designs manufactured side by side.</p>
+</div>
+
+<h2>Master truth table — every connective, side by side</h2>
+<p>Collected in one place, for reference, every connective introduced on this page, evaluated on the same four rows of \(p\) and \(q\):</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>All eight connectives on the same four rows</caption>
+<thead><tr><th class="mono">p</th><th class="mono">q</th><th class="mono">¬p</th><th class="mono">p∧q</th><th class="mono">p∨q</th><th class="mono">p⊕q</th><th class="mono">p→q</th><th class="mono">p↔q</th><th class="mono">p↑q</th><th class="mono">p↓q</th></tr></thead>
+<tbody>
+<tr><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="d4">
+<h1>Tautologies, Contradictions, and the Algebra of Truth</h1>
+<div class="subtitle">how to prove two formulas make the same claim, without checking every row by hand every single time</div>
+
+<h2>Three categories every formula falls into</h2>
+<p>Build the full truth table of any compound proposition and its final column — the one giving the formula's overall truth value on every possible assignment of its variables — falls into exactly one of three categories.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Tautology, contradiction, contingency</caption>
+<thead><tr><th>Category</th><th>Definition</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><strong>Tautology</strong></td><td>true on every row — true no matter what its variables are</td><td class="mono">p ∨ ¬p</td></tr>
+<tr><td><strong>Contradiction</strong></td><td>false on every row — false no matter what its variables are</td><td class="mono">p ∧ ¬p</td></tr>
+<tr><td><strong>Contingency</strong></td><td>true on some rows, false on others — genuinely depends on p, q, …</td><td class="mono">p → q</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>\(p\vee\neg p\) is called the <strong>law of the excluded middle</strong>: whatever \(p\) claims, either \(p\) itself or its denial has to hold, and no assignment of \(p\)'s truth value can avoid making the whole formula true. \(p\wedge\neg p\) is its mirror image, forced false on every row, since no proposition can be simultaneously true and false under bivalence (Panel II).</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Verifying p ∨ ¬p is a tautology and p ∧ ¬p is a contradiction</caption>
+<thead><tr><th class="mono">p</th><th class="mono">¬p</th><th class="mono">p ∨ ¬p</th><th class="mono">p ∧ ¬p</th></tr></thead>
+<tbody>
+<tr><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Logical equivalence</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — logical equivalence</span>
+<p>Two propositions \(P\) and \(Q\) are <strong>logically equivalent</strong>, written \(P\equiv Q\), if they have the same truth value on every possible assignment of their shared variables — equivalently, if \(P\leftrightarrow Q\) is a tautology.</p>
+</div>
+
+<p>There are two ways to establish \(P\equiv Q\). The first is brute force: build the truth table for both and check every row matches. This always works, but the number of rows doubles with every additional variable, so a formula in five variables already needs 32 rows — correct, but tedious and error-prone by hand. The second method is algebraic: chain together a sequence of known equivalences — the <strong>laws of logic</strong> below — to transform \(P\) into \(Q\) directly, the same way an algebra student simplifies \(2(x+3)-x\) into \(x+6\) without re-deriving arithmetic from scratch at every step.</p>
+
+<h2>The laws of logic</h2>
+<p>Every law below is itself a tautology of the form \(\text{LHS}\leftrightarrow\text{RHS}\), and every one can be checked by truth table — the catalog exists so that check never has to be repeated by hand.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>The standard laws of propositional logic</caption>
+<thead><tr><th>Law</th><th>Form</th></tr></thead>
+<tbody>
+<tr><td>Identity</td><td class="mono">p ∧ T ≡ p&nbsp;&nbsp;&nbsp;&nbsp;p ∨ F ≡ p</td></tr>
+<tr><td>Domination</td><td class="mono">p ∨ T ≡ T&nbsp;&nbsp;&nbsp;&nbsp;p ∧ F ≡ F</td></tr>
+<tr><td>Idempotent</td><td class="mono">p ∧ p ≡ p&nbsp;&nbsp;&nbsp;&nbsp;p ∨ p ≡ p</td></tr>
+<tr><td>Double negation</td><td class="mono">¬(¬p) ≡ p</td></tr>
+<tr><td>Commutative</td><td class="mono">p ∧ q ≡ q ∧ p&nbsp;&nbsp;&nbsp;&nbsp;p ∨ q ≡ q ∨ p</td></tr>
+<tr><td>Associative</td><td class="mono">(p∧q)∧r ≡ p∧(q∧r)&nbsp;&nbsp;&nbsp;&nbsp;(p∨q)∨r ≡ p∨(q∨r)</td></tr>
+<tr><td>Distributive</td><td class="mono">p∧(q∨r) ≡ (p∧q)∨(p∧r)&nbsp;&nbsp;&nbsp;&nbsp;p∨(q∧r) ≡ (p∨q)∧(p∨r)</td></tr>
+<tr><td>De Morgan's laws</td><td class="mono">¬(p∧q) ≡ ¬p∨¬q&nbsp;&nbsp;&nbsp;&nbsp;¬(p∨q) ≡ ¬p∧¬q</td></tr>
+<tr><td>Absorption</td><td class="mono">p∨(p∧q) ≡ p&nbsp;&nbsp;&nbsp;&nbsp;p∧(p∨q) ≡ p</td></tr>
+<tr><td>Negation</td><td class="mono">p∨¬p ≡ T&nbsp;&nbsp;&nbsp;&nbsp;p∧¬p ≡ F</td></tr>
+<tr><td>Implication law</td><td class="mono">p→q ≡ ¬p∨q</td></tr>
+<tr><td>Contrapositive law</td><td class="mono">p→q ≡ ¬q→¬p</td></tr>
+<tr><td>Biconditional law</td><td class="mono">p↔q ≡ (p→q)∧(q→p)</td></tr>
+<tr><td>Exportation</td><td class="mono">(p∧q)→r ≡ p→(q→r)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — De Morgan's laws are the single most useful entry in this table</span>
+<p>De Morgan's laws say that negating a conjunction flips it into a disjunction of negations, and negating a disjunction flips it into a conjunction of negations — the connective switches type every time a negation is pushed through it. "It is not the case that I brought an umbrella and a coat" means exactly "I didn't bring an umbrella, or I didn't bring a coat" — it does <em>not</em> mean "I brought neither." This pattern reappears twice more in this essay: as a law for negating quantified statements in Panel V, and as an identical-looking law for set complements in Panel IX — three appearances of the exact same underlying idea.</p>
+</div>
+
+<h2>Worked example — proving a tautology two ways</h2>
+<p>Claim: \(\big[(p\to q)\wedge\neg q\big]\to\neg p\) is a tautology. This particular formula is <strong>modus tollens</strong>, previewed here and formalized as a named rule of inference in Panel VI.</p>
+
+<h3>Method 1 — truth table</h3>
+<div class="tbl-wrap">
+<table>
+<caption>Truth table for [(p→q) ∧ ¬q] → ¬p</caption>
+<thead><tr><th class="mono">p</th><th class="mono">q</th><th class="mono">p→q</th><th class="mono">¬q</th><th class="mono">(p→q)∧¬q</th><th class="mono">¬p</th><th class="mono">[(p→q)∧¬q]→¬p</th></tr></thead>
+<tbody>
+<tr><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+<tr><td class="mono tt-f">F</td><td class="mono tt-f">F</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td><td class="mono tt-t">T</td></tr>
+</tbody>
+</table>
+</div>
+<p>Every row in the last column is T, confirming the tautology directly — the only row where the antecedent \((p\to q)\wedge\neg q\) is even true is the last one, and there \(\neg p\) is also true, so the conditional never has a chance to fail.</p>
+
+<h3>Method 2 — the algebra of the laws table</h3>
+<div class="proof-list">
+<li><span class="pf-stmt">[(p→q) ∧ ¬q] → ¬p</span><span class="pf-just">start</span></li>
+<li><span class="pf-stmt">≡ ¬[(p→q) ∧ ¬q] ∨ ¬p</span><span class="pf-just">implication law</span></li>
+<li><span class="pf-stmt">≡ [¬(p→q) ∨ ¬(¬q)] ∨ ¬p</span><span class="pf-just">De Morgan's</span></li>
+<li><span class="pf-stmt">≡ [¬(p→q) ∨ q] ∨ ¬p</span><span class="pf-just">double negation</span></li>
+<li><span class="pf-stmt">≡ ¬(p→q) ∨ (q ∨ ¬p)</span><span class="pf-just">associative</span></li>
+<li><span class="pf-stmt">≡ ¬(¬p ∨ q) ∨ (q ∨ ¬p)</span><span class="pf-just">implication law, inside the negation</span></li>
+<li><span class="pf-stmt">≡ (p ∧ ¬q) ∨ (q ∨ ¬p)</span><span class="pf-just">De Morgan's + double negation</span></li>
+<li><span class="pf-stmt">≡ (p ∧ ¬q) ∨ (¬p ∨ q)</span><span class="pf-just">commutative</span></li>
+<li><span class="pf-stmt">≡ [(p ∧ ¬q) ∨ ¬p] ∨ q</span><span class="pf-just">associative</span></li>
+<li><span class="pf-stmt">≡ [(p ∨ ¬p) ∧ (¬q ∨ ¬p)] ∨ q</span><span class="pf-just">distributive</span></li>
+<li><span class="pf-stmt">≡ [T ∧ (¬q ∨ ¬p)] ∨ q</span><span class="pf-just">negation law</span></li>
+<li><span class="pf-stmt">≡ (¬q ∨ ¬p) ∨ q</span><span class="pf-just">identity law</span></li>
+<li><span class="pf-stmt">≡ ¬q ∨ q ∨ ¬p</span><span class="pf-just">associative + commutative</span></li>
+<li><span class="pf-stmt">≡ T ∨ ¬p</span><span class="pf-just">negation law</span></li>
+<li><span class="pf-stmt">≡ T</span><span class="pf-just">domination law</span></li>
+</div>
+<p>Both methods agree, as they must — logical equivalence is a single fact about a formula, and the truth table and the algebra are just two different procedures for discovering the same fact. In practice, the algebraic method becomes far more efficient than truth tables once a formula has more than three or four variables, exactly the way symbolic algebra outpaces plugging in numbers once an expression gets complicated.</p>
+
+<h2>The duality principle</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — logical duality</span>
+<p>Given a formula built only from \(\wedge\), \(\vee\), and \(\neg\), its <strong>dual</strong> is formed by swapping every \(\wedge\) with \(\vee\) (and vice versa) and swapping every \(T\) with \(F\) (and vice versa), leaving variables and negations untouched. If \(P\equiv Q\), then the dual of \(P\) is logically equivalent to the dual of \(Q\).</p>
+</div>
+<p>Look back at the laws table: Identity, Domination, Idempotent, Commutative, Associative, Distributive, De Morgan's, and Absorption are all listed in matched pairs precisely because each pair is the other's dual — proving one half of a pair by truth table automatically certifies the other half via duality, with no separate proof needed. This exact pairing structure resurfaces in Panel IX, where \(\wedge\leftrightarrow\cap\), \(\vee\leftrightarrow\cup\), \(\neg\leftrightarrow{}\)complement, \(T\leftrightarrow U\), and \(F\leftrightarrow\varnothing\) turn every logic law on this page into a set-theory law for free.</p>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="d5">
+<h1>Predicates and Quantifiers</h1>
+<div class="subtitle">logic that can finally talk about "every," "some," and exactly how many</div>
+
+<h2>Why propositional logic runs out of road</h2>
+<p>"\(x>3\)" is not a proposition by Panel II's definition — its truth value depends entirely on what \(x\) is, and until \(x\) is pinned down the sentence has no single truth value to report. Propositional logic has no built-in way to talk about statements like this at all; it can only manipulate whole, already-settled propositions. <strong>Predicate logic</strong> extends the system to handle exactly this kind of variable-dependent claim.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — predicate</span>
+<p>A <strong>predicate</strong> (or <strong>propositional function</strong>) is a statement \(P(x)\) containing one or more variables, drawn from a specified <strong>domain of discourse</strong> \(U\), that becomes a genuine proposition — with a definite truth value — the instant each variable is replaced by a specific member of \(U\).</p>
+</div>
+
+<p><code>P(x) = "x > 3"</code> over the domain of integers is a predicate: \(P(5)\) is the proposition "5 > 3," true; \(P(1)\) is "1 > 3," false. A predicate can take more than one variable — \(Q(x,y) = \)"x is a divisor of y" is a two-place predicate, and \(Q(3,12)\) evaluates to the true proposition "3 is a divisor of 12."</p>
+
+<h2>The universal quantifier, ∀</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — universal quantifier</span>
+<p>\(\forall x\, P(x)\), read "for all x, P(x)" or "for every x, P(x)," is true exactly when \(P(x)\) is true for <em>every single</em> element \(x\) in the domain of discourse. It is false as soon as a single element of the domain makes \(P(x)\) false — that element is called a <strong>counterexample</strong>.</p>
+</div>
+
+<p>Over the domain of integers, \(\forall x\,(x^2\ge0)\) is true — every integer squared is nonnegative, with no exceptions to check. \(\forall x\,(x>0)\) is false, because \(x=-1\) is a counterexample: a single element where the predicate fails is all it takes to sink a universal claim, regardless of how many other elements satisfy it.</p>
+
+<h2>The existential quantifier, ∃</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — existential quantifier</span>
+<p>\(\exists x\, P(x)\), read "there exists an x such that P(x)," is true exactly when <em>at least one</em> element \(x\) in the domain of discourse makes \(P(x)\) true. It is false only when <em>no</em> element of the domain satisfies \(P(x)\) — when the predicate fails everywhere.</p>
+</div>
+
+<p>Over the integers, \(\exists x\,(x^2=4)\) is true — \(x=2\) (or \(x=-2\)) witnesses it. \(\exists x\,(x^2=-1)\) is false over the integers (and over the reals) because no real number squares to a negative number; the same predicate becomes true the instant the domain is widened to the complex numbers, which is exactly why stating the domain of discourse alongside a quantified claim isn't optional bookkeeping — it can change the claim's truth value outright.</p>
+
+<h2>The uniqueness quantifier, ∃!</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — uniqueness quantifier</span>
+<p>\(\exists! x\, P(x)\), read "there exists a unique x such that P(x)," is true exactly when exactly one element of the domain satisfies \(P(x)\) — at least one, and no more than one. Formally, \(\exists!x\,P(x)\) unpacks to \(\exists x\,\big(P(x)\wedge\forall y\,(P(y)\to y=x)\big)\): some \(x\) works, and anything else that works must actually be that same \(x\).</p>
+</div>
+<p>Over the integers, \(\exists! x\,(x^2=0)\) is true — only \(x=0\) works. \(\exists!x\,(x^2=4)\) is false, not because no integer works, but because <em>two</em> do (\(2\) and \(-2\)); uniqueness fails even though existence holds. This quantifier reappears by name in Panel XI: the formal definition of a function is exactly a uniqueness statement about outputs.</p>
+
+<h2>Negating quantified statements</h2>
+<p>Pushing a negation through a quantifier flips the quantifier's type, in exact parallel with De Morgan's laws from Panel IV — this is why the pattern is often called De Morgan's laws for quantifiers.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Negating a quantifier flips its type</caption>
+<thead><tr><th>Statement</th><th>Negation</th></tr></thead>
+<tbody>
+<tr><td class="mono">¬∀x P(x)</td><td class="mono">≡ ∃x ¬P(x)</td></tr>
+<tr><td class="mono">¬∃x P(x)</td><td class="mono">≡ ∀x ¬P(x)</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The intuition matches the symbols exactly: to disprove "every x satisfies P," it's enough to produce a single x that doesn't — one counterexample, an existential claim. To disprove "some x satisfies P," you must rule out every single x — a universal claim about \(\neg P\). "Not everyone likes broccoli" means "someone dislikes broccoli," not "everyone dislikes broccoli" — negating \(\forall\) never simply flips it into another \(\forall\).</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — negating the quantifier is not the same as negating only the predicate</span>
+<p>\(\neg\forall x\,P(x)\) and \(\forall x\,\neg P(x)\) are entirely different claims, and mixing them up is a common and consequential error. "Not everyone in the room is over 6 feet tall" (\(\neg\forall x\,P(x)\), meaning at least one person is 6 feet or under) is a far weaker claim than "everyone in the room is not over 6 feet tall" (\(\forall x\,\neg P(x)\), meaning literally no one in the room is over 6 feet). The correct negation moves the ¬ all the way to the front <em>and</em> swaps the quantifier — both steps are required, and doing only one produces a different, usually false, statement.</p>
+</div>
+
+<h2>Nested quantifiers — order is not decoration</h2>
+<p>Statements with two or more quantifiers are where predicate logic earns its reputation for being genuinely tricky, because swapping the order of two different quantifiers can change a true statement into a false one.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — ∀x∃y and ∃y∀x are not the same claim</span>
+<p>Let the domain be the integers and let \(P(x,y)\) mean "x + y = 0."</p>
+<p>\(\forall x\,\exists y\, (x+y=0)\) reads "for every x, there is some y (which may depend on x) making x + y = 0" — <strong>true</strong>: given any x, choose \(y=-x\), and it works, a different y for each x.</p>
+<p>\(\exists y\,\forall x\, (x+y=0)\) reads "there is a single y that works for every x at once" — <strong>false</strong>: no fixed y makes \(x+y=0\) simultaneously for \(x=1\) and \(x=2\), since that would force \(y=-1\) and \(y=-2\) at the same time.</p>
+<p>The lesson generalizes: in \(\forall x\,\exists y\), the witness \(y\) is allowed to depend on \(x\) — it's chosen <em>after</em> \(x\) is fixed. In \(\exists y\,\forall x\), the single \(y\) has to be chosen <em>first</em>, before knowing which \(x\) it will be tested against, and then survive every \(x\) at once. Swapping two quantifiers of the <em>same</em> type (∀∀ or ∃∃) never changes the truth value — only swapping ∀ and ∃ past each other can.</p>
+</div>
+
+<div class="ascii">   ∀x ∃y P(x,y)              ∃y ∀x P(x,y)
+
+   x=1 ──▶ pick y=-1          pick ONE y first ──▶ must survive
+   x=2 ──▶ pick y=-2                                every x afterward
+   x=3 ──▶ pick y=-3
+   ...a different y                 no single y can equal
+   is chosen for                    -1 and -2 and -3 ...
+   each x — always possible         simultaneously — impossible
+
+   the witness may depend            the witness must be chosen
+   on x: STRICTLY WEAKER claim       BEFORE x: STRICTLY STRONGER claim</div>
+
+<h2>Translating English into quantified logic</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Common English quantifier phrasings</caption>
+<thead><tr><th>English</th><th>Symbolic form</th></tr></thead>
+<tbody>
+<tr><td>"Every x has property P"</td><td class="mono">∀x P(x)</td></tr>
+<tr><td>"All x that are Q also have property P"</td><td class="mono">∀x (Q(x) → P(x))</td></tr>
+<tr><td>"Some x has property P"</td><td class="mono">∃x P(x)</td></tr>
+<tr><td>"There is an x that is Q and has property P"</td><td class="mono">∃x (Q(x) ∧ P(x))</td></tr>
+<tr><td>"No x has property P"</td><td class="mono">∀x ¬P(x)&nbsp;&nbsp;or equivalently&nbsp;&nbsp;¬∃x P(x)</td></tr>
+<tr><td>"At most one x has property P"</td><td class="mono">∀x∀y [(P(x)∧P(y)) → x=y]</td></tr>
+<tr><td>"Exactly one x has property P"</td><td class="mono">∃!x P(x)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — the ∧ / → swap between ∃ and ∀ is not a typo</span>
+<p>Look carefully at the second and fourth rows above: a restricted universal uses → (only x's satisfying Q are required to satisfy P; the rest are irrelevant) while a restricted existential uses ∧ (the witness must satisfy both Q and P at once, stated together). Writing \(\forall x\,(Q(x)\wedge P(x))\) by mistake would claim <em>every single element of the entire domain</em> satisfies Q, not just the ones the sentence meant to restrict attention to — almost always false and almost never the intended meaning. Writing \(\exists x\,(Q(x)\to P(x))\) by mistake is nearly as broken: it's satisfied by any element where Q(x) merely happens to be false, vacuously, whether or not any Q-element ever satisfies P at all. Getting → and ∧ backwards between these two cases is probably the single most common quantifier-translation mistake there is.</p>
+</div>
+
+<h3>Worked example</h3>
+<p>"Every student who studies discrete math passes the exam." Domain: all people. Let \(S(x)\) = "x is a student," \(D(x)\) = "x studies discrete math," \(E(x)\) = "x passes the exam."</p>
+<div class="katex-display" data-katex="\forall x\, \big[(S(x)\wedge D(x)) \to E(x)\big]"></div>
+<p>Negating it, to see what it would take to falsify the claim (De Morgan for quantifiers, plus De Morgan for the conditional from Panel IV):</p>
+<div class="katex-display" data-katex="\exists x\, \big[S(x)\wedge D(x)\wedge \neg E(x)\big]"></div>
+<p>— "there is a student who studies discrete math and does not pass the exam." A single such student is all it would take to disprove the original claim, exactly matching the counterexample intuition ∀ carries throughout this panel.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="d6">
+<h1>Rules of Inference — How Valid Arguments Are Built</h1>
+<div class="subtitle">argument forms guaranteed to preserve truth, purely because of their shape — not their subject matter</div>
+
+<h2>Arguments and validity</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — argument and validity</span>
+<p>An <strong>argument</strong> is a sequence of propositions called <strong>premises</strong>, followed by a proposition called the <strong>conclusion</strong>. An argument is <strong>valid</strong> if the conclusion is guaranteed true whenever every premise is true — equivalently, if \((\text{premise}_1\wedge\text{premise}_2\wedge\cdots\wedge\text{premise}_n)\to\text{conclusion}\) is a tautology.</p>
+</div>
+
+<p>Validity is entirely about form, not content, and not about whether the premises happen to be true in reality. "All cats can fly. Fluffy is a cat. Therefore, Fluffy can fly." is a <em>valid</em> argument — the conclusion really does follow from the premises — even though the first premise is false in reality and the argument is therefore <em>unsound</em>. Validity only asks: <em>if</em> the premises were true, would the conclusion have to be true as well? A <strong>sound</strong> argument is a valid one whose premises also happen to actually be true; soundness needs validity plus a fact-check, and this panel is only ever about the first half.</p>
+
+<h2>The core rules of inference</h2>
+<p>Each rule below is itself a tautology (checkable, in every case, by the truth-table methods of Panel IV) rewritten in a standard two-line "premises above the line, conclusion below" format.</p>
+
+<div class="rule-grid">
+<div class="rule-card">
+<div class="rc-name">Modus Ponens</div>
+<div class="rc-form">p → q
+p
+─────
+∴ q</div>
+<div class="rc-note">"If it rains, the game is cancelled. It is raining. Therefore, the game is cancelled." The single most common rule in ordinary reasoning.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Modus Tollens</div>
+<div class="rc-form">p → q
+¬q
+─────
+∴ ¬p</div>
+<div class="rc-note">"If it rains, the game is cancelled. The game was not cancelled. Therefore, it did not rain." Proved as a tautology by hand in Panel IV.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Hypothetical Syllogism</div>
+<div class="rc-form">p → q
+q → r
+─────
+∴ p → r</div>
+<div class="rc-note">Chains two conditionals transitively — the backbone of any multi-step "if this, then that, then the other thing" argument.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Disjunctive Syllogism</div>
+<div class="rc-form">p ∨ q
+¬p
+─────
+∴ q</div>
+<div class="rc-note">"It's either the butler or the gardener. It wasn't the butler. Therefore, it was the gardener." Eliminating one option confirms the other.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Addition</div>
+<div class="rc-form">p
+─────
+∴ p ∨ q</div>
+<div class="rc-note">Any true proposition can be weakened by "or"-ing it with literally anything — q needn't be true, or even related to p, for the disjunction to hold.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Simplification</div>
+<div class="rc-form">p ∧ q
+─────
+∴ p</div>
+<div class="rc-note">If a conjunction holds, each conjunct individually holds — the least surprising rule in the list, and one of the most-used inside longer proofs.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Conjunction</div>
+<div class="rc-form">p
+q
+─────
+∴ p ∧ q</div>
+<div class="rc-note">Two separately established facts may always be bundled into a single conjunction — the mirror image of Simplification.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Resolution</div>
+<div class="rc-form">p ∨ q
+¬p ∨ r
+──────
+∴ q ∨ r</div>
+<div class="rc-note">The single rule underneath most automated theorem provers and SAT solvers — see the note below.</div>
+</div>
+</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Two more argument forms that combine a disjunction with two conditionals</caption>
+<thead><tr><th>Name</th><th>Form</th></tr></thead>
+<tbody>
+<tr><td>Constructive dilemma</td><td class="mono">(p→q) ∧ (r→s), p∨r&nbsp;&nbsp;⊢&nbsp;&nbsp;q∨s</td></tr>
+<tr><td>Destructive dilemma</td><td class="mono">(p→q) ∧ (r→s), ¬q∨¬s&nbsp;&nbsp;⊢&nbsp;&nbsp;¬p∨¬r</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — resolution and automated reasoning</span>
+<p>Resolution is singled out among these rules because, unlike the others, it alone is enough to build a complete automated proof procedure: any set of formulas in a certain normal form is contradictory if and only if repeatedly applying resolution eventually derives the empty clause. This single fact is the theoretical foundation of every modern SAT solver and much of automated theorem proving — software that proves or refutes enormous propositional formulas billions of times a day inside compilers, model checkers, and verification tools traces its correctness back to exactly this rule.</p>
+</div>
+
+<h2>Rules of inference for quantified statements</h2>
+<p>Four more rules connect quantified statements (Panel V) to the ordinary propositional rules above, letting a proof "unwrap" a quantifier, reason about a specific element, and then "rewrap" the conclusion.</p>
+
+<div class="rule-grid">
+<div class="rule-card">
+<div class="rc-name">Universal Instantiation</div>
+<div class="rc-form">∀x P(x)
+─────────
+∴ P(c)   for any specific c in the domain</div>
+<div class="rc-note">If something is true of everything, it's true of any one particular thing you name.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Universal Generalization</div>
+<div class="rc-form">P(c)   for an arbitrary, unrestricted c
+─────────────────────────────────
+∴ ∀x P(x)</div>
+<div class="rc-note">Requires c to be a stand-in for a wholly arbitrary element — not one singled out by any special assumption — or the step is invalid.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Existential Instantiation</div>
+<div class="rc-form">∃x P(x)
+─────────────────────────
+∴ P(c)   for some new, freshly-named c</div>
+<div class="rc-note">c must be a brand-new name, not previously used — it stands for "whichever element makes this true," about which nothing further may be assumed.</div>
+</div>
+
+<div class="rule-card">
+<div class="rc-name">Existential Generalization</div>
+<div class="rc-form">P(c)   for a specific c
+─────────
+∴ ∃x P(x)</div>
+<div class="rc-note">If one particular element satisfies P, then certainly something does — the direct route to proving an existential claim: exhibit a witness.</div>
+</div>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — Universal Generalization has a strict side condition</span>
+<p>Universal Generalization is only valid when the element \(c\) used really is arbitrary — introduced with no special properties assumed about it beyond membership in the domain. In particular, a \(c\) obtained from Existential Instantiation can never be fed into Universal Generalization: that \(c\) was singled out precisely <em>because</em> it satisfies some predicate, so it isn't arbitrary, and generalizing from it would prove something about "every x" using evidence from only one specially-chosen x. This exact misstep is how a surprising number of invalid quantifier "proofs" go wrong.</p>
+</div>
+
+<h2>Fallacies — argument shapes that look valid but aren't</h2>
+<p>Two invalid patterns are common enough, and similar enough in appearance to Modus Ponens and Modus Tollens, that they have standard names.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Two classic fallacies, and the counterexample truth row that breaks each one</caption>
+<thead><tr><th>Fallacy</th><th>Invalid form</th><th>Why it fails</th></tr></thead>
+<tbody>
+<tr><td>Affirming the consequent</td><td class="mono">p→q, q&nbsp;&nbsp;⊬&nbsp;&nbsp;p</td><td>row p=F, q=T makes both premises true and the "conclusion" p false — e.g. "if it rains the ground is wet; the ground is wet; therefore it rained" ignores sprinklers</td></tr>
+<tr><td>Denying the antecedent</td><td class="mono">p→q, ¬p&nbsp;&nbsp;⊬&nbsp;&nbsp;¬q</td><td>row p=F, q=T makes both premises true and ¬q false — "if it rains the ground is wet; it didn't rain; therefore the ground isn't wet" again ignores sprinklers</td></tr>
+</tbody>
+</table>
+</div>
+<p>Notice both fallacies are refuted by the exact same row of the truth table — p false, q true — which is precisely the row where a conditional is true for a reason that has nothing to do with its converse or inverse being true too (Panel III's converse/inverse warning, resurfacing here as the formal mechanism behind two named fallacies).</p>
+
+<h2>A worked formal proof</h2>
+<p>Consider the argument: "If the network is down, then the backup runs. If the backup runs, then an alert is sent. The network is down. Therefore, an alert is sent." Symbolically, with \(p=\)"network is down," \(q=\)"backup runs," \(r=\)"alert is sent": premises \(p\to q\), \(q\to r\), \(p\); conclusion \(r\).</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">p → q</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">q → r</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">p</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">p → r</span><span class="pf-just">hypothetical syllogism, lines 1, 2</span></li>
+<li><span class="pf-stmt">∴ r</span><span class="pf-just">modus ponens, lines 4, 3</span></li>
+</div>
+
+<p>Every line after the premises is justified by exactly one named rule applied to exactly one or two earlier lines — this is what "a formal proof" means in this context: a finite sequence of statements where every non-premise line is licensed by a rule of inference, ending at the conclusion. Panel XIII works a longer example with five premises.</p>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="d7">
+<h1>Proof Techniques</h1>
+<div class="subtitle">turning the rules of inference into the standard toolkit every mathematics proof is built from</div>
+
+<h2>Direct proof</h2>
+<p>To prove \(p\to q\) directly, assume \(p\) is true and derive \(q\) through a chain of already-established facts and inference rules — exactly the shape a Modus Ponens chain naturally takes.</p>
+
+<div class="callout note">
+<span class="callout-label">Worked example — if n is even, then n² is even</span>
+<p><strong>Proof.</strong> Assume \(n\) is even. By definition, \(n=2k\) for some integer \(k\). Then \(n^2=(2k)^2=4k^2=2(2k^2)\). Since \(2k^2\) is an integer, \(n^2\) is \(2\) times an integer, so \(n^2\) is even. \(\blacksquare\)</p>
+</div>
+
+<h2>Proof by contraposition</h2>
+<p>Panel III established that \(p\to q\) and its contrapositive \(\neg q\to\neg p\) are logically equivalent — so proving the (often easier) contrapositive proves the original for free.</p>
+
+<div class="callout note">
+<span class="callout-label">Worked example — if n² is odd, then n is odd</span>
+<p><strong>Proof (by contraposition).</strong> The contrapositive is: if \(n\) is not odd (i.e., \(n\) is even), then \(n^2\) is not odd (i.e., \(n^2\) is even) — exactly the previous worked example. Having proved that, the contrapositive holds, and therefore so does the original statement. \(\blacksquare\)</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — when to reach for contraposition</span>
+<p>A direct proof of "if \(n^2\) is odd, then \(n\) is odd" is awkward: starting from "\(n^2\) is odd" gives very little immediate leverage on \(n\) itself. Starting from the contrapositive's hypothesis — "\(n\) is even" — hands you the clean algebraic form \(n=2k\) immediately. As a rule of thumb, reach for contraposition whenever the hypothesis of \(p\to q\) is awkward to work with directly but the hypothesis of \(\neg q\to\neg p\) hands you a clean algebraic starting point instead.</p>
+</div>
+
+<h2>Proof by contradiction</h2>
+<p>To prove a proposition \(P\), assume \(\neg P\) and derive a contradiction — some statement \(C\wedge\neg C\), which Panel IV showed is a contradiction, false on every row. Since assuming \(\neg P\) leads somewhere impossible, \(\neg P\) itself cannot be true, so \(P\) must be.</p>
+
+<div class="callout note">
+<span class="callout-label">Worked example — √2 is irrational</span>
+<p><strong>Proof (by contradiction).</strong> Suppose, for contradiction, that \(\sqrt2\) is rational. Then \(\sqrt2=a/b\) for integers \(a,b\) with no common factor (every rational number can be written in lowest terms). Squaring, \(2=a^2/b^2\), so \(a^2=2b^2\). Then \(a^2\) is even, so by the earlier worked example \(a\) is even: \(a=2k\). Substituting, \((2k)^2=2b^2\), so \(4k^2=2b^2\), so \(b^2=2k^2\) — meaning \(b^2\), and hence \(b\), is also even. But then both \(a\) and \(b\) are even, contradicting the assumption that they share no common factor. This contradiction means the original assumption — that \(\sqrt2\) is rational — must be false. Therefore \(\sqrt2\) is irrational. \(\blacksquare\)</p>
+</div>
+
+<h2>Proof by cases</h2>
+<p>When a hypothesis naturally splits into an exhaustive list of possibilities, proving the conclusion separately in each case proves it in general — this is exactly the constructive dilemma rule from Panel VI, applied case by case.</p>
+
+<div class="callout note">
+<span class="callout-label">Worked example — n(n+1) is always even, for any integer n</span>
+<p><strong>Proof (by cases).</strong> Either \(n\) is even or \(n\) is odd (law of the excluded middle, Panel IV) — an exhaustive split into two cases.<br><strong>Case 1 (n even):</strong> \(n=2k\), so \(n(n+1)=2k(n+1)\), which is \(2\) times an integer — even.<br><strong>Case 2 (n odd):</strong> then \(n+1\) is even, so \(n+1=2k\), giving \(n(n+1)=n\cdot2k\), again \(2\) times an integer — even.<br>Every case yields an even product, so \(n(n+1)\) is even for every integer \(n\). \(\blacksquare\)</p>
+</div>
+
+<h2>Existence and uniqueness proofs</h2>
+<p>Proving \(\exists x\,P(x)\) (Panel V) can be done <strong>constructively</strong> — exhibit an actual \(x\) and verify \(P(x)\) — or <strong>non-constructively</strong> — argue that some \(x\) must exist without ever producing one explicitly, often via contradiction: assume no such \(x\) exists and derive an impossibility. Proving \(\exists!x\,P(x)\) needs both halves separately: existence (some \(x\) works) and uniqueness (any two things that work are actually equal), matching the unpacked definition given in Panel V.</p>
+
+<h2>Mathematical induction</h2>
+<p>Induction proves a statement \(P(n)\) for every natural number \(n\) at once — an infinite universal claim, \(\forall n\,P(n)\) over the domain of natural numbers — without checking infinitely many cases individually.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the principle of mathematical induction</span>
+<p>To prove \(\forall n\ge n_0\,P(n)\), it suffices to prove two things: the <strong>base case</strong>, \(P(n_0)\); and the <strong>inductive step</strong>, \(\forall k\ge n_0\,\big(P(k)\to P(k+1)\big)\). Together, these guarantee \(P(n)\) for every \(n\ge n_0\): the base case starts a chain, and the inductive step — itself proved exactly like any other conditional, via a direct proof assuming \(P(k)\) — lets Modus Ponens carry that chain forward one integer at a time, forever.</p>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Worked example — 1 + 2 + ⋯ + n = n(n+1)/2</span>
+<p><strong>Base case (n=1):</strong> the left side is \(1\); the right side is \(1(1+1)/2=1\). They match.</p>
+<p><strong>Inductive step:</strong> assume \(P(k)\): \(1+2+\cdots+k=\dfrac{k(k+1)}{2}\) (the <strong>inductive hypothesis</strong>). Then:</p>
+<div class="katex-display" data-katex="1+2+\cdots+k+(k+1) \;=\; \frac{k(k+1)}{2}+(k+1) \;=\; \frac{k(k+1)+2(k+1)}{2} \;=\; \frac{(k+1)(k+2)}{2}"></div>
+<p>which is exactly \(P(k+1)\) — the same formula with \(n=k+1\) substituted in. Having shown \(P(1)\) and \(\forall k\,(P(k)\to P(k+1))\), the principle of induction gives \(P(n)\) for every \(n\ge1\). \(\blacksquare\)</p>
+</div>
+
+<h3>Strong induction</h3>
+<p>A variant, <strong>strong induction</strong>, replaces the inductive step's assumption with a stronger one: assume \(P(1),P(2),\dots,P(k)\) all hold — every earlier case, not just the immediately preceding one — and prove \(P(k+1)\) from that whole stack. This is needed whenever the inductive step genuinely depends on a case further back than \(k\), not just on \(k\) itself — the standard example being that every integer greater than 1 has a prime factorization, where an arbitrary composite number \(k+1=a\cdot b\) needs the inductive hypothesis applied to \(a\) and \(b\) separately, and neither one is necessarily equal to \(k\).</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — induction is really Universal Generalization in disguise</span>
+<p>Weak and strong induction are equivalent in power — anything provable with one is provable with the other — and both ultimately rest on the <strong>well-ordering principle</strong>: every nonempty set of natural numbers has a least element. (If \(P(n)\) failed for some \(n\), the set of all such failures would be nonempty and would have a least element \(m\); the base case rules out \(m=n_0\), and the inductive step, applied at \(m-1\), rules out every other possible least failure too — so no failure can exist.) Structurally, induction is a packaged, reusable version of exactly the quantifier-proof machinery from Panel VI: it proves \(\forall n\,P(n)\) without ever invoking Universal Generalization on an infinite, unmanageable domain directly.</p>
+</div>
+
+<h2>Disproof by counterexample</h2>
+<p>To disprove a universal claim \(\forall x\,P(x)\), Panel V's negation law says it suffices to prove \(\exists x\,\neg P(x)\) — produce one single \(x\) where \(P(x)\) fails. No proof technique above is required for this beyond simple exhibition: a counterexample is a complete disproof all on its own, precisely because \(\neg\forall x\,P(x)\equiv\exists x\,\neg P(x)\).</p>
+
+<h2>Summary — which technique, when</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Choosing a proof technique</caption>
+<thead><tr><th>Technique</th><th>Use when…</th></tr></thead>
+<tbody>
+<tr><td>Direct proof</td><td>the hypothesis of p→q hands you an immediately usable algebraic form</td></tr>
+<tr><td>Contraposition</td><td>¬q→¬p has a cleaner hypothesis to work from than p→q does</td></tr>
+<tr><td>Contradiction</td><td>assuming the negation quickly produces an obviously false statement</td></tr>
+<tr><td>Cases</td><td>the hypothesis naturally splits into a short, exhaustive list of possibilities</td></tr>
+<tr><td>Induction</td><td>the claim is ∀n P(n) over the natural numbers, and P(k+1) can be built from P(k) (or earlier cases)</td></tr>
+<tr><td>Counterexample</td><td>the claim is universal and you suspect it's actually false</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="d8">
+<h1>Sets — the Universe's Building Material</h1>
+<div class="subtitle">an unordered collection of distinct objects, and the handful of definitions everything else is built from</div>
+
+<h2>What is a set</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — set</span>
+<p>A <strong>set</strong> is an unordered collection of distinct objects, called its <strong>elements</strong> or <strong>members</strong>. Two sets are considered <strong>equal</strong> exactly when they contain the same elements — neither the order the elements are listed in, nor how many times an element is listed, changes the set itself.</p>
+</div>
+
+<p>\(\{1,2,3\}\), \(\{3,1,2\}\), and \(\{1,1,2,2,3\}\) are all the exact same set — three elements, no more, no fewer, however they were written down. This principle — that a set is completely determined by which elements belong to it, nothing else — is called <strong>extensionality</strong>, and it is the reason the proof technique in Panel IX for showing two sets are equal always reduces to checking membership, element by element, rather than comparing how the sets were described.</p>
+
+<h2>Notation</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Two ways to describe the same set</caption>
+<thead><tr><th>Style</th><th>Example</th><th>Reads as</th></tr></thead>
+<tbody>
+<tr><td>Roster (list) notation</td><td class="mono">{1, 2, 3, 4, 5}</td><td>the set containing exactly these listed elements</td></tr>
+<tr><td>Set-builder notation</td><td class="mono">{x ∈ ℤ : 1 ≤ x ≤ 5}</td><td>the set of all x in the integers such that 1 ≤ x ≤ 5</td></tr>
+</tbody>
+</table>
+</div>
+<p>Set-builder notation is indispensable the moment a set is infinite or too large to list — \(\{x\in\mathbb Z : x \text{ is even}\}\) has no roster form at all, but its set-builder description is exact and unambiguous.</p>
+
+<h2>Membership and equality</h2>
+<p>Membership is written \(x\in S\) ("x is an element of S") or \(x\notin S\) ("x is not an element of S"). Set equality, following extensionality above, is formally a biconditional over every possible element:</p>
+<div class="katex-display" data-katex="A=B \quad\Longleftrightarrow\quad \forall x\,\big(x\in A \leftrightarrow x\in B\big)"></div>
+<p>— every element of \(A\) is an element of \(B\), and every element of \(B\) is an element of \(A\), with nothing left over on either side. This formula is exactly why Panel IX's standard technique for proving \(A=B\) is to prove \(A\subseteq B\) and \(B\subseteq A\) separately: it is the biconditional law from Panel IV, applied to set membership.</p>
+
+<h2>Special sets</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Sets with their own standard names</caption>
+<thead><tr><th>Symbol</th><th>Set</th></tr></thead>
+<tbody>
+<tr><td class="mono">∅ (or {})</td><td>the <strong>empty set</strong> — the unique set with no elements at all</td></tr>
+<tr><td class="mono">ℕ</td><td>the natural numbers, {0, 1, 2, 3, …} (some texts start at 1 — always check the convention in use)</td></tr>
+<tr><td class="mono">ℤ</td><td>the integers, {…, −2, −1, 0, 1, 2, …}</td></tr>
+<tr><td class="mono">ℚ</td><td>the rational numbers — ratios of integers</td></tr>
+<tr><td class="mono">ℝ</td><td>the real numbers</td></tr>
+<tr><td class="mono">ℂ</td><td>the complex numbers</td></tr>
+<tr><td class="mono">U</td><td>the <strong>universal set</strong> for a given discussion — whatever fixed "everything under consideration" set every other set is drawn from as a subset</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Subsets and proper subsets</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — subset</span>
+<p>\(A\subseteq B\) ("A is a subset of B") means every element of \(A\) is also an element of \(B\): \(\forall x\,(x\in A\to x\in B)\). \(A\subset B\) ("A is a <strong>proper</strong> subset of B") additionally requires \(A\ne B\) — B has at least one element that A lacks.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the empty set is a subset of every set, vacuously</span>
+<p>\(\varnothing\subseteq S\) for <em>every</em> set \(S\), including \(S=\varnothing\) itself. The defining condition is \(\forall x\,(x\in\varnothing\to x\in S)\), and since \(x\in\varnothing\) is false for every possible \(x\) — there are no elements in \(\varnothing\) to begin with — the conditional inside the quantifier is vacuously true on every single instance, exactly the vacuous-truth mechanism from Panel III. There is nothing to check, so there is nothing that could ever fail the check.</p>
+</div>
+
+<h2>Proving set equality via mutual subset</h2>
+<p>Directly from the biconditional definition of equality above: to prove \(A=B\), it suffices to prove \(A\subseteq B\) and separately prove \(B\subseteq A\). This "double inclusion" technique is the standard method for proving set identities throughout Panel IX, and it always bottoms out in ordinary predicate-logic reasoning about an arbitrary element \(x\) — pick an arbitrary \(x\in A\), show \(x\in B\) follows; that's Universal Generalization from Panel VI, applied to set membership.</p>
+
+<h2>The power set</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — power set</span>
+<p>The <strong>power set</strong> of \(S\), written \(\mathcal P(S)\), is the set of <em>all</em> subsets of \(S\) — including \(\varnothing\) and \(S\) itself. If \(|S|=n\) is finite, then \(|\mathcal P(S)|=2^n\).</p>
+</div>
+
+<div class="ascii">   S = {1, 2}                       𝒫(S) has 2² = 4 elements:
+
+   Every subset of S corresponds       ∅
+   to a yes/no choice for each         {1}
+   element — "is 1 included?"          {2}
+   "is 2 included?" — exactly          {1, 2}
+   2 choices per element, made
+   independently: 2 × 2 = 4 total</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — why the count is exactly 2ⁿ</span>
+<p>Building a subset of \(S=\{s_1,\dots,s_n\}\) is exactly \(n\) independent binary choices — include \(s_1\) or not, include \(s_2\) or not, and so on — and \(n\) independent binary choices multiply out to \(2^n\) total outcomes, the same counting principle behind a truth table with \(n\) variables having \(2^n\) rows (Panel III) and behind counting all functions from an \(n\)-element set into a \(2\)-element set (made precise, and shown to be the very same fact, in Panel XI).</p>
+</div>
+
+<h2>The Cartesian product</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — Cartesian product</span>
+<p>The <strong>Cartesian product</strong> \(A\times B\) is the set of all <strong>ordered pairs</strong> \((a,b)\) with \(a\in A\) and \(b\in B\): \(A\times B=\{(a,b): a\in A \wedge b\in B\}\). Unlike a set, an ordered pair is sensitive to order — \((a,b)\ne(b,a)\) whenever \(a\ne b\) — and \(|A\times B|=|A|\cdot|B|\) for finite sets.</p>
+</div>
+
+<div class="ascii">   A = {1, 2, 3}     B = {x, y}       A × B  (|A×B| = 3 · 2 = 6 pairs)
+
+            x       y
+        ┌───────┬───────┐
+      1 │ (1,x) │ (1,y) │
+        ├───────┼───────┤
+      2 │ (2,x) │ (2,y) │
+        ├───────┼───────┤
+      3 │ (3,x) │ (3,y) │
+        └───────┴───────┘
+
+   Every cell of the grid is one ordered pair — the Cartesian product is
+   literally the grid itself, which is exactly why it's the standard way
+   to picture it, and exactly why Panel X builds relations on top of it.</div>
+
+<p>The construction generalizes to any number of sets: an <strong>ordered n-tuple</strong> \((a_1,a_2,\dots,a_n)\) is a member of \(A_1\times A_2\times\cdots\times A_n\), and \(A^n\) abbreviates \(A\times A\times\cdots\times A\) (n factors) — the familiar \(\mathbb R^2\) and \(\mathbb R^3\) of coordinate geometry are exactly this construction applied to \(\mathbb R\).</p>
+
+</section>
+
+<!-- ============ PANEL 9 ============ -->
+<section class="panel" id="d9">
+<h1>Combining Sets — Operations, Identities, and Size</h1>
+<div class="subtitle">the same algebra as Panel IV's logic laws, wearing a different notation</div>
+
+<h2>The five basic operations</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Set operations, defined via set-builder notation</caption>
+<thead><tr><th>Operation</th><th>Notation</th><th>Definition</th></tr></thead>
+<tbody>
+<tr><td>Union</td><td class="mono">A ∪ B</td><td class="mono">{x : x∈A ∨ x∈B}</td></tr>
+<tr><td>Intersection</td><td class="mono">A ∩ B</td><td class="mono">{x : x∈A ∧ x∈B}</td></tr>
+<tr><td>Difference</td><td class="mono">A − B</td><td class="mono">{x : x∈A ∧ x∉B}</td></tr>
+<tr><td>Complement</td><td class="mono">Aᶜ (or A′)</td><td class="mono">{x∈U : x∉A}&nbsp;&nbsp;(relative to a fixed universal set U)</td></tr>
+<tr><td>Symmetric difference</td><td class="mono">A ∆ B</td><td class="mono">(A−B) ∪ (B−A)&nbsp;&nbsp;=&nbsp;&nbsp;{x : x∈A ⊕ x∈B}</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Every definition above is written directly in terms of a logical connective from Panel III — union is literally disjunction of membership, intersection is literally conjunction, complement is literally negation, symmetric difference is literally exclusive or. That is not a coincidence or a convenient analogy; it is the same underlying structure, described twice.</p>
+
+<div class="ascii">        A ∪ B                  A ∩ B                   A − B
+
+      ╭─────╮╭─────╮          ╭─────╮╭─────╮          ╭─────╮╭─────╮
+     ╱███████╲╱███████╲      ╱     ╲╱     ╲          ╱███████╲     ╲
+    │█████████████████│     │      ██      │        │███████│      │
+    │███ A ████████ B █│     │    A ██ B    │        │  A  ██│  B   │
+     ╲███████╱╲███████╱      ╲     ╱╲     ╱          ╲███████╱     ╱
+      ╰─────╯╰─────╯          ╰─────╯╰─────╯          ╰─────╯╰─────╯
+
+   shaded = in the       shaded = in BOTH          shaded = in A
+   result set             A and B only              but NOT in B</div>
+
+<h2>The algebra of sets</h2>
+<p>Every law from Panel IV's logic table has a set-theoretic mirror image, produced mechanically by the substitution \(\wedge\to\cap\), \(\vee\to\cup\), \(\neg\to{}\)complement, \(T\to U\), \(F\to\varnothing\) — exactly the dual correspondence Panel IV closed with.</p>
+
+<div class="dual-grid">
+<div>
+<h4>Propositional logic</h4>
+<p class="mono" style="line-height:2;">p ∧ T ≡ p<br>p ∨ F ≡ p<br>p ∨ T ≡ T<br>p ∧ F ≡ F<br>¬(¬p) ≡ p<br>p ∧ q ≡ q ∧ p<br>p∧(q∨r) ≡ (p∧q)∨(p∧r)<br>¬(p∧q) ≡ ¬p∨¬q<br>¬(p∨q) ≡ ¬p∧¬q</p>
+</div>
+<div>
+<h4>Set theory</h4>
+<p class="mono" style="line-height:2;">A ∩ U = A<br>A ∪ ∅ = A<br>A ∪ U = U<br>A ∩ ∅ = ∅<br>(Aᶜ)ᶜ = A<br>A ∩ B = B ∩ A<br>A∩(B∪C) = (A∩B)∪(A∩C)<br>(A∩B)ᶜ = Aᶜ∪Bᶜ<br>(A∪B)ᶜ = Aᶜ∩Bᶜ</p>
+</div>
+</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>The full set-theory law list, for reference</caption>
+<thead><tr><th>Law</th><th>Form</th></tr></thead>
+<tbody>
+<tr><td>Identity</td><td class="mono">A ∩ U = A&nbsp;&nbsp;&nbsp;&nbsp;A ∪ ∅ = A</td></tr>
+<tr><td>Domination</td><td class="mono">A ∪ U = U&nbsp;&nbsp;&nbsp;&nbsp;A ∩ ∅ = ∅</td></tr>
+<tr><td>Idempotent</td><td class="mono">A ∪ A = A&nbsp;&nbsp;&nbsp;&nbsp;A ∩ A = A</td></tr>
+<tr><td>Complementation</td><td class="mono">(Aᶜ)ᶜ = A</td></tr>
+<tr><td>Commutative</td><td class="mono">A∪B = B∪A&nbsp;&nbsp;&nbsp;&nbsp;A∩B = B∩A</td></tr>
+<tr><td>Associative</td><td class="mono">(A∪B)∪C = A∪(B∪C)&nbsp;&nbsp;&nbsp;&nbsp;(A∩B)∩C = A∩(B∩C)</td></tr>
+<tr><td>Distributive</td><td class="mono">A∩(B∪C)=(A∩B)∪(A∩C)&nbsp;&nbsp;&nbsp;&nbsp;A∪(B∩C)=(A∪B)∩(A∪C)</td></tr>
+<tr><td>De Morgan's laws</td><td class="mono">(A∩B)ᶜ = Aᶜ∪Bᶜ&nbsp;&nbsp;&nbsp;&nbsp;(A∪B)ᶜ = Aᶜ∩Bᶜ</td></tr>
+<tr><td>Complement laws</td><td class="mono">A∪Aᶜ = U&nbsp;&nbsp;&nbsp;&nbsp;A∩Aᶜ = ∅</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Proving a set identity by element-chasing</h2>
+<p>The second proof technique — alongside quoting the laws table directly — is to prove double inclusion (Panel VIII) by reasoning about an arbitrary element, one connective at a time.</p>
+
+<div class="callout note">
+<span class="callout-label">Worked example — De Morgan's law for sets: (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ</span>
+<p><strong>Proof.</strong> Let \(x\) be arbitrary.</p>
+<div class="katex-display" data-katex="x\in(A\cap B)^c \;\Leftrightarrow\; x\notin(A\cap B) \;\Leftrightarrow\; \neg(x\in A \wedge x\in B)"></div>
+<div class="katex-display" data-katex="\Leftrightarrow\; (x\notin A) \vee (x\notin B) \quad\text{(De Morgan's law for logic, Panel IV)}"></div>
+<div class="katex-display" data-katex="\Leftrightarrow\; x\in A^c \vee x\in B^c \;\Leftrightarrow\; x\in(A^c\cup B^c)"></div>
+<p>Since \(x\) was arbitrary, \(x\in(A\cap B)^c\leftrightarrow x\in(A^c\cup B^c)\) holds for every \(x\), which is exactly the definition of \((A\cap B)^c=A^c\cup B^c\) from Panel VIII. \(\blacksquare\)</p>
+</div>
+<p>Every single step above is nothing more than unwinding a set-membership definition into a logic statement, applying a Panel IV law, and folding the result back into set notation — proof that the set identity <em>is</em> the logic identity, translated word for word.</p>
+
+<h2>The inclusion–exclusion principle</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — inclusion–exclusion (two and three sets)</span>
+<div class="katex-display" data-katex="|A\cup B| = |A| + |B| - |A\cap B|"></div>
+<div class="katex-display" data-katex="|A\cup B\cup C| = |A|+|B|+|C| - |A\cap B|-|A\cap C|-|B\cap C| + |A\cap B\cap C|"></div>
+</div>
+<p>Simply adding \(|A|+|B|\) double-counts every element that lies in both sets, so the overlap \(|A\cap B|\) has to be subtracted back out exactly once. With three sets, subtracting all three pairwise overlaps removes the triple-overlap region three times over — once for each pair that contains it — so it has to be added back once more to land on the correct count, which is exactly what the alternating plus/minus pattern in the formula accomplishes.</p>
+
+<div class="callout note">
+<span class="callout-label">Worked example</span>
+<p>Of 50 students, 30 take Calculus, 25 take Discrete Math, and 15 take both. How many take at least one of the two?</p>
+<div class="katex-display" data-katex="|C\cup D| = 30+25-15 = 40"></div>
+<p>40 students take at least one course, and by subtraction, \(50-40=10\) students take neither.</p>
+</div>
+
+<h2>Cardinality, and a first taste of infinite sets</h2>
+<p>For a finite set, cardinality \(|S|\) is simply the number of elements — but the same idea extends, carefully, to infinite sets by comparing sets via bijections (formalized in Panel XI): two sets have the <strong>same cardinality</strong> if a bijection exists between them, whether or not either set is finite.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — some infinities are the same size, and some are strictly bigger</span>
+<p>\(\mathbb N\), \(\mathbb Z\), and \(\mathbb Q\) all turn out to have the exact same cardinality — surprising for \(\mathbb Z\) (which seems "twice as big" as \(\mathbb N\)) and doubly surprising for \(\mathbb Q\) (which seems vastly denser than either), yet an explicit bijection exists in both cases, and a set with a bijection to \(\mathbb N\) is called <strong>countably infinite</strong>. \(\mathbb R\), by contrast, is <strong>uncountable</strong> — Cantor's diagonal argument shows directly that no function \(\mathbb N\to\mathbb R\) can possibly be surjective: given any proposed list \(r_1,r_2,r_3,\dots\) of real numbers, build a new real number by choosing its \(n\)-th decimal digit to differ from the \(n\)-th digit of \(r_n\); the resulting number differs from every single \(r_n\) in at least one digit, so it cannot appear anywhere on the list, and the list was assumed arbitrary. \(\mathbb R\) is strictly bigger than \(\mathbb N\) — a genuinely different size of infinity, not just a bigger finite-feeling amount.</p>
+</div>
+
+<p>A closely related fact, <strong>Cantor's theorem</strong>, says \(|S|<|\mathcal P(S)|\) for every set \(S\) — even infinite ones — using an almost identical diagonal argument on any proposed bijection between \(S\) and \(\mathcal P(S)\). Combined, these two results mean there is no single largest infinity: given any set, its power set (Panel VIII) is always strictly larger, forever.</p>
+
+</section>
+
+<!-- ============ PANEL 10 ============ -->
+<section class="panel" id="d10">
+<h1>Relations — Connecting Elements of Sets</h1>
+<div class="subtitle">the general notion of "related to," of which ≤, =, and "is a friend of" are all special cases</div>
+
+<h2>Relations as subsets of a Cartesian product</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — relation</span>
+<p>A (binary) <strong>relation</strong> \(R\) from a set \(A\) to a set \(B\) is simply a subset of the Cartesian product: \(R\subseteq A\times B\). If \((a,b)\in R\), it's written \(a\,R\,b\), read "a is related to b." A relation on a single set \(A\) is a relation from \(A\) to itself, \(R\subseteq A\times A\).</p>
+</div>
+
+<p>"\(\le\)" on the integers is the relation \(\{(a,b)\in\mathbb Z\times\mathbb Z : a\le b\}\) — an infinite subset of \(\mathbb Z\times\mathbb Z\), but a perfectly well-defined one. "Is a divisor of" on \(\{1,2,\dots,10\}\) is the finite relation \(\{(1,1),(1,2),\dots,(1,10),(2,2),(2,4),(2,6),(2,8),(2,10),(3,3),(3,6),(3,9),\dots\}\) — every pair \((a,b)\) where \(a\) evenly divides \(b\).</p>
+
+<div class="ascii">   R = "divides" on {1, 2, 3, 4, 6}     drawn as a directed graph
+
+        1 ──────┬────────┬────────┬────────▶ (1 divides everything)
+        │        │        │        │
+        ▼        ▼        ▼        ▼
+        1        2        3        4    6
+                 │                 │    │
+                 └────────▶────────┴────┘
+                    2 divides 4 and 6
+
+        3 ──────────────────────────▶ 6      (self-loops at every
+                                                number, "n divides n",
+                                                are omitted here for clarity)</div>
+
+<h2>Properties of relations</h2>
+<div class="tbl-wrap">
+<table>
+<caption>The five standard properties a relation on a set can have</caption>
+<thead><tr><th>Property</th><th>Definition</th><th>Example that has it</th><th>Example that lacks it</th></tr></thead>
+<tbody>
+<tr><td>Reflexive</td><td class="mono">∀a∈A, a R a</td><td>≤ on ℤ (a ≤ a always)</td><td>&lt; on ℤ (a &lt; a is never true)</td></tr>
+<tr><td>Irreflexive</td><td class="mono">∀a∈A, ¬(a R a)</td><td>&lt; on ℤ</td><td>≤ on ℤ</td></tr>
+<tr><td>Symmetric</td><td class="mono">∀a,b, a R b → b R a</td><td>"is a sibling of"</td><td>≤ on ℤ (5≤6 but not 6≤5)</td></tr>
+<tr><td>Antisymmetric</td><td class="mono">∀a,b, (a R b ∧ b R a) → a=b</td><td>≤ on ℤ</td><td>"is a sibling of" (two distinct siblings satisfy it both ways)</td></tr>
+<tr><td>Transitive</td><td class="mono">∀a,b,c, (a R b ∧ b R c) → a R c</td><td>≤ on ℤ, and "divides" on ℕ</td><td>"is a parent of" (grandparent ≠ parent)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — symmetric and antisymmetric are not opposites</span>
+<p>It's tempting to assume "antisymmetric" means "not symmetric," but the two properties are independent, and a relation can even have both at once. \(=\) on any set is both symmetric (\(a=b\to b=a\)) and antisymmetric (\(a=b\wedge b=a\to a=b\) is trivially true) simultaneously. "Divides" on the positive integers is antisymmetric but not symmetric. "Is a sibling of" is symmetric but not antisymmetric. And a relation like "\(a\) and \(b\) have different parity" on the integers is symmetric and manages to be <em>not</em> antisymmetric as well (e.g. 2 and 4 aren't even related to each other here, but plenty of distinct related pairs exist, like 2 and 3, without forcing equality) — all four logical combinations of the two properties actually occur.</p>
+</div>
+
+<h2>Equivalence relations</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — equivalence relation</span>
+<p>A relation is an <strong>equivalence relation</strong> if it is reflexive, symmetric, and transitive all at once. For \(a\in A\), the <strong>equivalence class</strong> of \(a\), written \([a]\), is \(\{x\in A : x\,R\,a\}\) — every element related to \(a\).</p>
+</div>
+
+<p>"Congruent mod 5" on the integers (\(a\,R\,b\) iff \(a-b\) is a multiple of 5) is reflexive (\(a-a=0\), a multiple of 5), symmetric (if \(a-b\) is a multiple of 5, so is \(b-a=-(a-b)\)), and transitive (if \(5\mid(a-b)\) and \(5\mid(b-c)\), then \(5\mid\big((a-b)+(b-c)\big)=a-c\)) — an equivalence relation. Its equivalence classes are \([0],[1],[2],[3],[4]\), each one containing every integer that leaves the same remainder on division by 5.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — equivalence relations and partitions are the same idea, twice</span>
+<p>Every equivalence relation on \(A\) partitions \(A\) into disjoint equivalence classes whose union is all of \(A\) — and conversely, every partition of \(A\) defines an equivalence relation (two elements related exactly when they land in the same block). This is not merely an analogy; it is a genuine one-to-one correspondence between equivalence relations on \(A\) and ways of partitioning \(A\) into disjoint nonempty pieces. Congruence mod 5 partitions \(\mathbb Z\) into exactly 5 classes; more generally, congruence mod \(n\) always partitions \(\mathbb Z\) into exactly \(n\) classes, one per possible remainder.</p>
+</div>
+
+<h2>Partial orders</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — partial order</span>
+<p>A relation is a <strong>partial order</strong> if it is reflexive, antisymmetric, and transitive. A set equipped with a partial order is called a <strong>partially ordered set</strong>, or <strong>poset</strong>.</p>
+</div>
+
+<p>\(\le\) on \(\mathbb Z\) is a partial order — and in fact a <strong>total</strong> order, since any two integers are comparable. "Divides" on the positive integers is a partial order that is <em>not</em> total: 4 and 6 satisfy neither "4 divides 6" nor "6 divides 4," so they simply aren't comparable at all — a genuinely "partial" ordering, with some pairs left unranked relative to each other. Posets are usually pictured with a <strong>Hasse diagram</strong> — dots for elements, an upward edge from \(a\) to \(b\) whenever \(a\,R\,b\) and there's no element strictly between them, with reflexive self-loops and transitively-implied edges both omitted since they're recoverable from the diagram automatically.</p>
+
+<div class="ascii">   Hasse diagram of "divides" on {1, 2, 3, 4, 6, 12}
+
+               12
+              /  \
+             4    6
+            / \  / \
+           2   3    (2─6 and 3─4 edges omitted: they're
+            \ /       implied transitively through 12,
+             1         since 2|4|12 and 2|6, etc.)
+
+   Reading upward = "divides." 2 and 3 are incomparable —
+   neither divides the other — which is exactly why this is
+   only a PARTIAL order, not a total (linear) one.</div>
+
+<div class="callout note">
+<span class="callout-label">Note — relations set up the next panel</span>
+<p>Every property, every diagram, and every definition in this panel applies to <em>any</em> relation \(R\subseteq A\times B\) — nothing here has required, so far, that each element of \(A\) relate to only one element of \(B\). Panel XI adds exactly that one restriction, and the entire theory of functions falls out of it.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 11 ============ -->
+<section class="panel" id="d11">
+<h1>Functions — Relations That Never Repeat an Input</h1>
+<div class="subtitle">one extra restriction on a relation, and an entire theory of injective, surjective, and bijective maps falls out of it</div>
+
+<h2>The formal definition</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — function</span>
+<p>A <strong>function</strong> \(f:A\to B\) is a relation \(f\subseteq A\times B\) satisfying: for every \(a\in A\), there is <strong>exactly one</strong> \(b\in B\) with \((a,b)\in f\) — written \(f(a)=b\). \(A\) is the <strong>domain</strong>, \(B\) is the <strong>codomain</strong>, and the <strong>range</strong> (or <strong>image</strong>) is \(\{f(a) : a\in A\}\subseteq B\) — the set of outputs actually hit.</p>
+</div>
+
+<p>The phrase "exactly one" is doing all the work, and it is precisely the uniqueness quantifier \(\exists!\) from Panel V: a function requires \(\forall a\in A\,\exists! b\in B\,\big((a,b)\in f\big)\) — every input produces some output, and never more than one. A relation that assigns two different outputs to the same input, or leaves some input with no output at all, fails to be a function on either count.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — codomain and range are not the same thing, and mixing them up is a very common error</span>
+<p>The codomain is the <em>declared</em> target set — part of the function's specification, chosen in advance — while the range is whichever subset of the codomain actually gets hit by some input. \(f:\mathbb Z\to\mathbb Z\), \(f(n)=n^2\), has codomain \(\mathbb Z\) but range only the perfect squares \(\{0,1,4,9,16,\dots\}\) — a strict subset. Whether the range equals the whole codomain is precisely the question of surjectivity, defined below, and it is a genuine question about the function, not something decidable just by reading off its formula.</p>
+</div>
+
+<h2>Injective (one-to-one)</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — injective</span>
+<p>\(f:A\to B\) is <strong>injective</strong> (or <strong>one-to-one</strong>) if distinct inputs always produce distinct outputs: \(\forall a_1,a_2\in A\,\big(f(a_1)=f(a_2)\to a_1=a_2\big)\) — equivalently, its contrapositive, \(a_1\ne a_2\to f(a_1)\ne f(a_2)\).</p>
+</div>
+
+<h2>Surjective (onto)</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — surjective</span>
+<p>\(f:A\to B\) is <strong>surjective</strong> (or <strong>onto</strong>) if every element of the codomain is actually hit by some input: \(\forall b\in B\,\exists a\in A\,\big(f(a)=b\big)\) — the range equals the entire codomain, with nothing left over.</p>
+</div>
+
+<h2>Bijective</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — bijective</span>
+<p>\(f:A\to B\) is <strong>bijective</strong> if it is both injective and surjective — every element of \(B\) is hit by exactly one element of \(A\). An inverse function \(f^{-1}:B\to A\) exists if and only if \(f\) is bijective, and it satisfies \(f^{-1}(f(a))=a\) and \(f(f^{-1}(b))=b\) for every \(a\in A,\,b\in B\).</p>
+</div>
+
+<h2>Four small functions, classified</h2>
+<p>Because discrete math deals in finite sets, function properties can be checked completely, by exhaustively looking at every input, rather than approximated with a graph — one of the genuine advantages the discrete setting has over continuous calculus for building intuition here.</p>
+
+<div class="ascii">   A = {1, 2, 3}      B = {a, b, c, d}
+
+   f₁: NEITHER            f₂: INJECTIVE ONLY      f₃: SURJECTIVE ONLY     f₄: BIJECTIVE
+   (repeats an output,    (distinct outputs,      (every output hit,     (perfect pairing —
+    misses "d")            but "d" still missed)   but "a" is hit twice)  needs |A|=|B|, so
+                                                                            this needs a 4th
+   1 ──▶ a                1 ──▶ a                  1 ──▶ a                 element in A: A'={1,2,3,4})
+   2 ──▶ a                2 ──▶ b                  2 ──▶ a
+   3 ──▶ b                3 ──▶ c                  3 ──▶ b
+        c  (unhit)             d (unhit)                 c
+        d  (unhit)                                       d
+
+                                                    (this needs |A|≥|B|      1 ──▶ a
+                                                     to reach every output)  2 ──▶ b
+                                                                             3 ──▶ c
+                                                                             4 ──▶ d</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — |A| vs |B| already tells you what's possible, before checking a single arrow</span>
+<p>An injective function \(A\to B\) can exist only if \(|A|\le|B|\) — you cannot fit more pigeons into fewer distinct holes without doubling up somewhere, which is exactly the pigeonhole principle below. A surjective function \(A\to B\) can exist only if \(|A|\ge|B|\) — you cannot cover every hole in \(B\) with fewer pigeons than there are holes. A bijection can exist only if \(|A|=|B|\) exactly — both conditions must hold simultaneously. For finite sets, these counting facts rule functions in or out before a single arrow is even drawn.</p>
+</div>
+
+<h2>Composition of functions</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — composition</span>
+<p>For \(f:A\to B\) and \(g:B\to C\), the <strong>composition</strong> \(g\circ f:A\to C\) is defined by \((g\circ f)(a)=g(f(a))\) — apply \(f\) first, then feed the result into \(g\).</p>
+</div>
+
+<p>Composition is associative — \((h\circ g)\circ f=h\circ(g\circ f)\) — because both sides simply apply \(f\), then \(g\), then \(h\), in the same order, to the same input. The <strong>identity function</strong> \(\text{id}_A(a)=a\) acts as a two-sided identity for composition: \(f\circ\text{id}_A=f=\text{id}_B\circ f\). If \(f\) and \(g\) are both bijections, so is \(g\circ f\), and its inverse reverses both the order and the direction: \((g\circ f)^{-1}=f^{-1}\circ g^{-1}\) — to undo "apply f, then g," first undo \(g\), then undo \(f\), the same way taking off shoes-then-socks in reverse means socks-then-shoes... no — taking off <em>shoes</em> first, then socks, precisely because they were put on in the opposite order.</p>
+
+<h2>Counting functions</h2>
+<div class="tbl-wrap">
+<table>
+<caption>How many functions, of each kind, exist between two finite sets</caption>
+<thead><tr><th>Kind</th><th>Count, for |A|=m, |B|=n</th></tr></thead>
+<tbody>
+<tr><td>All functions A → B</td><td class="mono">n^m</td></tr>
+<tr><td>Injective functions A → B (needs m ≤ n)</td><td class="mono">n·(n−1)·(n−2)⋯(n−m+1)</td></tr>
+<tr><td>Bijective functions A → B (needs m = n)</td><td class="mono">n!</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Every function \(A\to B\) is exactly \(m\) independent choices — pick \(f(a_1)\) freely from \(n\) options, pick \(f(a_2)\) freely from \(n\) options, and so on — giving \(n^m\) total, the exact same "independent binary choices multiply" reasoning that gave \(2^n\) subsets in Panel VIII's power set. Setting \(n=2\) makes this concrete: functions from an \(m\)-element set \(A\) into \(\{0,1\}\) number exactly \(2^m\) — and each such function corresponds precisely to a subset of \(A\) (the <strong>characteristic function</strong> of the subset, sending an element to 1 if it's included and 0 if not). Counting functions into \(\{0,1\}\) and counting subsets are, quite literally, the same count, arrived at two different ways.</p>
+
+<h2>The pigeonhole principle</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — pigeonhole principle</span>
+<p>If \(|A|>|B|\), then no function \(f:A\to B\) can be injective — some two distinct elements of \(A\) must share an output. Equivalently: if more than \(n\) objects are placed into \(n\) categories, at least one category receives two or more objects.</p>
+</div>
+
+<p>This follows immediately from the counting fact above: an injection needs \(|A|\le|B|\), so the moment \(|A|>|B|\), the necessary condition for injectivity is already violated — no arrow-by-arrow check is even required.</p>
+
+<div class="callout note">
+<span class="callout-label">Worked example — a deceptively simple use of pigeonhole</span>
+<p>In any group of 13 people, at least two share a birth month. Let \(A\) be the 13 people and \(B\) be the 12 months; the "which month were you born in" assignment is a function \(A\to B\) with \(|A|=13>12=|B|\), so by the pigeonhole principle it cannot be injective — two people, at minimum, are forced into the same month. Nothing about people or months was ever really used beyond their two counts — this is exactly why the principle applies to an enormous range of situations (hashing collisions, Ramsey-type arguments, and the surprisingly deep coincidences in Panel XIII), all traceable back to a single counting fact about functions between finite sets.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 12 ============ -->
+<section class="panel" id="d12">
+<h1>Interactive Lab</h1>
+<div class="subtitle">three small tools — build a truth table, shade a Venn region, and test a quantifier over a finite domain</div>
+
+<h2>Lab 1 — Truth Table Generator</h2>
+<p>Pick a formula from the list. The table fills in every row of every variable it uses, plus every intermediate column needed to build up to the final result — exactly the way Panel III and IV's tables were built by hand. The readout below reports whether the final column is a tautology, a contradiction, or a genuine contingency (Panel IV).</p>
+
+<div class="lab">
+  <div class="controls">
+    <div class="control-row">
+      <label>Formula</label>
+      <select id="ttSelect">
+        <option value="and">p ∧ q</option>
+        <option value="or">p ∨ q</option>
+        <option value="not">¬p</option>
+        <option value="cond" selected>p → q</option>
+        <option value="bicond">p ↔ q</option>
+        <option value="xor">p ⊕ q</option>
+        <option value="demorgan1">¬(p∧q)  vs.  ¬p∨¬q  (De Morgan)</option>
+        <option value="implaw">(p→q)  vs.  ¬p∨q  (implication law)</option>
+        <option value="modusponens">(p ∧ (p→q)) → q  (modus ponens, 2 vars)</option>
+        <option value="hypsyll">((p→q)∧(q→r)) → (p→r)  (hypothetical syllogism, 3 vars)</option>
+        <option value="contrapositive">(p→q)  vs.  (¬q→¬p)  (contrapositive)</option>
+      </select>
+    </div>
+  </div>
+  <div class="tbl-wrap" id="ttOut"></div>
+  <div class="matrix-display">
+    <div class="block" style="flex:1 1 100%;"><div class="k">VERDICT ON THE FINAL COLUMN</div><div class="v" id="ttVerdict">…</div></div>
+  </div>
+</div>
+
+<h2>Lab 2 — Venn Diagram Set Explorer</h2>
+<p>Pick a set expression; the matching region of the two-circle Venn diagram (inside universe \(U\), the canvas rectangle) is shaded. Move the cursor over the canvas to test whether that exact point counts as a member of the currently selected set. Try picking <code>(A∩B)ᶜ</code> and then <code>Aᶜ∪Bᶜ</code> back to back — Panel IX's De Morgan's law for sets predicts they shade the identical region, and this lets you check that by eye.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">SHADED REGION = THE SELECTED SET</div>
+      <canvas id="cvVenn" width="480" height="300" style="width:100%;max-width:480px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="control-row">
+      <label>Set expression</label>
+      <select id="vennSelect">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="union" selected>A ∪ B</option>
+        <option value="inter">A ∩ B</option>
+        <option value="aminusb">A − B</option>
+        <option value="bminusa">B − A</option>
+        <option value="compA">Aᶜ</option>
+        <option value="symdiff">A ∆ B (symmetric difference)</option>
+        <option value="notunion">(A ∪ B)ᶜ</option>
+        <option value="notinter">(A ∩ B)ᶜ</option>
+        <option value="demorgan">Aᶜ ∪ Bᶜ&nbsp;&nbsp;(compare against (A∩B)ᶜ)</option>
+      </select>
+    </div>
+  </div>
+  <div class="matrix-display">
+    <div class="block"><div class="k">CURSOR POINT</div><div class="v" id="vennPt">…</div></div>
+    <div class="block"><div class="k">IN A?</div><div class="v" id="vennInA">…</div></div>
+    <div class="block"><div class="k">IN B?</div><div class="v" id="vennInB">…</div></div>
+    <div class="block"><div class="k">IN SELECTED SET?</div><div class="v" id="vennInSel">…</div></div>
+  </div>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--accent)"></span> shaded = member of the selected set</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> cursor point</span>
+  </div>
+</div>
+
+<h2>Lab 3 — Quantifier Explorer</h2>
+<p>The domain is the twelve chips below. Click a chip to toggle whether it belongs to the current subset \(S\) (highlighted chips are "in S"; the rest are excluded from the quantifiers below, demonstrating <em>restricted</em> quantification, ∀x∈S and ∃x∈S, from Panel V). Pick a predicate; each chip's border turns green if it satisfies the predicate and red if it doesn't, and the readouts report whether \(\forall x\in S\,P(x)\) and \(\exists x\in S\,P(x)\) hold, naming a counterexample or a witness exactly as Panel V defines them.</p>
+
+<div class="lab">
+  <div class="controls">
+    <div class="control-row">
+      <label>Predicate P(x)</label>
+      <select id="quantSelect">
+        <option value="even" selected>x is even</option>
+        <option value="odd">x is odd</option>
+        <option value="prime">x is prime</option>
+        <option value="gt6">x &gt; 6</option>
+        <option value="square">x is a perfect square</option>
+        <option value="div3">x is divisible by 3</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>&nbsp;</label>
+      <button class="mini-toggle" id="quantAll">select all</button>
+      <button class="mini-toggle" id="quantNone">select none</button>
+    </div>
+  </div>
+  <div class="chip-row" id="quantChips"></div>
+  <div class="matrix-display">
+    <div class="block" style="flex:1 1 100%;"><div class="k">∀x ∈ S, P(x)</div><div class="v" id="quantForall">…</div></div>
+    <div class="block" style="flex:1 1 100%;"><div class="k">∃x ∈ S, P(x)</div><div class="v" id="quantExists">…</div></div>
+  </div>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--accent)"></span> in the current domain S (click to toggle)</span>
+    <span><span class="swatch" style="background:var(--green)"></span> border = P(x) is true</span>
+    <span><span class="swatch" style="background:var(--red)"></span> border = P(x) is false</span>
+  </div>
+</div>
+
+</section>
+
+<!-- ============ PANEL 13 ============ -->
+<section class="panel" id="d13">
+<h1>Worked Examples &amp; Summary</h1>
+<div class="subtitle">five complete proofs, each one drawing on several earlier panels at once, and a full reference table to close</div>
+
+<h2>1. A five-premise formal proof</h2>
+<p><strong>Argument.</strong> "If the sensor triggers, then either the alarm sounds or the system is in maintenance mode. If the system is in maintenance mode, then no alert is emailed. The sensor triggered. No alert was emailed. Therefore, the alarm sounds." Let \(p=\)"sensor triggers," \(q=\)"alarm sounds," \(r=\)"maintenance mode," \(s=\)"alert is emailed."</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">p → (q ∨ r)</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">r → ¬s</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">p</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">¬s</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">q ∨ r</span><span class="pf-just">modus ponens, 1, 3</span></li>
+<li><span class="pf-stmt">¬r → ¬¬s, i.e. s → r</span><span class="pf-just">contrapositive of line 2</span></li>
+<li><span class="pf-stmt">¬r</span><span class="pf-just">modus tollens, 2, 4</span></li>
+<li><span class="pf-stmt">∴ q</span><span class="pf-just">disjunctive syllogism, 5, 7</span></li>
+</div>
+<p>Line 6 is not actually needed for this derivation and is included only to show the contrapositive step explicitly — the real chain runs premises 1–4 straight through lines 5, 7, to 8. Every line traces back to a named rule from Panel VI applied to one or two earlier lines, which is the complete definition of a valid formal proof.</p>
+
+<h2>2. Translating, then negating, a nested-quantifier claim</h2>
+<p><strong>Claim:</strong> "Every customer has placed at least one order that was delivered on time." Domain: all people. \(C(x)=\)"x is a customer," \(O(x,y)=\)"y is an order placed by x," \(D(y)=\)"y was delivered on time."</p>
+<div class="katex-display" data-katex="\forall x\,\Big[C(x) \to \exists y\,\big(O(x,y)\wedge D(y)\big)\Big]"></div>
+<p>Negating step by step, pushing the ¬ inward one connective at a time (Panel IV and Panel V's laws, applied in sequence):</p>
+<div class="proof-list">
+<li><span class="pf-stmt">¬∀x [C(x) → ∃y(O(x,y)∧D(y))]</span><span class="pf-just">start: negate the claim</span></li>
+<li><span class="pf-stmt">∃x ¬[C(x) → ∃y(O(x,y)∧D(y))]</span><span class="pf-just">¬∀ ≡ ∃¬ (Panel V)</span></li>
+<li><span class="pf-stmt">∃x [C(x) ∧ ¬∃y(O(x,y)∧D(y))]</span><span class="pf-just">¬(p→q) ≡ p∧¬q (Panel IV)</span></li>
+<li><span class="pf-stmt">∃x [C(x) ∧ ∀y ¬(O(x,y)∧D(y))]</span><span class="pf-just">¬∃ ≡ ∀¬ (Panel V)</span></li>
+<li><span class="pf-stmt">∃x [C(x) ∧ ∀y (¬O(x,y) ∨ ¬D(y))]</span><span class="pf-just">De Morgan's (Panel IV)</span></li>
+</div>
+<p>In plain English, line 5 reads: "there is a customer such that every one of their orders either wasn't actually their order or wasn't delivered on time" — which, cleaned up, just says "there is a customer none of whose orders were delivered on time," exactly the intuitive counterexample the original claim would need to be false.</p>
+
+<h2>3. A set identity proved by the laws table directly</h2>
+<p><strong>Claim:</strong> \(A-(B\cup C) = (A-B)\cap(A-C)\).</p>
+<div class="proof-list">
+<li><span class="pf-stmt">A − (B∪C)</span><span class="pf-just">start</span></li>
+<li><span class="pf-stmt">= A ∩ (B∪C)ᶜ</span><span class="pf-just">difference law: X − Y = X ∩ Yᶜ</span></li>
+<li><span class="pf-stmt">= A ∩ (Bᶜ∩Cᶜ)</span><span class="pf-just">De Morgan's law for sets (Panel IX)</span></li>
+<li><span class="pf-stmt">= (A ∩ Bᶜ) ∩ (A ∩ Cᶜ)</span><span class="pf-just">idempotent law applied to A, then associative/commutative</span></li>
+<li><span class="pf-stmt">= (A − B) ∩ (A − C)</span><span class="pf-just">difference law, both directions</span></li>
+</div>
+<p>Line 4 uses a small standard trick — since \(A\cap A=A\) (idempotent law), \(A\cap X\cap Y\) can always be rewritten as \((A\cap X)\cap(A\cap Y)\), splitting one copy of \(A\) into two. This identity is the set-theoretic De Morgan's law wearing yet another disguise, exactly the kind of translation Panel IX's worked example performed directly.</p>
+
+<h2>4. Proving a function is bijective and building its inverse</h2>
+<p><strong>Claim:</strong> \(f:\mathbb R\to\mathbb R\), \(f(x)=3x-2\), is a bijection, with inverse \(f^{-1}(y)=\dfrac{y+2}{3}\).</p>
+<p><strong>Injective.</strong> Suppose \(f(x_1)=f(x_2)\): \(3x_1-2=3x_2-2\), so \(3x_1=3x_2\), so \(x_1=x_2\). By Panel XI's definition, \(f\) is injective.</p>
+<p><strong>Surjective.</strong> Let \(y\in\mathbb R\) be arbitrary (Existential Generalization needs a witness for \(x\), so construct one). Set \(x=\dfrac{y+2}{3}\); then \(f(x)=3\cdot\dfrac{y+2}{3}-2=(y+2)-2=y\). So every \(y\) is hit, and \(f\) is surjective.</p>
+<p>Both properties hold, so \(f\) is bijective, and the \(x\) constructed in the surjectivity step — \(x=(y+2)/3\) — is exactly the formula for \(f^{-1}\), since it was built precisely to satisfy \(f(x)=y\), i.e., \(f(f^{-1}(y))=y\). Checking the other direction, \(f^{-1}(f(x))=\dfrac{(3x-2)+2}{3}=\dfrac{3x}{3}=x\). Both round-trips return the original input, confirming \(f^{-1}\) is genuinely a two-sided inverse. \(\blacksquare\)</p>
+
+<h2>5. An induction proof: a divisibility claim</h2>
+<p><strong>Claim:</strong> for every \(n\ge1\), \(7^n-1\) is divisible by 6.</p>
+<p><strong>Base case (n=1):</strong> \(7^1-1=6\), and \(6\) is divisible by \(6\).</p>
+<p><strong>Inductive step:</strong> assume \(P(k)\): \(7^k-1=6m\) for some integer \(m\). Then:</p>
+<div class="katex-display" data-katex="7^{k+1}-1 = 7\cdot7^k - 1 = 7(7^k-1) + 7 - 1 = 7(6m) + 6 = 6(7m+1)"></div>
+<p>which is \(6\) times the integer \(7m+1\), so \(7^{k+1}-1\) is divisible by \(6\) — exactly \(P(k+1)\). By the principle of mathematical induction (Panel VII), \(6\mid(7^n-1)\) for every \(n\ge1\). \(\blacksquare\)</p>
+
+<h2>6. Resolution, run by hand on a concrete argument</h2>
+<p><strong>Argument.</strong> "Either the build fails, or the tests pass. Either the tests don't pass, or the deploy proceeds. The build fails, or the deploy proceeds — is that guaranteed?" Let \(p=\)"the build fails," \(q=\)"the tests pass," \(r=\)"the deploy proceeds." Premises: \(p\vee q\), \(\neg q\vee r\). Goal: \(p\vee r\).</p>
+<p>This is exactly the shape the resolution rule from Panel VI is built for: two disjunctions sharing a complementary pair (\(q\) in one, \(\neg q\) in the other) resolve into a new disjunction with that pair removed.</p>
+<div class="proof-list">
+<li><span class="pf-stmt">p ∨ q</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">¬q ∨ r</span><span class="pf-just">premise</span></li>
+<li><span class="pf-stmt">∴ p ∨ r</span><span class="pf-just">resolution, lines 1, 2 (resolve on q / ¬q)</span></li>
+</div>
+<p>Only three lines, and no case split was ever needed — resolution alone closes the argument. This is precisely why it scales the way it does inside automated tools: a solver doesn't need cleverness to pick which rule applies next, only a systematic search for two clauses sharing a complementary literal, repeated until either the goal or a contradiction (the empty clause) appears.</p>
+
+<h2>7. Verifying an equivalence relation and reading off its classes</h2>
+<p><strong>Claim.</strong> Define \(R\) on \(A=\{1,2,3,4,5,6\}\) by \(a\,R\,b \iff a\bmod 3 = b\bmod 3\) ("same remainder when divided by 3"). Show \(R\) is an equivalence relation, and list its equivalence classes.</p>
+<p><strong>Reflexive.</strong> For any \(a\in A\), \(a\bmod3=a\bmod3\) trivially, so \(a\,R\,a\).</p>
+<p><strong>Symmetric.</strong> If \(a\,R\,b\), then \(a\bmod3=b\bmod3\); equality is symmetric, so \(b\bmod3=a\bmod3\), giving \(b\,R\,a\).</p>
+<p><strong>Transitive.</strong> If \(a\,R\,b\) and \(b\,R\,c\), then \(a\bmod3=b\bmod3\) and \(b\bmod3=c\bmod3\); chaining the two equalities gives \(a\bmod3=c\bmod3\), so \(a\,R\,c\).</p>
+<p>All three properties hold (Panel X's definition), so \(R\) is an equivalence relation, and by the equivalence-relation/partition correspondence it partitions \(A\) into disjoint classes:</p>
+<div class="katex-display" data-katex="[1] = \{1,4\}, \qquad [2] = \{2,5\}, \qquad [3] = \{3,6\}"></div>
+<p>— one class per possible remainder (0, 1, or 2) on division by 3, together covering every element of \(A\) exactly once, exactly as the insight box in Panel X predicted for congruence relations in general.</p>
+
+<h2>Full reference summary</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Every core definition from this essay, in one table</caption>
+<thead><tr><th>Concept</th><th>Symbol / form</th><th>Meaning, in one line</th></tr></thead>
+<tbody>
+<tr><td>Negation</td><td class="mono">¬p</td><td>true iff p is false</td></tr>
+<tr><td>Conjunction</td><td class="mono">p ∧ q</td><td>true iff both p, q true</td></tr>
+<tr><td>Disjunction</td><td class="mono">p ∨ q</td><td>true iff at least one of p, q true</td></tr>
+<tr><td>Conditional</td><td class="mono">p → q</td><td>false only when p true, q false (vacuously true if p false)</td></tr>
+<tr><td>Biconditional</td><td class="mono">p ↔ q</td><td>true iff p, q share a truth value</td></tr>
+<tr><td>Tautology / contradiction</td><td class="mono">— / —</td><td>true on every row / false on every row</td></tr>
+<tr><td>Logical equivalence</td><td class="mono">P ≡ Q</td><td>same truth value on every row; P↔Q is a tautology</td></tr>
+<tr><td>Universal quantifier</td><td class="mono">∀x P(x)</td><td>true iff P(x) holds for every x in the domain</td></tr>
+<tr><td>Existential quantifier</td><td class="mono">∃x P(x)</td><td>true iff P(x) holds for at least one x</td></tr>
+<tr><td>Negated quantifiers</td><td class="mono">¬∀x P(x) ≡ ∃x ¬P(x)</td><td>disproving "all" needs only one counterexample</td></tr>
+<tr><td>Valid argument</td><td class="mono">—</td><td>conclusion is guaranteed true whenever every premise is</td></tr>
+<tr><td>Modus ponens</td><td class="mono">p→q, p ⊢ q</td><td>affirm the hypothesis, conclude the consequent</td></tr>
+<tr><td>Modus tollens</td><td class="mono">p→q, ¬q ⊢ ¬p</td><td>deny the consequent, conclude the hypothesis is false</td></tr>
+<tr><td>Mathematical induction</td><td class="mono">P(n₀), ∀k(P(k)→P(k+1)) ⊢ ∀n≥n₀ P(n)</td><td>base case + inductive step proves every case at once</td></tr>
+<tr><td>Set</td><td class="mono">{x : …}</td><td>unordered collection of distinct elements</td></tr>
+<tr><td>Subset</td><td class="mono">A ⊆ B</td><td>every element of A is an element of B</td></tr>
+<tr><td>Power set</td><td class="mono">𝒫(S), |𝒫(S)|=2ⁿ</td><td>the set of every subset of S</td></tr>
+<tr><td>Union / intersection</td><td class="mono">A∪B / A∩B</td><td>set version of ∨ / set version of ∧</td></tr>
+<tr><td>De Morgan's (sets)</td><td class="mono">(A∩B)ᶜ = Aᶜ∪Bᶜ</td><td>set version of De Morgan's for logic</td></tr>
+<tr><td>Relation</td><td class="mono">R ⊆ A×B</td><td>a set of ordered pairs relating elements</td></tr>
+<tr><td>Equivalence relation</td><td class="mono">reflexive+symmetric+transitive</td><td>partitions its set into equivalence classes</td></tr>
+<tr><td>Function</td><td class="mono">f:A→B</td><td>a relation where each input has exactly one output</td></tr>
+<tr><td>Injective / surjective / bijective</td><td class="mono">— / — / —</td><td>never repeats an output / hits every output / both at once</td></tr>
+<tr><td>Pigeonhole principle</td><td class="mono">|A|&gt;|B| ⇒ no injection A→B</td><td>more objects than categories forces a collision</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Symbol quick reference, in the order this essay introduces them</caption>
+<thead><tr><th>Symbol</th><th>Name</th><th>Panel</th></tr></thead>
+<tbody>
+<tr><td class="mono">¬</td><td>negation ("not")</td><td>III</td></tr>
+<tr><td class="mono">∧</td><td>conjunction ("and")</td><td>III</td></tr>
+<tr><td class="mono">∨</td><td>disjunction ("or," inclusive)</td><td>III</td></tr>
+<tr><td class="mono">→</td><td>conditional ("if…then")</td><td>III</td></tr>
+<tr><td class="mono">↔</td><td>biconditional ("iff")</td><td>III</td></tr>
+<tr><td class="mono">⊕</td><td>exclusive or (XOR)</td><td>III</td></tr>
+<tr><td class="mono">↑ / ↓</td><td>NAND / NOR</td><td>III</td></tr>
+<tr><td class="mono">≡</td><td>logical equivalence</td><td>IV</td></tr>
+<tr><td class="mono">∀</td><td>universal quantifier ("for all")</td><td>V</td></tr>
+<tr><td class="mono">∃</td><td>existential quantifier ("there exists")</td><td>V</td></tr>
+<tr><td class="mono">∃!</td><td>uniqueness quantifier ("exactly one")</td><td>V</td></tr>
+<tr><td class="mono">⊢</td><td>"proves" / "derives" (an argument's conclusion)</td><td>VI</td></tr>
+<tr><td class="mono">∈ / ∉</td><td>set membership / non-membership</td><td>VIII</td></tr>
+<tr><td class="mono">⊆ / ⊂</td><td>subset / proper subset</td><td>VIII</td></tr>
+<tr><td class="mono">∅</td><td>the empty set</td><td>VIII</td></tr>
+<tr><td class="mono">𝒫(S)</td><td>power set of S</td><td>VIII</td></tr>
+<tr><td class="mono">×</td><td>Cartesian product</td><td>VIII</td></tr>
+<tr><td class="mono">∪ / ∩</td><td>union / intersection</td><td>IX</td></tr>
+<tr><td class="mono">− / ᶜ</td><td>set difference / complement</td><td>IX</td></tr>
+<tr><td class="mono">∆</td><td>symmetric difference</td><td>IX</td></tr>
+<tr><td class="mono">|S|</td><td>cardinality of S</td><td>IX</td></tr>
+<tr><td class="mono">R, aRb</td><td>a relation, and "a is related to b"</td><td>X</td></tr>
+<tr><td class="mono">[a]</td><td>the equivalence class of a</td><td>X</td></tr>
+<tr><td class="mono">f:A→B, f⁻¹</td><td>a function, and its inverse</td><td>XI</td></tr>
+<tr><td class="mono">g∘f</td><td>composition ("g after f")</td><td>XI</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — everything in this essay is one idea, viewed from six angles</span>
+<p>Propositional logic, predicate logic, set theory, and function theory are not really four separate subjects stacked on top of each other — they are the same underlying grammar of "true, for a reason, that can be checked step by step," described in four increasingly expressive vocabularies. A truth table is a finite check of every case; a Venn diagram is a picture of exactly the same case-check; a quantified statement generalizes the case-check to an entire domain at once; a function is a quantified statement (∀a ∃!b) wearing the shape of a machine. Panel VI's rules of inference and Panel VII's proof techniques are the tools that let all four vocabularies talk to each other inside a single argument — which is exactly what every proof in this closing panel just did.</p>
+</div>
+
+<h2>Where to go next</h2>
+<p>This essay stops at the foundations on purpose — everything past this point in a typical discrete mathematics course builds directly on top of it. <strong>Combinatorics</strong> takes the counting arguments from Panels VIII and XI (the \(2^n\) power set count, the \(n^m\) and \(n!\) function counts) and turns them into a full toolkit for counting arrangements, selections, and distributions. <strong>Graph theory</strong> takes the relation-as-directed-graph picture from Panel X and studies it as an object in its own right — paths, cycles, connectivity, and coloring. <strong>Number theory</strong> returns to the divisibility relation from Panel X and the induction technique from Panel VII to build primality, modular arithmetic, and cryptographic applications on top of them. And <strong>formal proof practice</strong> — simply working more problems using Panel VII's techniques — is, more than any single additional topic, what actually turns this vocabulary into fluency. Rosen's <em>Discrete Mathematics and Its Applications</em> is the standard course textbook most of this material's presentation traces back to, and remains a solid, thorough next stop for any of these branches.</p>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10','d11','d12','d13'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawVenn();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+// ============ LAB 1: TRUTH TABLE GENERATOR ============
+const ttSelect = document.getElementById('ttSelect');
+const ttOut = document.getElementById('ttOut');
+const ttVerdict = document.getElementById('ttVerdict');
+
+function tf(b){ return `<span class="${b?'tt-t':'tt-f'} mono">${b?'T':'F'}</span>`; }
+
+const ttFormulas = {
+  and:      { vars:['p','q'], cols:[ {h:'p ∧ q', f:(p,q)=>p&&q} ] },
+  or:       { vars:['p','q'], cols:[ {h:'p ∨ q', f:(p,q)=>p||q} ] },
+  not:      { vars:['p'],     cols:[ {h:'¬p', f:(p)=>!p} ] },
+  cond:     { vars:['p','q'], cols:[ {h:'p → q', f:(p,q)=>(!p)||q} ] },
+  bicond:   { vars:['p','q'], cols:[ {h:'p ↔ q', f:(p,q)=>p===q} ] },
+  xor:      { vars:['p','q'], cols:[ {h:'p ⊕ q', f:(p,q)=>p!==q} ] },
+  demorgan1:{ vars:['p','q'], cols:[
+                {h:'¬(p∧q)', f:(p,q)=>!(p&&q)},
+                {h:'¬p∨¬q',  f:(p,q)=>(!p)||(!q)},
+                {h:'match?', f:(p,q)=>(!(p&&q))===((!p)||(!q))}
+              ] },
+  implaw:   { vars:['p','q'], cols:[
+                {h:'p→q',  f:(p,q)=>(!p)||q},
+                {h:'¬p∨q', f:(p,q)=>(!p)||q},
+                {h:'match?', f:(p,q)=>true}
+              ] },
+  modusponens: { vars:['p','q'], cols:[
+                {h:'p→q', f:(p,q)=>(!p)||q},
+                {h:'p∧(p→q)', f:(p,q)=>p&&((!p)||q)},
+                {h:'(p∧(p→q))→q', f:(p,q)=>{ const a=p&&((!p)||q); return (!a)||q; }}
+              ] },
+  hypsyll:  { vars:['p','q','r'], cols:[
+                {h:'p→q', f:(p,q,r)=>(!p)||q},
+                {h:'q→r', f:(p,q,r)=>(!q)||r},
+                {h:'(p→q)∧(q→r)', f:(p,q,r)=>((!p)||q)&&((!q)||r)},
+                {h:'p→r', f:(p,q,r)=>(!p)||r},
+                {h:'whole thing', f:(p,q,r)=>{ const ant=((!p)||q)&&((!q)||r); const con=(!p)||r; return (!ant)||con; }}
+              ] },
+  contrapositive: { vars:['p','q'], cols:[
+                {h:'p→q', f:(p,q)=>(!p)||q},
+                {h:'¬q→¬p', f:(p,q)=>(q)||(!p)},
+                {h:'match?', f:(p,q)=>((!p)||q)===(q||(!p))}
+              ] }
+};
+
+function renderTruthTable(key){
+  const spec = ttFormulas[key];
+  const n = spec.vars.length;
+  const rows = Math.pow(2,n);
+  let html = '<table><thead><tr>';
+  spec.vars.forEach(v=> html += `<th class="mono">${v}</th>`);
+  spec.cols.forEach(c=> html += `<th class="mono">${c.h}</th>`);
+  html += '</tr></thead><tbody>';
+
+  let lastColVals = [];
+  for(let i=0;i<rows;i++){
+    const assign = spec.vars.map((_,idx)=> ((i >> (n-1-idx)) & 1) === 1 );
+    html += '<tr>';
+    assign.forEach(v=> html += `<td>${tf(v)}</td>`);
+    spec.cols.forEach((c,ci)=>{
+      const val = c.f(...assign);
+      if(ci === spec.cols.length-1) lastColVals.push(val);
+      html += `<td>${tf(val)}</td>`;
+    });
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  ttOut.innerHTML = html;
+
+  const allTrue = lastColVals.every(v=>v);
+  const allFalse = lastColVals.every(v=>!v);
+  if(allTrue) ttVerdict.textContent = 'Every row in the final column is T — this is a TAUTOLOGY (or a confirmed match, for the comparison formulas).';
+  else if(allFalse) ttVerdict.textContent = 'Every row in the final column is F — this is a CONTRADICTION.';
+  else ttVerdict.textContent = 'Some rows T, some rows F — this is a CONTINGENCY: its truth genuinely depends on the variables.';
+}
+ttSelect.addEventListener('change', ()=> renderTruthTable(ttSelect.value));
+renderTruthTable(ttSelect.value);
+
+// ============ LAB 2: VENN DIAGRAM EXPLORER ============
+const vennCv = document.getElementById('cvVenn');
+const vctx = vennCv.getContext('2d');
+const vennSelect = document.getElementById('vennSelect');
+const vennPt = document.getElementById('vennPt');
+const vennInA = document.getElementById('vennInA');
+const vennInB = document.getElementById('vennInB');
+const vennInSel = document.getElementById('vennInSel');
+
+const V_W = 480, V_H = 300;
+const CA = {x:190, y:150, r:110};
+const CB = {x:290, y:150, r:110};
+let vennPointer = {x:0, y:0, has:false};
+
+function pathA(){ vctx.arc(CA.x, CA.y, CA.r, 0, Math.PI*2); }
+function pathB(){ vctx.arc(CB.x, CB.y, CB.r, 0, Math.PI*2); }
+
+const vennFormulas = {
+  A:         (a,b)=> a,
+  B:         (a,b)=> b,
+  union:     (a,b)=> a||b,
+  inter:     (a,b)=> a&&b,
+  aminusb:   (a,b)=> a&&!b,
+  bminusa:   (a,b)=> b&&!a,
+  compA:     (a,b)=> !a,
+  symdiff:   (a,b)=> a!==b,
+  notunion:  (a,b)=> !(a||b),
+  notinter:  (a,b)=> !(a&&b),
+  demorgan:  (a,b)=> (!a)||(!b)
+};
+
+function shadeIntersection(color){
+  vctx.save();
+  vctx.beginPath(); pathA(); vctx.clip();
+  vctx.beginPath(); pathB(); vctx.clip();
+  vctx.fillStyle = color; vctx.fillRect(0,0,V_W,V_H);
+  vctx.restore();
+}
+function shadeAMinusB(color){
+  vctx.save();
+  vctx.beginPath(); pathA(); vctx.clip();
+  vctx.fillStyle = color; vctx.fillRect(0,0,V_W,V_H);
+  vctx.globalCompositeOperation = 'destination-out';
+  vctx.beginPath(); pathB(); vctx.fill();
+  vctx.globalCompositeOperation = 'source-over';
+  vctx.restore();
+}
+function shadeBMinusA(color){
+  vctx.save();
+  vctx.beginPath(); pathB(); vctx.clip();
+  vctx.fillStyle = color; vctx.fillRect(0,0,V_W,V_H);
+  vctx.globalCompositeOperation = 'destination-out';
+  vctx.beginPath(); pathA(); vctx.fill();
+  vctx.globalCompositeOperation = 'source-over';
+  vctx.restore();
+}
+function shadeNeither(color){
+  vctx.save();
+  vctx.fillStyle = color; vctx.fillRect(0,0,V_W,V_H);
+  vctx.globalCompositeOperation = 'destination-out';
+  vctx.beginPath(); pathA(); vctx.fill();
+  vctx.beginPath(); pathB(); vctx.fill();
+  vctx.globalCompositeOperation = 'source-over';
+  vctx.restore();
+}
+
+function drawVenn(){
+  vctx.clearRect(0,0,V_W,V_H);
+  vctx.fillStyle = cssVar('--bg-elevated');
+  vctx.fillRect(0,0,V_W,V_H);
+  vctx.strokeStyle = cssVar('--border');
+  vctx.lineWidth = 1.5;
+  vctx.strokeRect(6,6,V_W-12,V_H-12);
+
+  const key = vennSelect.value;
+  const formula = vennFormulas[key];
+  const accent = cssVar('--accent');
+
+  // shade each of the 4 regions (TT, TF, FT, FF) if formula says it's a member
+  if(formula(true,true))   shadeIntersection(accent);
+  if(formula(true,false))  shadeAMinusB(accent);
+  if(formula(false,true))  shadeBMinusA(accent);
+  if(formula(false,false)) shadeNeither(accent);
+
+  // outlines
+  vctx.strokeStyle = cssVar('--blue'); vctx.lineWidth = 2.5;
+  vctx.globalAlpha = 0.9;
+  vctx.beginPath(); pathA(); vctx.stroke();
+  vctx.strokeStyle = cssVar('--purple');
+  vctx.beginPath(); pathB(); vctx.stroke();
+  vctx.globalAlpha = 1;
+
+  vctx.font = '600 16px JetBrains Mono, monospace';
+  vctx.fillStyle = cssVar('--blue');
+  vctx.fillText('A', CA.x-95, CA.y-70);
+  vctx.fillStyle = cssVar('--purple');
+  vctx.fillText('B', CB.x+85, CB.y-70);
+
+  vctx.font = '11px JetBrains Mono, monospace';
+  vctx.fillStyle = cssVar('--ink-faint');
+  vctx.fillText('UNIVERSE U', 14, 24);
+
+  if(vennPointer.has){
+    const {x,y} = vennPointer;
+    const inA = Math.hypot(x-CA.x,y-CA.y) < CA.r;
+    const inB = Math.hypot(x-CB.x,y-CB.y) < CB.r;
+    const inSel = formula(inA,inB);
+
+    vctx.fillStyle = cssVar('--bg');
+    vctx.strokeStyle = inSel ? cssVar('--green') : cssVar('--red');
+    vctx.lineWidth = 2;
+    vctx.beginPath(); vctx.arc(x,y,5,0,Math.PI*2); vctx.fill(); vctx.stroke();
+
+    vennPt.textContent = `(${x.toFixed(0)}, ${y.toFixed(0)})`;
+    vennInA.textContent = inA ? 'yes' : 'no';
+    vennInB.textContent = inB ? 'yes' : 'no';
+    vennInSel.textContent = inSel ? 'yes — inside shaded region' : 'no — outside shaded region';
+  } else {
+    vennPt.textContent = '…'; vennInA.textContent = '…'; vennInB.textContent = '…'; vennInSel.textContent = '…';
+  }
+}
+
+function vennPointerToLocal(e){
+  const rect = vennCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: (clientX-rect.left) * (V_W/rect.width),
+    y: (clientY-rect.top) * (V_H/rect.height)
+  };
+}
+vennCv.addEventListener('mousemove', e=>{ vennPointer = {...vennPointerToLocal(e), has:true}; drawVenn(); });
+vennCv.addEventListener('mouseleave', ()=>{ vennPointer.has=false; drawVenn(); });
+vennCv.addEventListener('touchmove', e=>{ vennPointer = {...vennPointerToLocal(e), has:true}; drawVenn(); }, {passive:true});
+vennSelect.addEventListener('change', drawVenn);
+drawVenn();
+
+// ============ LAB 3: QUANTIFIER EXPLORER ============
+const quantDomain = [1,2,3,4,5,6,7,8,9,10,11,12];
+let quantS = new Set(quantDomain);
+const quantSelect = document.getElementById('quantSelect');
+const quantChips = document.getElementById('quantChips');
+const quantForall = document.getElementById('quantForall');
+const quantExists = document.getElementById('quantExists');
+
+const quantPreds = {
+  even:  x => x % 2 === 0,
+  odd:   x => x % 2 === 1,
+  prime: x => [2,3,5,7,11].includes(x),
+  gt6:   x => x > 6,
+  square:x => [1,4,9].includes(x),
+  div3:  x => x % 3 === 0
+};
+
+function renderQuantChips(){
+  const pred = quantPreds[quantSelect.value];
+  quantChips.innerHTML = '';
+  quantDomain.forEach(x=>{
+    const chip = document.createElement('div');
+    const truth = pred(x);
+    chip.className = 'chip' + (quantS.has(x) ? ' on' : '') + (truth ? ' p-true' : ' p-false');
+    chip.textContent = x;
+    chip.addEventListener('click', ()=>{
+      if(quantS.has(x)) quantS.delete(x); else quantS.add(x);
+      renderQuantChips();
+    });
+    quantChips.appendChild(chip);
+  });
+
+  const S = Array.from(quantS).sort((a,b)=>a-b);
+  if(S.length === 0){
+    quantForall.textContent = 'True — vacuously (S is empty, so there is nothing to fail the check on).';
+    quantExists.textContent = 'False — S is empty, so no witness can be found.';
+    return;
+  }
+  const counterexample = S.find(x=>!pred(x));
+  const witness = S.find(x=>pred(x));
+  quantForall.textContent = counterexample===undefined
+    ? `True — every element of S = {${S.join(', ')}} satisfies P(x).`
+    : `False — counterexample: P(${counterexample}) fails.`;
+  quantExists.textContent = witness===undefined
+    ? `False — no element of S = {${S.join(', ')}} satisfies P(x).`
+    : `True — witness: P(${witness}) holds.`;
+}
+quantSelect.addEventListener('change', renderQuantChips);
+document.getElementById('quantAll').addEventListener('click', ()=>{ quantS = new Set(quantDomain); renderQuantChips(); });
+document.getElementById('quantNone').addEventListener('click', ()=>{ quantS = new Set(); renderQuantChips(); });
+renderQuantChips();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Mappings Deform Space — Linear and Nonlinear United</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+a{ color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent-dim); }
+a:hover{ border-bottom-color:var(--accent); }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.matrix-display .block .v.yes{ color:var(--green); }
+.matrix-display .block .v.no{ color:var(--red); }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">MAPS &amp; DEFORMATION</div>
+  <button class="tab-btn active" data-tab="t1">I · The Picture</button>
+  <button class="tab-btn" data-tab="t2">II · Linear — One Deformation, Everywhere</button>
+  <button class="tab-btn" data-tab="t3">III · Nonlinear — Deformation That Moves</button>
+  <button class="tab-btn" data-tab="t4">IV · The Bridge</button>
+  <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t6">VI · Why It Matters</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>How Mappings Deform Space</h1>
+<div class="subtitle">what it means for a function to bend, stretch, and fold the space it acts on — and the one axis that separates every mapping into two families</div>
+
+<h2>A mapping is an instruction to relocate, not just to compute</h2>
+<p>Take a function \(F\), and instead of asking "what number does it return," ask "where does it send things." That reframing costs nothing when \(F:\mathbb R\to\mathbb R\) — a point on a line moving to another point on the same line is a thin picture. It stops being thin the instant the domain has real geometric structure: a plane, a sheet, a solid. Apply \(F\) to every point of a region <em>simultaneously</em>, not one at a time, and something you couldn't see before becomes visible — the region itself changes shape. Squares stop being square. Circles stretch into ellipses. Straight lines curve. That change of shape, tracked as a single global act rather than a sequence of individual input-output pairs, is what this essay means by <strong>deformation</strong>.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — mapping and deformation</span>
+<p>A <strong>mapping</strong> \(F:\mathbb R^n\to\mathbb R^m\) assigns to every point of its domain exactly one point of its codomain. To ask how \(F\) <strong>deforms space</strong> is to apply it to an entire region at once and compare the region's shape before and after — does it preserve lengths? angles? area or volume? straight lines? orientation? A mapping that answers "yes" to all of these is not deforming anything; every mapping that answers "no" to at least one is.</p>
+</div>
+
+<h3>Three questions a deformation can be asked</h3>
+<p>Almost every geometric fact about a mapping reduces to three questions, asked of a small patch of the domain and its image under \(F\):</p>
+<div class="ascii">   LENGTH        does a segment of length ℓ become a segment of length ℓ?
+                  (no, in general — it's rescaled by some factor)
+
+   ANGLE          does a right angle stay a right angle?
+                  (no, in general — it can be sheared open or closed)
+
+   AREA/VOLUME    does a patch of area A become a patch of area A?
+                  (no, in general — it's rescaled by some factor,
+                   possibly a <span class="hl">different</span> factor at every point)</div>
+<p>A mapping that answers "yes" to the first two is called an <strong>isometry</strong> — a rigid motion, a rotation or reflection or translation, nothing more. Isometries are the deformation-free special case, mentioned here mainly to set them aside: almost nothing interesting in mathematics is an isometry, and this essay is about the enormous territory that remains once you allow lengths, angles, and areas to genuinely change.</p>
+
+<div class="ascii">   BEFORE — a plain square grid                AFTER — under a typical mapping F
+
+   ┌─┬─┬─┬─┐                                    ╭─╮ ╭──╮ ╭╮
+   ├─┼─┼─┼─┤                                   ╱ ╱ ╱   ╲  ╲
+   ├─┼─┼─┼─┤              F                   ╱ ╱ ╱     ╲  ╲
+   ├─┼─┼─┼─┤        ────────▶                 ╲ ╲ ╲     ╱  ╱
+   └─┴─┴─┴─┘                                   ╲ ╲ ╲   ╱  ╱
+                                                 ╰─╯ ╰──╯ ╰╯
+
+   equal squares, equal spacing            unequal cells, curved edges —
+                                            <span class="hl">how</span> unequal, and <span class="hl">where</span>, is the
+                                            entire content of this essay</div>
+
+<h3>The one question this whole essay chases</h3>
+<p>Look at that warped grid on the right and one thing jumps out: the cells near the top don't look like the cells near the bottom. The deformation is not the same everywhere. That observation, taken seriously, is the single organizing idea behind everything that follows, and it splits every mapping in existence into exactly two families:</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the axis this essay is built around</span>
+<p>Some mappings perform the <em>exact same</em> deformation at every point of their domain — stretch by the same amount, in the same directions, no matter where you are standing. These are the <strong>linear</strong> mappings (Panel II). Every other mapping performs a deformation that changes as you move through the domain — the stretch factor, the stretch direction, even whether the map preserves or reverses orientation, can all be different at two nearby points. These are the <strong>nonlinear</strong> mappings (Panel III). The two families are not unrelated — Panel IV is the reason this essay exists: a nonlinear mapping's deformation, frozen at a single point and viewed close enough, turns out to be a linear one.</p>
+</div>
+
+<p>Two companion essays go deep on each half of this picture: <a href="../../algebra/linear_algebra/functions-as-mappings-essay.html">Functions as Mappings</a> derives the matrix from linearity itself, and <a href="jacobian-essay.html">the Jacobian essay</a> works out, with full rigor, how the local linear stand-in for a nonlinear map is constructed and proved to exist. This essay sits between them, and its job is narrower and more visual: to make the deformation itself — not the algebra underneath it — the thing you can see, compare, and drag around with your own hand.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Linear Mappings</h1>
+<div class="subtitle">one deformation, photographed once, valid at every point in the domain forever</div>
+
+<h2>What linearity actually buys you, geometrically</h2>
+<p>A map \(T:\mathbb R^n\to\mathbb R^m\) is <strong>linear</strong> if it respects addition and scaling of vectors:</p>
+<div class="katex-display" data-katex="T(\mathbf u+\mathbf v)=T(\mathbf u)+T(\mathbf v), \qquad T(c\,\mathbf u)=c\,T(\mathbf u)"></div>
+<p>Those two algebraic rules sound like bookkeeping, but they carry an immediate geometric consequence that is easy to miss the first time through: they say the deformation \(T\) performs cannot depend on <em>where</em> in the domain you look. Compare what happens near an arbitrary point \(\mathbf p\) to what happens near the origin. Displace \(\mathbf p\) by a small vector \(\mathbf h\); the change in output is</p>
+<div class="katex-display" data-katex="T(\mathbf p+\mathbf h) - T(\mathbf p) = T(\mathbf h)"></div>
+<p>by additivity alone — nothing approximate about it, and \(\mathbf p\) has vanished from the right-hand side entirely. The change in output caused by a nudge \(\mathbf h\) is exactly \(T(\mathbf h)\), regardless of where \(\mathbf p\) was. Move to a completely different starting point \(\mathbf q\) and nudge it by that same \(\mathbf h\): the change is again exactly \(T(\mathbf h)\), not one bit different. The deformation near \(\mathbf p\) and the deformation near \(\mathbf q\) are not merely similar — they are the identical linear map, every time, everywhere.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — uniform deformation</span>
+<p>Call a mapping's deformation <strong>uniform</strong> if the relationship between a small displacement \(\mathbf h\) at one point and the resulting change in output is the same linear function of \(\mathbf h\), no matter which point you start from. The computation above shows this is not an extra property some linear maps happen to have — it is a restatement of linearity itself. Linear maps are, by definition, exactly the uniformly deforming ones.</p>
+</div>
+
+<h3>The grid stays a grid</h3>
+<p>Uniform deformation has a direct visual signature: a linear map sends the square grid from Panel I to a grid of congruent parallelograms — same size, same shape, same orientation, tiled edge to edge, no matter how far from the origin you look. Compare this to the warped grid at the end of Panel I, where distant cells looked nothing alike.</p>
+<div class="ascii">   linear map                     nonlinear map (Panel III, for contrast)
+
+   ▱ ▱ ▱ ▱ ▱                      ╭╮  ╭─╮  ╭──╮
+   ▱ ▱ ▱ ▱ ▱                     ╱  ╲╱   ╲╱    ╲
+   ▱ ▱ ▱ ▱ ▱                    │    │    │     │
+   ▱ ▱ ▱ ▱ ▱                     ╲  ╱╲   ╱╲    ╱
+   ▱ ▱ ▱ ▱ ▱                      ╰╯  ╰─╯  ╰──╯
+
+   every ▱ is the <span class="hl">same</span>              every cell is <span class="hl">different</span> — size,
+   parallelogram, translated             shape, and orientation all
+   — same size, shape, tilt              drift as you move through
+   at every location                     the grid</div>
+
+<h3>The vocabulary: rotate, stretch, reflect, shear, project</h3>
+<p>A short list of archetypes covers almost every linear deformation you will meet, and every one of them can be built from a rotation composed with an independent stretch along perpendicular axes composed with another rotation — the singular value decomposition, \(T=U\Sigma V^{\mathsf T}\), proved and used in depth in the Jacobian essay's <a href="jacobian-essay.html">catalog of warps</a>. For the purposes of this essay, the important fact is simpler: whichever combination of these a given \(T\) performs, it performs that exact combination at every point.</p>
+<div class="ascii">   rotation      →  turns without stretching             det = ±1
+   scaling       →  stretches along fixed axes            det = product of factors
+   shear         →  tilts without changing area           det = 1
+   reflection    →  flips handedness                      det = −1
+   projection    →  crushes a whole direction to 0         det = 0</div>
+
+<h3>The determinant: a single number, valid everywhere</h3>
+<p>Because a linear map sends the unit square to a fixed parallelogram (spanned by the images of the basis vectors), that parallelogram's area — \(|\det T|\) — is the factor by which \(T\) rescales area, and by the same uniformity argument as above, it is <em>the same factor for every region in the domain</em>, not just the unit square. Double a region's area and its image's area doubles too; slide a region anywhere in the plane and its image's area doesn't change at all. One number, \(\det T\), is a complete and permanent answer to "how much does this map rescale area," valid at every location, forever.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the entire content of "linear": a mapping whose deformation can be summarized once, by one matrix, and that single summary remains exactly correct no matter where in the domain you go looking. Nothing in Panel III is capable of that — and the precise moment that capability breaks is where nonlinear mappings begin.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>Nonlinear Mappings</h1>
+<div class="subtitle">deformation that changes its mind as you move through the domain</div>
+
+<h2>Breaking uniformity on purpose</h2>
+<p>Take the polar map \(F(r,\theta) = (r\cos\theta,\ r\sin\theta)\), which turns a rectangle of \((r,\theta)\) values into a disk of \((x,y)\) points. Displace a point \((r,\theta)\) by a small \((\Delta r,\Delta\theta)\), and unlike Panel II, the resulting change in position depends on \(r\) itself:</p>
+<div class="katex-display" data-katex="F(r+\Delta r,\ \theta+\Delta\theta) - F(r,\theta) \;\approx\; \Delta r\,(\cos\theta,\sin\theta) \;+\; r\,\Delta\theta\,(-\sin\theta,\cos\theta)"></div>
+<p>Nudge \(\theta\) by a fixed amount \(\Delta\theta\) near \(r=0.1\) and the point barely moves; make the identical nudge \(\Delta\theta\) near \(r=5\) and the point sweeps a much longer arc. The very same displacement in the domain produces a small change in one place and a large change in another, purely because of <em>where</em> it was applied — precisely the possibility Panel II's uniformity argument ruled out for linear maps.</p>
+
+<div class="ascii">   DOMAIN — a (r,θ) rectangle             IMAGE — under F(r,θ)=(r cosθ, r sinθ)
+
+   θ ┌───────────────┐                          ⟋‾‾‾⟍
+     │ □ □ □ □ □ □ □ │            F           ⟋       ⟍
+     │ □ □ □ □ □ □ □ │      ────────▶        │  ╲  ╱   │
+     │ □ □ □ □ □ □ □ │                        │   ╲╱    │
+     └───────────────┘                          ⟍       ⟋
+       0        r →                               ⟍___⟋
+
+   equal little squares                    tiny wedges near the center,
+   in domain coordinates                   fat wedges near the rim —
+                                            <span class="hl">same</span> input square, <span class="hl">different</span>
+                                            output size depending on r</div>
+
+<h3>What breaks, concretely</h3>
+<p>Three things Panel II took for granted all fail at once, and it is worth naming them individually because each has its own consequence later in this essay:</p>
+<div class="ascii">   NO SINGLE MATRIX      there is no A with F(v) = Av for every v — the best
+                          linear description of F is different at every point
+
+   CURVED IMAGES          straight grid lines in the domain become curves in
+                          the image (the θ = const rays stay straight here,
+                          but the r = const circles are the giveaway)
+
+   POSITION-DEPENDENT
+   AREA FACTOR             a patch of domain area ΔrΔθ near radius r becomes
+                           image area ≈ r·ΔrΔθ — the scaling factor r is now
+                           a <span class="hl">function of position</span>, not a fixed number</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — a nonlinear map is not "a linear map done wrong"</span>
+<p>It's tempting to think of nonlinearity as some kind of defect or corruption of the tidy linear picture. It's more accurate, and more useful, to think of it as an <em>enrichment</em>: nonlinear maps can do things — curve a line, fold a plane over on itself, crush different regions by different amounts — that are simply outside a linear map's vocabulary no matter which matrix you pick. Polar coordinates, complex squaring, projections onto a curved surface, the flow of a turbulent fluid: none of these could be described by any single matrix, not because they're pathological, but because a single matrix was never expressive enough for the job.</p>
+</div>
+
+<h3>A second example: where the map folds</h3>
+<p>Complex squaring, \(F(x,y)=(x^2-y^2,\ 2xy)\), makes the position-dependence even more dramatic. Near \((1,0)\) the map acts like pure scaling by \(2\); near \((0,1)\) it acts like scaling by \(2\) combined with a \(90°\) rotation — two visibly different local behaviors, from the same formula, purely because the point changed. And at the origin itself the map crushes every direction to a single point at once: every line through the origin maps to a single ray, a collapse in dimension that no linear map with a nonzero determinant could ever produce, and that this particular map produces only at that one location.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>The honest way to describe a nonlinear map's deformation is not "the matrix is <em>A</em>" — there isn't one — but "the deformation is described by a <em>field</em>": a different linear snapshot attached to each point, varying continuously as the point varies. Panel IV makes that sentence precise, and gives the field a name.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>The Bridge</h1>
+<div class="subtitle">every nonlinear deformation is a linear deformation, one point at a time</div>
+
+<h2>Zooming in erases the difference</h2>
+<p>Panel III's polar-map patch, near radius \(r\), stretches domain area by a factor of exactly \(r\) — but only <em>near</em> that radius. Shrink the patch and that local factor becomes more and more exactly correct, because the map is smooth: over a small enough neighborhood, the amount by which \(r\) itself varies becomes negligible, and the deformation genuinely does look uniform, exactly the way Panel II described. This is not a coincidence specific to polar coordinates. It is the content of differentiability itself, and it holds for any smooth map \(F\):</p>
+<div class="katex-display" data-katex="F(\mathbf a+\mathbf h) \;=\; F(\mathbf a) \;+\; J_F(\mathbf a)\,\mathbf h \;+\; o(\|\mathbf h\|) \qquad \text{as } \mathbf h\to 0"></div>
+<p>\(J_F(\mathbf a)\) — the <strong>Jacobian</strong> — is a genuine linear map, an honest matrix of partial derivatives, and it is the <em>best possible</em> linear stand-in for \(F\)'s deformation near \(\mathbf a\): the error between the true deformation and this linear guess shrinks faster than the neighborhood itself. The full derivation, including the proof that continuous partial derivatives force this approximation to exist, lives in <a href="jacobian-essay.html">the Jacobian essay</a>; the fact worth sitting with here is what that equation says about the relationship between Panels II and III — <em>every</em> smooth nonlinear map is, up close, indistinguishable from some linear map. The two families this essay opened with are not opposites. One is what the other looks like through a sufficiently powerful microscope.</p>
+
+<div class="callout definition">
+<span class="callout-label">Claim — a linear map's own Jacobian is itself, everywhere</span>
+<p>If \(T\) is linear, \(T(\mathbf p+\mathbf h)-T(\mathbf p) = T(\mathbf h)\) exactly, with no error term at all — Panel II derived this directly from additivity. Comparing to the definition above, that means \(J_T(\mathbf p)=T\) for <em>every</em> point \(\mathbf p\), and the "\(o(\|\mathbf h\|)\)" error is identically zero rather than merely small. A linear map is the special, degenerate case where the field of local linear snapshots from Panel III has collapsed to a single constant snapshot, repeated at every point. Uniform deformation and "Jacobian equal to the map itself, everywhere" are two descriptions of the identical fact.</p>
+</div>
+
+<h3>The determinant becomes a function of position</h3>
+<p>Panel II's single number \(\det T\) has a direct nonlinear analogue: \(\det J_F(\mathbf a)\), the local area- (or volume-) scaling factor at \(\mathbf a\), computed exactly the way Panel III's polar example suggested. For the polar map this determinant is \(r\) itself — growing without bound as you move outward, vanishing at exactly one point, the origin, where the map genuinely does collapse a whole neighborhood down to nothing. That vanishing point is called a <strong>critical point</strong>, and it is the nonlinear generalization of Panel II's projection archetype (\(\det=0\)): the difference is that a linear projection crushes an entire direction <em>everywhere</em>, while a nonlinear map's determinant can vanish at some points and not others, because it is free to change from place to place.</p>
+<div class="ascii">   LINEAR                                NONLINEAR
+
+   det T = 3          (constant,          det J_F(a) = r     (a function of
+   every point)                           position — here, distance from
+                                           the origin)
+
+   T singular         ⟺  det T = 0        F has a critical point at a
+   ⟺  crushes SOME       for the ENTIRE       ⟺  det J_F(a) = 0
+   direction, at          domain, always       at THIS location only —
+   EVERY point                                 nearby points may be fine</div>
+
+<h3>An instructive exception: maps built out of literal linear pieces</h3>
+<p>Not every nonlinear map needs the approximation machinery above — some are nonlinear only in the sense of being <em>assembled</em> from several exactly linear pieces glued along boundaries, with no smoothing in between. The rectified linear unit, \(\text{ReLU}(x)=\max(0,x)\), and every neural network layer built from it, is exactly this: on each side of the crease at \(0\), the function is dead linear, and the "nonlinearity" is entirely the fact of which linear piece is active. Zooming in near the crease itself does <em>not</em> converge to a single linear map the way Panel II's picture requires — the left- and right-hand slopes disagree no matter how far you zoom — so this case sits pointedly outside the smooth story above, a reminder that "nonlinear" is a larger category than "differentiable nonlinear," even though the differentiable case is where nearly all of the interesting structure in this essay lives.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the sentence this essay has been building toward</span>
+<p>A nonlinear mapping is not a different kind of object from a linear one — it is a linear map that changes its mind as you move. Panel II's entire vocabulary (rotate, stretch, shear, reflect, project, and the determinant that measures all of it) is not superseded by nonlinear geometry; it is <em>reused</em> at every single point, with the specific rotation, stretch, and determinant now varying smoothly from location to location. Calculus is not a separate subject from linear algebra bolted on afterward — it is the bookkeeping system for tracking how linear algebra's answer changes as the point you're asking about moves.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Interactive Lab</h1>
+<div class="subtitle">switch between a linear and a nonlinear map, drag the point, and watch whether the matrix cares where you are</div>
+
+<p>Pick any entry from the dropdown and drag the point <strong>P</strong> in the left canvas. The right canvas shows the true image of the small square around P (in <span style="color:var(--red)">rust</span>) against the flat parallelogram the Jacobian alone predicts (in <span style="color:var(--blue)">blue</span>) — and the readout below tells you, in plain words, whether that matrix is the same no matter where you drag P, or whether it changes as you move.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">DOMAIN — drag P</div>
+      <canvas id="domainCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">IMAGE UNDER F</div>
+      <canvas id="imageCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Mapping F(u,v)</label>
+      <select id="mapSelect">
+        <optgroup label="linear — uniform deformation">
+          <option value="identity">identity — (u, v)</option>
+          <option value="rotate">rotate 45° — (.71u−.71v, .71u+.71v)</option>
+          <option value="scale">scale — (1.6u, 0.6v)</option>
+          <option value="shear" selected>shear — (u + 0.6v, v)</option>
+          <option value="reflect">reflect — (u, −v)</option>
+        </optgroup>
+        <optgroup label="nonlinear — deformation varies by location">
+          <option value="square">complex squaring — (u²−v², 2uv)</option>
+          <option value="polar">polar — (u·cos v, u·sin v)</option>
+          <option value="saddle">saddle — (u+v, u·v)</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Neighborhood size</label>
+      <input type="range" id="sizeSlider" min="4" max="90" value="55">
+      <span class="readout" id="sizeReadout">0.55</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">POINT P</div>
+      <div class="v" id="pointReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">JACOBIAN J(P)</div>
+      <div class="v" id="jacReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">|det J(P)|</div>
+      <div class="v" id="detReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">SAME MATRIX EVERYWHERE?</div>
+      <div class="v" id="uniformReadout">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> full grid image (global)</span>
+    <span><span class="swatch" style="background:var(--red)"></span> actual image of the small square</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> J(P)-predicted parallelogram</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Select <code>shear</code> and drag P anywhere you like: the rust and blue shapes are already identical everywhere, and <code>J(P)</code> never changes — Panel II's uniformity, live. Now select <code>square</code> or <code>polar</code> and drag P from near the origin out toward the edge: <code>J(P)</code> visibly changes with every drag, and the rust and blue shapes only agree closely once you shrink the neighborhood slider — Panel IV's linearization, live. Same lab, same two shapes to compare; the only thing that changed is which family of map you handed it.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Why This Relationship Matters</h1>
+<div class="subtitle">the same rotate-stretch-reflect vocabulary, spoken in a position-dependent dialect, everywhere you look</div>
+
+<h2>Locally flat, globally curved</h2>
+<p>The Panel IV relationship is not a curiosity confined to textbooks — it's the working assumption behind an enormous range of applied mathematics, precisely because a field of local linear maps is so much easier to compute with than an intractable nonlinear one.</p>
+
+<div class="ascii">   MAP PROJECTIONS       a flat map of the whole globe necessarily distorts
+                          area or angle somewhere (no isometry from a sphere
+                          to a plane exists) — but a city map, covering a
+                          tiny patch, is nearly undistorted: local linearity,
+                          made cartographic
+
+   GENERAL RELATIVITY     spacetime is globally curved, but the equivalence
+                          principle says any small enough region looks flat
+                          — literally Panel IV's linearization, applied to
+                          the geometry of the universe itself
+
+   NEWTON'S METHOD        solving a nonlinear equation F(x)=0 by repeatedly
+                          solving the LINEAR equation J_F(x)·Δx = −F(x)
+                          instead — using the local snapshot to take a step,
+                          then re-taking the snapshot at the new point
+
+   COMPUTER GRAPHICS      shading a curved surface uses the LOCAL tangent
+                          plane and normal vector at each point — a curved
+                          object is rendered as a mesh of tiny flat (linear)
+                          patches, glued smoothly enough to fool the eye</div>
+
+<h3>The picture, one more time</h3>
+<p>Every example above follows the identical script: a globally nonlinear object is genuinely, unavoidably complicated to describe all at once, but describing it <em>one small patch at a time</em>, using nothing but linear algebra at each patch, turns out to be both accurate and computationally tractable. The nonlinear whole is real; so is the fact that it's built, patch by patch, from the vocabulary of Panel II.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — where to go deeper</span>
+<p>This essay stayed deliberately visual — one axis (uniform vs. position-dependent deformation), one bridge (the Jacobian), one lab to feel both halves with your own hands. For the algebra of <em>why</em> a linear map reduces to a matrix at all — bases, coordinates, the column-by-column recipe — see <a href="../../algebra/linear_algebra/functions-as-mappings-essay.html">Functions as Mappings</a>. For the calculus of <em>why</em> the Jacobian is forced to exist, the full proof from continuous partial derivatives, the Inverse Function Theorem, and the change-of-variables formula that the polar map's determinant \(r\) feeds directly into, see <a href="jacobian-essay.html">the Jacobian essay</a>.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>Every deformation of space, however wild it looks globally, is spoken in the same small alphabet: rotate, stretch along some set of axes, reflect. A linear map recites that alphabet once and means it everywhere. A nonlinear map recites a different sentence in that same alphabet at every single point, and calculus is nothing more than the discipline of tracking how the sentence changes as you move.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderLab();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ INTERACTIVE LAB ============
+const domainCv = document.getElementById('domainCanvas');
+const imageCv = document.getElementById('imageCanvas');
+const dctx = domainCv.getContext('2d');
+const ictx = imageCv.getContext('2d');
+const mapSelect = document.getElementById('mapSelect');
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeReadout = document.getElementById('sizeReadout');
+const pointReadout = document.getElementById('pointReadout');
+const jacReadout = document.getElementById('jacReadout');
+const detReadout = document.getElementById('detReadout');
+const uniformReadout = document.getElementById('uniformReadout');
+
+let P = {u:1, v:1};
+let dragging = false;
+
+const R2 = Math.SQRT1_2;
+const maps = {
+  identity: { F:(u,v)=>[u,v],                    J:()=>[[1,0],[0,1]],        maxAbs:2.4, linear:true },
+  rotate:   { F:(u,v)=>[R2*u-R2*v, R2*u+R2*v],    J:()=>[[R2,-R2],[R2,R2]],   maxAbs:2.4, linear:true },
+  scale:    { F:(u,v)=>[1.6*u, 0.6*v],            J:()=>[[1.6,0],[0,0.6]],   maxAbs:3.6, linear:true },
+  shear:    { F:(u,v)=>[u+0.6*v, v],              J:()=>[[1,0.6],[0,1]],     maxAbs:3.6, linear:true },
+  reflect:  { F:(u,v)=>[u,-v],                    J:()=>[[1,0],[0,-1]],      maxAbs:2.4, linear:true },
+  square:   { F:(u,v)=>[u*u-v*v, 2*u*v],          J:(u,v)=>[[2*u,-2*v],[2*v,2*u]], maxAbs:8,   linear:false },
+  polar:    { F:(u,v)=>[u*Math.cos(v), u*Math.sin(v)], J:(u,v)=>[[Math.cos(v),-u*Math.sin(v)],[Math.sin(v),u*Math.cos(v)]], maxAbs:2.5, linear:false },
+  saddle:   { F:(u,v)=>[u+v, u*v],                J:(u,v)=>[[1,1],[v,u]],    maxAbs:6,   linear:false }
+};
+
+const DOMAIN_RANGE = 2.2;
+function worldToScreenDomain(x,y){
+  const s = 300 / (2*DOMAIN_RANGE);
+  return [150 + x*s, 150 - y*s];
+}
+function screenToWorldDomain(px,py){
+  const s = 300 / (2*DOMAIN_RANGE);
+  return [(px-150)/s, (150-py)/s];
+}
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function drawDomain(){
+  dctx.clearRect(0,0,300,300);
+  dctx.fillStyle = cssVar('--bg-elevated');
+  dctx.fillRect(0,0,300,300);
+
+  dctx.strokeStyle = cssVar('--border');
+  dctx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.5){
+    let [x1,y1] = worldToScreenDomain(g,-2.2);
+    let [x2,y2] = worldToScreenDomain(g,2.2);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+    [x1,y1] = worldToScreenDomain(-2.2,g);
+    [x2,y2] = worldToScreenDomain(2.2,g);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+  }
+  dctx.strokeStyle = cssVar('--ink-faint');
+  dctx.lineWidth = 1.2;
+  let [ax1,ay1] = worldToScreenDomain(-2.2,0), [ax2,ay2] = worldToScreenDomain(2.2,0);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+  [ax1,ay1] = worldToScreenDomain(0,-2.2); [ax2,ay2] = worldToScreenDomain(0,2.2);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+
+  const h = sizeSlider.value/100;
+  const corners = [[P.u-h,P.v-h],[P.u+h,P.v-h],[P.u+h,P.v+h],[P.u-h,P.v+h]];
+  dctx.strokeStyle = cssVar('--blue');
+  dctx.lineWidth = 1.5;
+  dctx.beginPath();
+  corners.forEach(([x,y],i)=>{
+    const [sx,sy] = worldToScreenDomain(x,y);
+    i===0 ? dctx.moveTo(sx,sy) : dctx.lineTo(sx,sy);
+  });
+  dctx.closePath(); dctx.stroke();
+
+  const [px,py] = worldToScreenDomain(P.u,P.v);
+  dctx.fillStyle = cssVar('--accent');
+  dctx.beginPath(); dctx.arc(px,py,5,0,7); dctx.fill();
+}
+
+function drawImage(){
+  ictx.clearRect(0,0,300,300);
+  ictx.fillStyle = cssVar('--bg-elevated');
+  ictx.fillRect(0,0,300,300);
+
+  const map = maps[mapSelect.value];
+  const scale = 300/(2*map.maxAbs);
+  const w2s = (x,y)=>[150+x*scale, 150-y*scale];
+
+  ictx.strokeStyle = cssVar('--ink-faint');
+  ictx.globalAlpha = 0.35;
+  ictx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.4){
+    ictx.beginPath();
+    for(let t=-2.2;t<=2.2;t+=0.05){
+      const [x,y]=map.F(g,t); const [sx,sy]=w2s(x,y);
+      t===-2.2 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+    ictx.beginPath();
+    for(let t=-2.2;t<=2.2;t+=0.05){
+      const [x,y]=map.F(t,g); const [sx,sy]=w2s(x,y);
+      t===-2.2 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+  }
+  ictx.globalAlpha = 1;
+
+  const h = sizeSlider.value/100;
+  const Fp = map.F(P.u,P.v);
+  const J = map.J(P.u,P.v);
+
+  ictx.strokeStyle = cssVar('--red');
+  ictx.lineWidth = 2;
+  ictx.beginPath();
+  const N = 40;
+  const path = [];
+  for(let i=0;i<=N;i++) path.push([P.u-h+2*h*i/N, P.v-h]);
+  for(let i=0;i<=N;i++) path.push([P.u+h, P.v-h+2*h*i/N]);
+  for(let i=0;i<=N;i++) path.push([P.u+h-2*h*i/N, P.v+h]);
+  for(let i=0;i<=N;i++) path.push([P.u-h, P.v+h-2*h*i/N]);
+  path.forEach(([u,v],i)=>{
+    const [x,y] = map.F(u,v); const [sx,sy]=w2s(x,y);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+
+  ictx.strokeStyle = cssVar('--blue');
+  ictx.lineWidth = 2;
+  ictx.setLineDash([5,3]);
+  const localCorners = [[-h,-h],[h,-h],[h,h],[-h,h]];
+  ictx.beginPath();
+  localCorners.forEach(([du,dv],i)=>{
+    const ox = J[0][0]*du + J[0][1]*dv;
+    const oy = J[1][0]*du + J[1][1]*dv;
+    const [sx,sy] = w2s(Fp[0]+ox, Fp[1]+oy);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+  ictx.setLineDash([]);
+
+  const [fpx,fpy] = w2s(Fp[0],Fp[1]);
+  ictx.fillStyle = cssVar('--accent');
+  ictx.beginPath(); ictx.arc(fpx,fpy,5,0,7); ictx.fill();
+}
+
+function updateReadouts(){
+  const map = maps[mapSelect.value];
+  const J = map.J(P.u,P.v);
+  pointReadout.textContent = `(${P.u.toFixed(2)}, ${P.v.toFixed(2)})`;
+  jacReadout.innerHTML = `[ ${J[0][0].toFixed(2).padStart(6)}  ${J[0][1].toFixed(2).padStart(6)} ]<br>[ ${J[1][0].toFixed(2).padStart(6)}  ${J[1][1].toFixed(2).padStart(6)} ]`;
+  const det = Math.abs(J[0][0]*J[1][1] - J[0][1]*J[1][0]);
+  detReadout.textContent = det.toFixed(3);
+  sizeReadout.textContent = (sizeSlider.value/100).toFixed(2);
+  uniformReadout.textContent = map.linear ? 'YES — drag P, matrix never changes' : 'NO — drag P, matrix changes with it';
+  uniformReadout.className = 'v ' + (map.linear ? 'yes' : 'no');
+}
+
+function renderLab(){
+  drawDomain();
+  drawImage();
+  updateReadouts();
+}
+
+function domainEventToWorld(e){
+  const rect = domainCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (300/rect.width);
+  const py = (clientY-rect.top) * (300/rect.height);
+  return screenToWorldDomain(px,py);
+}
+domainCv.addEventListener('mousedown', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.6){ dragging = true; }
+});
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+});
+window.addEventListener('mouseup', ()=> dragging=false);
+domainCv.addEventListener('touchstart', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.8){ dragging = true; }
+}, {passive:true});
+domainCv.addEventListener('touchmove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+}, {passive:true});
+window.addEventListener('touchend', ()=> dragging=false);
+
+mapSelect.addEventListener('change', renderLab);
+sizeSlider.addEventListener('input', renderLab);
+
+renderLab();
+</script>
+
+</body>
+</html>

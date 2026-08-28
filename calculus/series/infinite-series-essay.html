@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infinite Series — How an Endless Sum Can Land on a Finite Number</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre-wrap; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">INFINITE SERIES</div>
+  <button class="tab-btn active" data-tab="s1">I · Adding Forever</button>
+  <button class="tab-btn" data-tab="s2">II · What Convergence Means</button>
+  <button class="tab-btn" data-tab="s3">III · The Geometric Series</button>
+  <button class="tab-btn" data-tab="s4">IV · Tests for Convergence</button>
+  <button class="tab-btn" data-tab="s5">V · Computing the Sum</button>
+  <button class="tab-btn" data-tab="s6">VI · Absolute vs Conditional</button>
+  <button class="tab-btn" data-tab="s7">VII · Interactive Lab</button>
+  <button class="tab-btn" data-tab="s8">VIII · Worked Examples</button>
+  <button class="tab-btn" data-tab="s9">IX · Where This Leads</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="s1">
+<h1>Adding Forever</h1>
+<div class="subtitle">how a sum with no last term can still be a single, definite number</div>
+
+<h2>Zeno's arrow, and the sum it hides</h2>
+<p>Before Achilles can reach the tortoise, he must first cover half the remaining distance. Then half of what's left after that. Then half of what's left after <em>that</em> — forever, an unending chain of steps, each one strictly necessary before the next can even begin. Zeno's point was that this looks like infinitely many tasks stuffed into a finite race, and infinitely many of anything, he argued, can never be finished. And yet Achilles obviously does catch the tortoise. Something in that argument has to give, and the fix turns out to be a genuinely subtle fact about addition: the distances being added, \(\frac12+\frac14+\frac18+\cdots\), don't need infinitely much room to fit into — they add up to exactly \(1\).</p>
+
+<h2>The one operation ordinary arithmetic never actually defines</h2>
+<p>Addition, \(+\), is a binary operation: it consumes exactly two numbers and returns one. Adding three numbers is really two applications of \(+\), one after the other; adding a million numbers is \(999{,}999\) applications, still a finite chain no matter how long. Nowhere in the axioms of the real numbers is there a rule for adding infinitely many numbers <em>at once</em>. So when someone writes \(\sum_{k=1}^\infty a_k\), they are not invoking some operation arithmetic already supplies — they are asking a question, and the theory of limits is the only thing equipped to answer it.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — partial sum</span>
+<p>For a sequence of numbers \(a_1,a_2,a_3,\dots\), the <strong>\(N\)-th partial sum</strong> is the ordinary, finite, entirely unmysterious sum of the first \(N\) terms:</p>
+<div class="katex-display" data-katex="S_N = \sum_{k=1}^{N} a_k = a_1+a_2+\cdots+a_N"></div>
+<p>Nothing exotic has happened yet — \(S_N\) is computed exactly the way any finite sum is.</p>
+</div>
+
+<h2>Reframing infinite addition as a limit already understood</h2>
+<p>The trick that makes the rest of this essay possible is to stop asking "what is the sum of infinitely many numbers" and start asking a completely different, well-posed question instead: what does the <em>sequence</em> \(S_1,S_2,S_3,\dots\) of partial sums do as \(N\) grows? That's an ordinary limit-of-a-sequence question, no different in kind from any other sequence limit.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — nothing new is being invented here</span>
+<p>The entire subject of infinite series is not a new branch of arithmetic bolted onto the real numbers. It is a single, extraordinarily fruitful application of the limit of a sequence — where the sequence being fed into the limit machinery happens to be built by repeated partial addition. Once the limit of a sequence already has a rigorous meaning, \(\sum_{k=1}^\infty a_k\) has a meaning purely by definition, and nothing further needs to be invented to make sense of it. Every question this essay asks — does a series converge, what does it converge to, does the order of the terms matter — is secretly a question about the sequence \((S_N)\), never about "infinite addition" as a primitive operation in its own right.</p>
+</div>
+
+<div class="ascii">   PARTIAL SUMS CLIMBING TOWARD A LIMIT
+
+   S₄ ┤              ●───
+   S₃ ┤          ●───┘
+   S₂ ┤      ●───┘          <span class="hl">┈┈┈┈┈┈┈┈┈┈┈┈┈  limit L</span>
+   S₁ ┤  ●───┘
+      └──┴───┴───┴───┴───▶  N
+         1   2   3   4
+
+   each step is a genuine, finite addition — the SEQUENCE
+   of steps is what has a limit, not any single "infinite sum"</div>
+
+<h2>Zeno's resolution</h2>
+<p>With \(a_k=\left(\frac12\right)^k\), the partial sums are \(S_1=\frac12\), \(S_2=\frac34\), \(S_3=\frac78\), and in general \(S_N=1-\left(\frac12\right)^N\) (Panel III derives this properly, as a special case of a much more general formula). As \(N\to\infty\), \(\left(\frac12\right)^N\to0\), so \(S_N\to1\). Zeno's argument quietly assumed that infinitely many steps must take an infinite amount of something — distance, time, effort — to complete. Nothing in the definition of a limit requires that, and the geometric shrinking of each successive step is precisely what lets infinitely many of them fit into a finite distance. Motion was never paradoxical; it was a convergent series, and the resolution had been sitting inside the definition of a limit the whole time.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="s2">
+<h1>What Convergence Means</h1>
+<div class="subtitle">the ε–N test applied to partial sums, and the one thing every convergent series is forced to do</div>
+
+<h2>The formal definition, inherited wholesale from limits</h2>
+<p>Series convergence borrows its definition directly from sequence convergence — the same \(\varepsilon\)–\(N\) machinery the companion Limits &amp; Sequences essay builds from scratch, applied here to the specific sequence \((S_N)\) of partial sums.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — convergence of a series</span>
+<p>The series \(\sum_{k=1}^\infty a_k\) <strong>converges</strong> to \(L\) if, for every \(\varepsilon&gt;0\), there exists \(N_0\) such that</p>
+<div class="katex-display" data-katex="n\ge N_0 \implies |S_n-L|&lt;\varepsilon"></div>
+<p>— equivalently, \(\lim_{N\to\infty}S_N=L\). If no such \(L\) exists, the series <strong>diverges</strong>. Nothing about individual terms \(a_k\) appears anywhere in this definition directly; convergence is a statement purely about the partial-sum sequence.</p>
+</div>
+
+<h2>A necessary condition: the terms must vanish</h2>
+<p>Since \(a_k=S_k-S_{k-1}\) for \(k\ge2\), if \(S_k\to L\) then \(a_k=S_k-S_{k-1}\to L-L=0\). This gives an immediate, cheap screening tool: if \(a_k\) does not tend to \(0\), the series cannot possibly converge, full stop, no further test required.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the converse is false, and famously so</span>
+<p>The harmonic series \(\sum_{k=1}^\infty\frac1k\) has terms \(\frac1k\to0\) — the necessary condition is satisfied — and yet it diverges. Group the terms in doubling blocks:</p>
+<div class="katex-display" data-katex="1+\frac12+\Big(\frac13+\frac14\Big)+\Big(\frac15+\frac16+\frac17+\frac18\Big)+\cdots"></div>
+<p>Each parenthesized block of length \(2^m\), running from \(\frac1{2^m+1}\) to \(\frac1{2^{m+1}}\), consists of \(2^m\) terms each at least as large as the smallest one in the block, \(\frac1{2^{m+1}}\), so the block sums to at least \(2^m\cdot\frac1{2^{m+1}}=\frac12\). Infinitely many blocks, each contributing at least \(\frac12\), force the partial sums past any bound — \(S_{2^m}\ge 1+\frac{m}{2}\), which grows without limit. (This grouping argument is due to Nicole Oresme, roughly six centuries before ε–N proofs existed.) Terms shrinking to zero is necessary for convergence; it is nowhere close to sufficient.</p>
+</div>
+
+<h2>Cauchy's criterion: certifying convergence without knowing the limit</h2>
+<p>Because the real numbers are complete, a sequence converges if and only if it is Cauchy — its terms eventually cluster arbitrarily close to <em>each other</em>, with no need to name the limit in advance. Applied to partial sums, this becomes a statement purely about tail sums:</p>
+<div class="katex-display" data-katex="\Big|\sum_{k=n+1}^{m}a_k\Big| = |S_m-S_n| &lt; \varepsilon \qquad \text{for all } m&gt;n\ge N_0"></div>
+
+<div class="callout note">
+<span class="callout-label">Note — why completeness is doing real work here</span>
+<p>Over the rational numbers alone, a Cauchy sequence of partial sums need not converge to anything <em>rational</em> — the sequence can march steadily toward a hole in the number line. It is precisely the completeness of \(\mathbb R\) (every Cauchy sequence of reals converges to a real number) that guarantees a Cauchy series of real terms converges to an actual real number, not merely toward one. Series convergence, in this sense, is one of the more direct payoffs of having built the reals to be complete in the first place.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="s3">
+<h1>The Geometric Series</h1>
+<div class="subtitle">the one infinite sum computable exactly by hand, and the yardstick every later test is measured against</div>
+
+<h2>Deriving the closed form by a multiplication trick</h2>
+<p>Consider \(S_N=a+ar+ar^2+\cdots+ar^{N-1}\), a sum of \(N\) terms, each one \(r\) times the last. Multiply the whole sum by \(r\) and subtract it from the original — every interior term cancels, leaving only the first and the one term pushed past the end:</p>
+<div class="katex-display" data-katex="S_N - rS_N = a - ar^N \implies (1-r)S_N = a(1-r^N)"></div>
+<p>which, for \(r\ne1\), rearranges into an exact, finite formula with no limit involved yet:</p>
+<div class="katex-display" data-katex="S_N = \frac{a(1-r^N)}{1-r}"></div>
+
+<h2>Taking the limit</h2>
+<p>Everything now hinges on what \(r^N\) does as \(N\to\infty\). If \(|r|&lt;1\), \(r^N\to0\), and the formula collapses cleanly:</p>
+<div class="callout definition">
+<span class="callout-label">Theorem — the geometric series</span>
+<div class="katex-display" data-katex="\sum_{k=0}^\infty ar^k = \frac{a}{1-r} \qquad \text{whenever } |r|&lt;1"></div>
+<p>If \(|r|\ge1\) the series diverges: for \(r&gt;1\) or \(r&lt;-1\), \(|r^N|\) grows without bound; for \(r=1\), \(S_N=aN\to\pm\infty\) (unless \(a=0\)); for \(r=-1\), \(S_N\) oscillates forever between \(a\) and \(0\) and never settles.</p>
+</div>
+
+<h2>Zeno's paradox, cashed in exactly</h2>
+<p>Take \(a=\frac12\), \(r=\frac12\): both inside the convergent range, so</p>
+<div class="katex-display" data-katex="\sum_{k=1}^\infty \left(\frac12\right)^k = \frac{1/2}{1-1/2} = 1"></div>
+<p>— the exact computation Panel I only sketched. The infinitely many steps of Achilles' approach genuinely do sum to a finite distance, and now there's a formula, not just an intuition, behind that fact.</p>
+
+<h2>Why this one series matters more than its formula alone suggests</h2>
+<p>The geometric series is the single fully-computable series that every other convergence test in Panel IV is, underneath, secretly comparing against: the ratio and root tests both ask "does this series eventually behave like a geometric one, and with what ratio?" It is also, quite literally, the Taylor series of \(\frac1{1-x}\) — the companion Taylor Series essay derives the identical formula from a completely different direction, by matching derivatives at a point rather than by the subtract-and-cancel trick used here, and finds the same series both ways. Two unrelated derivations landing on the same object is a recurring theme, not a coincidence: a convergent series, once its closed form is known, doesn't care how that form was found.</p>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="s4">
+<h1>Tests for Convergence</h1>
+<div class="subtitle">how to decide whether an infinite sum settles down, without ever computing what it settles down to</div>
+
+<h2>Two separate questions, and this panel only answers one</h2>
+<p>"Does \(\sum a_k\) converge?" and "what does it converge <em>to</em>?" are entirely different questions, and almost every classical test answers only the first. That's not a shortcoming — knowing a limit exists is exactly the information needed before spending any effort trying to compute it, and Panel V is devoted to the much harder second question.</p>
+
+<h2>Comparison test — bounding one series by another</h2>
+<p>If \(0\le a_k\le b_k\) for all \(k\) past some point, then the partial sums of \(a_k\) are increasing and bounded above by the (convergent) partial sums of \(b_k\), so they converge by the monotone convergence theorem for sequences — a bounded, monotonic sequence always has a limit. Read the other way, the same inequality says: if \(\sum a_k\) diverges, \(\sum b_k\) must diverge too, since it can only be even larger.</p>
+
+<h2>Ratio and root tests — comparing against a geometric series in disguise</h2>
+<p>Define \(L=\lim_{k\to\infty}\left|\frac{a_{k+1}}{a_k}\right|\). If \(L&lt;1\), the terms are eventually shrinking by a factor close to \(L\) at every step — close enough that \(|a_k|\) is eventually bounded above by a genuine convergent geometric series with ratio strictly between \(L\) and \(1\), so \(\sum a_k\) converges (absolutely, a distinction Panel VI makes precise). If \(L&gt;1\), the terms are eventually growing, so \(a_k\not\to0\) and the series diverges by Panel II's necessary condition. If \(L=1\), the test is silent — genuinely inconclusive, since both convergent and divergent series can produce \(L=1\). The root test asks the same question with \(L=\lim_{k\to\infty}\sqrt[k]{|a_k|}\), and reaches identical conclusions by an almost identical argument.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — Panel III was the engine all along</span>
+<p>Both tests are, at bottom, asking one question: does this series eventually look like a geometric series, and with what ratio? The moment \(L&lt;1\) is established, the entire convergence argument is just Panel III's comparison theorem applied to a nearby geometric series — nothing about the ratio or root tests is a genuinely new idea, only a new way of detecting when Panel III's formula secretly applies.</p>
+</div>
+
+<h2>Integral test — trading a sum for an area</h2>
+<p>If \(f\) is positive and decreasing on \([1,\infty)\) with \(a_k=f(k)\), then stacking rectangles of height \(f(k)\) against the graph of \(f\) — exactly the construction the companion Riemann Sum essay builds in full — sandwiches the partial sums between two versions of the same integral:</p>
+<div class="katex-display" data-katex="\int_1^{N+1} f(x)\,dx \;\le\; \sum_{k=1}^N f(k) \;\le\; f(1)+\int_1^N f(x)\,dx"></div>
+<p>so the series and the improper integral \(\int_1^\infty f(x)\,dx\) converge or diverge together. Applied to \(f(x)=1/x^p\), this settles the convergence of every <strong>p-series</strong> in one stroke:</p>
+<div class="callout definition">
+<span class="callout-label">Theorem — the p-series test</span>
+<div class="katex-display" data-katex="\sum_{k=1}^\infty \frac{1}{k^p} \ \text{converges} \iff p&gt;1"></div>
+<p>since \(\int_1^\infty x^{-p}\,dx\) converges exactly when \(p&gt;1\) (it evaluates to \(\frac1{p-1}\)) and diverges to \(+\infty\) otherwise. The harmonic series is the boundary case \(p=1\), which is exactly why the integral test correctly refuses to guarantee its convergence.</p>
+</div>
+
+<h2>Alternating series test (Leibniz)</h2>
+<p>If \(a_k\ge0\), \(a_k\) is eventually decreasing, and \(a_k\to0\), then \(\sum(-1)^{k+1}a_k\) converges — the partial sums oscillate but with shrinking amplitude, squeezing in on a limit from both sides. A useful bonus falls out for free: the error from stopping after \(N\) terms is bounded by the very next term left out,</p>
+<div class="katex-display" data-katex="|S-S_N| \le a_{N+1}"></div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Five tests, what each one needs, and what it can conclude</caption>
+<thead><tr><th>Test</th><th>Requires</th><th>Conclusion</th></tr></thead>
+<tbody>
+<tr><td>Comparison</td><td>\(0\le a_k\le b_k\)</td><td>convergence/divergence transfers between the two series</td></tr>
+<tr><td>Ratio</td><td>\(L=\lim|a_{k+1}/a_k|\)</td><td>converges if \(L&lt;1\), diverges if \(L&gt;1\), silent if \(L=1\)</td></tr>
+<tr><td>Root</td><td>\(L=\lim\sqrt[k]{|a_k|}\)</td><td>same verdicts as the ratio test</td></tr>
+<tr><td>Integral</td><td>\(a_k=f(k)\), \(f\) positive, decreasing</td><td>series and \(\int_1^\infty f\) converge or diverge together</td></tr>
+<tr><td>Alternating (Leibniz)</td><td>alternating sign, \(a_k\downarrow0\)</td><td>converges, with a computable error bound</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="s5">
+<h1>Computing the Sum</h1>
+<div class="subtitle">convergence tells you a number exists; only a handful of tricks tell you which number</div>
+
+<h2>The gap between knowing and finding</h2>
+<p>Every test in Panel IV certifies that a limit \(L\) exists without ever producing it — much the way the Intermediate Value Theorem certifies a root exists without locating it. Certifying existence and computing the value are genuinely different tasks, and the second one has far fewer general-purpose tools.</p>
+
+<h2>Telescoping — when consecutive terms cancel</h2>
+<p>If \(a_k\) can be written as \(b_k-b_{k+1}\) for some sequence \(b_k\), the partial sums collapse almost entirely: \(S_N=(b_1-b_2)+(b_2-b_3)+\cdots+(b_N-b_{N+1})=b_1-b_{N+1}\), with every interior \(b_k\) canceling against its neighbor. Taking \(N\to\infty\) needs nothing more than knowing what \(b_{N+1}\) does:</p>
+<div class="katex-display" data-katex="\sum_{k=1}^\infty (b_k-b_{k+1}) = b_1 - \lim_{k\to\infty}b_k"></div>
+<p>Partial fractions routinely manufacture exactly this shape. For \(a_k=\frac1{k(k+1)}\), the decomposition \(\frac1{k(k+1)}=\frac1k-\frac1{k+1}\) is already telescoping, with \(b_k=\frac1k\to0\):</p>
+<div class="katex-display" data-katex="\sum_{k=1}^\infty \frac1{k(k+1)} = \frac11 - 0 = 1"></div>
+
+<h2>Recognizing a series as a power series in disguise</h2>
+<p>The single most powerful sum-finding trick is to notice that a numeric series is just a known function's power series evaluated at one particular point — the companion Taylor Series essay builds an entire catalogue of such series from derivatives at \(0\). Once \(e^x=\sum_{k=0}^\infty\frac{x^k}{k!}\) is known, no further computation is needed to find \(\sum\frac1{k!}\): just substitute \(x=1\).</p>
+<div class="katex-display" data-katex="e^x=\sum_{k=0}^\infty\frac{x^k}{k!} \;\xrightarrow{\ x=1\ }\; \sum_{k=0}^\infty\frac1{k!}=e"></div>
+<p>A numeric series that looked like it needed its own bespoke argument turns out to already be answered, hiding inside a function whose value at that point is already familiar.</p>
+
+<h2>Differentiating or integrating a known series term by term</h2>
+<p>The same closure property the Taylor essay leans on — that a convergent power series can be differentiated or integrated term by term within its radius of convergence — turns still more numeric series into direct evaluations. Differentiate the geometric series \(\sum_{k=0}^\infty x^k=\frac1{1-x}\) term by term:</p>
+<div class="katex-display" data-katex="\sum_{k=1}^\infty kx^{k-1} = \frac{d}{dx}\frac{1}{1-x} = \frac{1}{(1-x)^2}"></div>
+<p>and substitute \(x=\frac12\): the left side becomes \(\sum_{k=1}^\infty k\left(\frac12\right)^{k-1}=4\), so \(\sum_{k=1}^\infty \frac{k}{2^k}=2\) — a sum with no obvious telescoping structure of its own, found entirely by differentiating a series that was already in hand.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — most convergent series have no elementary closed form at all</span>
+<p>\(\sum_{k=1}^\infty\frac1{k^2}\) converges instantly by the p-series test — but pinning down its exact value, \(\frac{\pi^2}6\), required Euler and a genuinely surprising argument (comparing coefficients in a product expansion of \(\sin x\), sketched in Panel VIII). The closely related \(\sum_{k=1}^\infty\frac1{k^3}\) converges by the identical test, yet whether its value (Apéry's constant) can be written in terms of \(\pi\) and elementary constants at all remains, to this day, unknown to be impossible or possible in any simpler closed form beyond Apéry's own irrationality proof. Convergence, established by Panel IV, is comparatively easy. Evaluation, this panel's subject, is often genuinely hard — and sometimes still open.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="s6">
+<h1>Absolute vs Conditional Convergence</h1>
+<div class="subtitle">why the order of the terms stops being irrelevant once a sum runs forever</div>
+
+<h2>Two grades of convergence</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — absolute and conditional convergence</span>
+<p>A series \(\sum a_k\) is <strong>absolutely convergent</strong> if \(\sum|a_k|\) converges. It is <strong>conditionally convergent</strong> if \(\sum a_k\) converges but \(\sum|a_k|\) does not.</p>
+</div>
+<p>The alternating harmonic series \(\sum_{k=1}^\infty\frac{(-1)^{k+1}}{k}\) is the standard example of the second kind: it converges by the Leibniz test (Panel IV), but stripping away the signs recovers the harmonic series, which Panel II already proved diverges. Convergence here depends essentially on the alternation — on the specific order in which positive and negative terms arrive.</p>
+
+<h2>Absolute convergence implies convergence</h2>
+<p>This is not automatic from the definition and is worth a line of proof: by the triangle inequality, \(\big|\sum_{k=m}^n a_k\big|\le\sum_{k=m}^n|a_k|\). If \(\sum|a_k|\) converges, its tail sums shrink to \(0\) by Panel II's Cauchy criterion, and the inequality above forces the tail sums of \(\sum a_k\) to shrink to \(0\) as well — so \(\sum a_k\) is Cauchy, hence convergent. Absolute convergence is strictly the stronger condition; every absolutely convergent series converges, but the alternating harmonic series shows the reverse implication fails.</p>
+
+<h2>Riemann's rearrangement theorem — when commutativity breaks</h2>
+<p>Finite addition is commutative without exception: order a finite list of numbers however you like, and the sum is unchanged. Infinite addition inherits that safety only when convergence is absolute.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — a conditionally convergent series can be rearranged to sum to anything</span>
+<p>If \(\sum a_k\) converges conditionally, its positive terms alone sum to \(+\infty\) and its negative terms alone sum to \(-\infty\) (if either sum were finite, the other tail would force absolute convergence). That imbalance is exactly enough room to reorder the series into summing to <em>any</em> target real number \(T\) whatsoever: add positive terms, in their original order, until the running total first exceeds \(T\); then add negative terms until it first drops back below \(T\); then positive again until it exceeds \(T\) once more, and so on forever. Because \(a_k\to0\), each overshoot and undershoot gets smaller, and the reordered partial sums converge to \(T\) exactly. The same construction can just as easily be tuned to make the rearranged series diverge, or oscillate forever. Absolutely convergent series have no such freedom — every rearrangement of an absolutely convergent series converges to the identical sum, with no exceptions.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — this is where Panel I's framing pays off</span>
+<p>A series was never "the sum of a set of numbers" — a set has no built-in order, so a sum over a set would automatically be order-independent by definition. A series is the limit of one specific <em>sequence</em> of partial sums, built by adding terms in one specific order. Finite sums don't notice this distinction, because finite addition is commutative outright and every ordering gives the identical finite total. Conditional convergence is the precise borderline where that comfortable equivalence between "sum over a set" and "sum in a sequence" breaks down — the exact point where infinite addition stops being a harmless extension of finite addition and starts depending on decisions finite addition never had to make.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="s7">
+<h1>Interactive Lab</h1>
+<div class="subtitle">watch the partial sums climb, stall, or run away — and see which convergence test is quietly deciding the outcome</div>
+
+<p>Pick a series, adjust its parameter where one applies, and drag the number of terms \(N\). The canvas plots the partial sum \(S_N\) in <span style="color:var(--blue)">blue</span> against the limit \(L\), when one exists, as a <span style="color:var(--purple)">dashed purple</span> line.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">PARTIAL SUMS Sₙ AS N GROWS</div>
+      <canvas id="cvSeries" width="560" height="360" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Series</label>
+      <select id="sSelect">
+        <option value="geo" selected>geometric: rᵏ</option>
+        <option value="harm">harmonic: 1/k</option>
+        <option value="altharm">alternating harmonic: (−1)ᵏ⁺¹/k</option>
+        <option value="pser">p-series: 1/kᵖ</option>
+        <option value="tele">telescoping: 1/(k(k+1))</option>
+      </select>
+    </div>
+    <div class="control-row" id="sParamRow">
+      <label id="sParamLabel">ratio r</label>
+      <input type="range" id="sParamSlider" min="-1.5" max="1.5" step="0.01" value="0.6">
+      <span class="readout" id="sParamReadout">0.60</span>
+    </div>
+    <div class="control-row">
+      <label>terms N</label>
+      <input type="range" id="sNSlider" min="5" max="60" step="1" value="25">
+      <span class="readout" id="sNReadout">25</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block"><div class="k">S_N (LAST PARTIAL SUM)</div><div class="v" id="sSNOut">…</div></div>
+    <div class="block"><div class="k">a_N (LAST TERM)</div><div class="v" id="sANOut">…</div></div>
+    <div class="block"><div class="k">LIMIT</div><div class="v" id="sLimitOut">…</div></div>
+    <div class="block" style="flex:1 1 100%;"><div class="k">TEST VERDICT</div><div class="v" id="sTestOut">…</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue)"></span> Sₙ (partial sum)</span>
+    <span><span class="swatch" style="background:var(--purple)"></span> limit L, if finite</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Start with the geometric series and drag \(r\) past \(1\) — the partial sums peel away from flat and shoot upward, exactly Panel III's divergence case made visible. Then switch to the harmonic series and push \(N\) to its maximum: the curve keeps climbing, unmistakably not settling down, even though it climbs so slowly that it's easy to mistake for convergence over a short stretch — a good visual reminder of why the necessary condition \(a_k\to0\) in Panel II is not sufficient. Finally, try the p-series with \(p\) dragged just above \(1\): convergence is technically guaranteed, but watch how sluggishly \(S_N\) approaches its limit compared to the geometric series — a qualitative preview of just how much easier "does it converge" is than "how fast, and to what."</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="s8">
+<h1>Worked Examples</h1>
+<div class="subtitle">five convergent sums, computed by five different tricks from Panel V</div>
+
+<h2>Telescoping: 1/(k(k+1))</h2>
+<p>Already derived in full in Panel V; restated here as the cleanest possible telescoping example:</p>
+<div class="katex-display" data-katex="\sum_{k=1}^\infty \frac1{k(k+1)} = \sum_{k=1}^\infty\left(\frac1k-\frac1{k+1}\right) = 1"></div>
+
+<h2>The Basel problem: 1/k²</h2>
+<p>The p-series test guarantees convergence instantly (\(p=2&gt;1\)), but the exact value is a genuinely famous result, first found by Euler in 1734. The idea, only sketched here: the function \(\frac{\sin x}{x}\) has zeros exactly at \(x=\pm\pi,\pm2\pi,\pm3\pi,\dots\), so it can be written as an infinite product \(\prod_{k=1}^\infty\left(1-\frac{x^2}{k^2\pi^2}\right)\); expanding both that product and \(\sin x\)'s own Taylor series (from the companion Taylor Series essay) in powers of \(x\), and matching the coefficient of \(x^2\) on both sides, forces:</p>
+<div class="katex-display" data-katex="\sum_{k=1}^\infty \frac1{k^2} = \frac{\pi^2}{6} \approx 1.644934"></div>
+<p>A convergence test that takes one line can sit next to an exact value that took one of history's best mathematicians a genuinely original argument to find — Panel V's warning about the gap between the two questions, made concrete.</p>
+
+<h2>1/k!: reading a sum off a function already known</h2>
+<p>Directly from Panel V's substitution into \(e^x\):</p>
+<div class="katex-display" data-katex="\sum_{k=0}^\infty \frac1{k!} = e \approx 2.718282"></div>
+
+<h2>The alternating harmonic series, at the very edge of convergence</h2>
+<p>The companion Taylor Series essay derives \(\ln(1+x)=\sum_{k=1}^\infty\frac{(-1)^{k-1}}{k}x^k\) with radius of convergence \(R=1\) — meaning the series is only guaranteed to represent \(\ln(1+x)\) strictly inside \(|x|&lt;1\), and \(x=1\) sits exactly on the boundary. Abel's theorem supplies the missing justification: if a power series converges at a boundary point, its sum there equals the limit of the function from just inside the disk. Plugging \(x=1\) in is legitimate for exactly that reason, and it gives:</p>
+<div class="katex-display" data-katex="\ln 2 = \sum_{k=1}^\infty \frac{(-1)^{k-1}}{k} = 1-\frac12+\frac13-\frac14+\cdots \approx 0.693147"></div>
+<p>— the conditionally convergent series from Panel VI, now with its exact value pinned down, and a reminder that computing a sum sometimes requires justifying a substitution right at the edge of where a formula is safe to use.</p>
+
+<h2>A numeric geometric series, for contrast</h2>
+<div class="katex-display" data-katex="\sum_{k=0}^\infty \left(\frac13\right)^k = \frac{1}{1-1/3} = \frac32"></div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Five sums and the technique that found each exact value</caption>
+<thead><tr><th>Series</th><th>Value</th><th>Technique</th></tr></thead>
+<tbody>
+<tr><td>\(\sum 1/(k(k+1))\)</td><td>\(1\)</td><td>telescoping via partial fractions</td></tr>
+<tr><td>\(\sum 1/k^2\)</td><td>\(\pi^2/6\)</td><td>matching coefficients against \(\sin x/x\)</td></tr>
+<tr><td>\(\sum 1/k!\)</td><td>\(e\)</td><td>evaluate \(e^x\)'s series at \(x=1\)</td></tr>
+<tr><td>\(\sum(-1)^{k-1}/k\)</td><td>\(\ln 2\)</td><td>evaluate \(\ln(1+x)\)'s series at the boundary, via Abel</td></tr>
+<tr><td>\(\sum (1/3)^k\)</td><td>\(3/2\)</td><td>geometric series formula</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+
+<!-- ============ PANEL 9 ============ -->
+<section class="panel" id="s9">
+<h1>Where This Leads</h1>
+<div class="subtitle">series whose terms depend on x, series that converge in a different sense entirely, and sums assigned to series that don't converge at all</div>
+
+<h2>Power series: everything in this essay, with x left in</h2>
+<p>A power series \(\sum_{k=0}^\infty c_k(x-a)^k\) is exactly the object the companion Taylor Series essay builds, and its radius of convergence is computed by nothing more than this essay's ratio test, applied to the coefficients rather than to a fixed numeric series: \(L=\lim_k\left|\frac{c_{k+1}}{c_k}\right||x-a|\), and the series converges (absolutely) whenever \(L&lt;1\), which rearranges to \(|x-a|&lt;R\) for \(R=1/\lim_k|c_{k+1}/c_k|\). Every tool in Panel IV of this essay was, without being named as such, already the machinery underneath that essay's entire theory of convergence.</p>
+
+<h2>Fourier series: a different notion of "settling down"</h2>
+<p>The companion Functions as Mappings essay introduces expanding a periodic function in the basis \(\{\sin kx,\cos kx\}\). Convergence there is a substantially subtler question than anything in this essay — pointwise convergence of a Fourier series can fail even at points where the function is perfectly well-behaved, and the series is more naturally judged to converge in an averaged, whole-interval sense (in norm) instead. The question "does an infinite sum settle down" survives the move to Fourier series completely intact; the acceptable notion of "settle down" is what has to be enlarged.</p>
+
+<h2>Generating functions: series with no convergence claim at all</h2>
+<p>The Taylor essay's closing panel introduces the <strong>generating function</strong>, a formal power series used purely as bookkeeping for a sequence's coefficients, with no claim whatsoever that the sum converges to anything. That's a genuine departure from every series in this essay, all of which cared, above everything else, about exactly what happens as \(N\to\infty\). A generating function sidesteps the question entirely and mines algebraic structure instead.</p>
+
+<h2>Assigning values to divergent series, carefully</h2>
+<p>Some series that diverge in the classical sense used throughout this essay can still be assigned a value by a different, explicitly non-classical procedure — and it's worth being precise about what that means. Grandi's series \(1-1+1-1+\cdots\) has partial sums oscillating forever between \(1\) and \(0\), so it diverges outright by Panel II's definition. Its <strong>Cesàro sum</strong> — the limit of the <em>average</em> of the partial sums, rather than of the partial sums themselves — exists and equals \(\frac12\):</p>
+<div class="katex-display" data-katex="C=\lim_{N\to\infty}\frac1N\sum_{n=1}^N S_n = \frac12"></div>
+<p>Cesàro summation genuinely extends ordinary convergence — every classically convergent series is also Cesàro-summable to the same value — but a Cesàro sum is not a claim that the original series "really" converges to that number in the sense Panel II defined; it's a different, explicitly weaker notion, applied precisely because the stronger one failed. The famous-looking claim that \(1+2+3+\cdots=-\frac1{12}\), assigned via a still more exotic procedure called zeta function regularization, is the same story at a further remove: the series diverges without any ambiguity in the ordinary sense of this essay, and the value \(-\frac1{12}\) is what a specific analytic-continuation procedure assigns it, not a hidden true sum this essay's tools somehow missed.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — companion essays</span>
+<p>This essay leaned throughout on three companions: the Limits &amp; Sequences essay, for the \(\varepsilon\)–\(N\) definition of convergence this entire subject is built on; the Riemann Sum essay, for the rectangle-versus-curve argument behind the integral test; and the Taylor Series essay, for nearly every worked example in Panel VIII and the entire idea of a power series in Panel IX.</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>An infinite series was never really about addition — arithmetic only ever adds finitely many things at a time. It's about one specific sequence, the partial sums, and whether that sequence has a limit. Every tool in this essay, from the ε–N definition through the ratio test to Abel's theorem, exists to answer that one question, or — once it's been answered — to actually find the number on the other side of it.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['s1','s2','s3','s4','s5','s6','s7','s8','s9'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawSeries();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ---------- shared helpers ----------
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function fmtN(n, d){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+
+// ============ INTERACTIVE LAB: PARTIAL SUMS ============
+const SCFG = {
+  geo:     { hasParam:true,  paramLabel:'ratio r', paramMin:-1.5, paramMax:1.5, paramStep:0.01, paramDefault:0.6,  Nmin:5,  Nmax:60,  Ndefault:25  },
+  harm:    { hasParam:false, Nmin:10, Nmax:500, Ndefault:200 },
+  altharm: { hasParam:false, Nmin:5,  Nmax:200, Ndefault:50  },
+  pser:    { hasParam:true,  paramLabel:'power p', paramMin:0.2, paramMax:4, paramStep:0.05, paramDefault:1.5, Nmin:10, Nmax:300, Ndefault:100 },
+  tele:    { hasParam:false, Nmin:5,  Nmax:100, Ndefault:20  }
+};
+
+let SL = { type:'geo', param:0.6, N:25 };
+
+const sSelect = document.getElementById('sSelect');
+const sParamRow = document.getElementById('sParamRow');
+const sParamLabel = document.getElementById('sParamLabel');
+const sParamSlider = document.getElementById('sParamSlider');
+const sParamReadout = document.getElementById('sParamReadout');
+const sNSlider = document.getElementById('sNSlider');
+const sNReadout = document.getElementById('sNReadout');
+const cvSeries = document.getElementById('cvSeries');
+const sctx = cvSeries.getContext('2d');
+const sSNOut = document.getElementById('sSNOut');
+const sANOut = document.getElementById('sANOut');
+const sLimitOut = document.getElementById('sLimitOut');
+const sTestOut = document.getElementById('sTestOut');
+
+function computeSeries(type, param, N){
+  const terms = new Array(N);
+  for(let i=0;i<N;i++){
+    const k = i+1;
+    let a;
+    switch(type){
+      case 'geo': a = Math.pow(param, i); break;
+      case 'harm': a = 1/k; break;
+      case 'altharm': a = (i%2===0 ? 1 : -1)/k; break;
+      case 'pser': a = 1/Math.pow(k, param); break;
+      case 'tele': a = 1/(k*(k+1)); break;
+    }
+    terms[i] = a;
+  }
+  const partial = new Array(N);
+  let s = 0;
+  for(let i=0;i<N;i++){ s += terms[i]; partial[i] = s; }
+
+  let limit = { finite:false, value:null, note:'' };
+  switch(type){
+    case 'geo':
+      if(Math.abs(param) < 1){ limit = { finite:true, value: 1/(1-param), note:'a/(1−r)' }; }
+      else if(param >= 1){ limit = { finite:false, value:null, note:'diverges (S_N → ∞)' }; }
+      else { limit = { finite:false, value:null, note:'diverges (no limit — oscillates or grows)' }; }
+      break;
+    case 'harm':
+      limit = { finite:false, value:null, note:'diverges (S_N ~ ln N + γ → ∞)' };
+      break;
+    case 'altharm':
+      limit = { finite:true, value: Math.log(2), note:'ln 2 (conditionally convergent)' };
+      break;
+    case 'pser':
+      if(param > 1){
+        if(Math.abs(param-2) < 1e-6){
+          limit = { finite:true, value: Math.PI*Math.PI/6, note:'π²/6 (Basel problem, p=2)' };
+        } else {
+          const M = 200000;
+          let s2 = 0;
+          for(let k=1;k<=M;k++) s2 += 1/Math.pow(k, param);
+          s2 += Math.pow(M, 1-param)/(param-1);
+          limit = { finite:true, value: s2, note:'no elementary closed form in general — numeric estimate' };
+        }
+      } else {
+        limit = { finite:false, value:null, note:'diverges (p ≤ 1)' };
+      }
+      break;
+    case 'tele':
+      limit = { finite:true, value:1, note:'1 (telescopes: 1/k − 1/(k+1))' };
+      break;
+  }
+  return { terms, partial, limit };
+}
+
+function testNote(type, param){
+  switch(type){
+    case 'geo': return `Ratio test: |r| = ${Math.abs(param).toFixed(2)} ${Math.abs(param)<1 ? '< 1 ⇒ converges' : '≥ 1 ⇒ diverges'}`;
+    case 'harm': return 'p-series test: p = 1 ⇒ diverges (the boundary case)';
+    case 'altharm': return 'Alternating series test: 1/k ↓ 0 ⇒ converges (conditionally, not absolutely)';
+    case 'pser': return `p-series test: p = ${param.toFixed(2)} ${param>1 ? '> 1 ⇒ converges' : '≤ 1 ⇒ diverges'}`;
+    case 'tele': return 'Telescoping: S_N = 1 − 1/(N+1) → 1 ⇒ converges';
+  }
+  return '';
+}
+
+function onSeriesChange(){
+  const cfg = SCFG[sSelect.value];
+  SL.type = sSelect.value;
+
+  sParamRow.style.display = cfg.hasParam ? 'flex' : 'none';
+  if(cfg.hasParam){
+    SL.param = cfg.paramDefault;
+    sParamLabel.textContent = cfg.paramLabel;
+    sParamSlider.min = cfg.paramMin; sParamSlider.max = cfg.paramMax; sParamSlider.step = cfg.paramStep;
+    sParamSlider.value = SL.param;
+    sParamReadout.textContent = SL.param.toFixed(2);
+  }
+
+  SL.N = cfg.Ndefault;
+  sNSlider.min = cfg.Nmin; sNSlider.max = cfg.Nmax; sNSlider.step = 1; sNSlider.value = SL.N;
+  sNReadout.textContent = SL.N;
+
+  drawSeries();
+}
+sSelect.addEventListener('change', onSeriesChange);
+sParamSlider.addEventListener('input', ()=>{ SL.param = +sParamSlider.value; sParamReadout.textContent = SL.param.toFixed(2); drawSeries(); });
+sNSlider.addEventListener('input', ()=>{ SL.N = +sNSlider.value; sNReadout.textContent = SL.N; drawSeries(); });
+
+function drawSeries(){
+  const { type, param, N } = SL;
+  const { terms, partial, limit } = computeSeries(type, param, N);
+
+  const xMin = 1, xMax = N;
+  let yMin = Math.min(0, ...partial);
+  let yMax = Math.max(0, ...partial);
+  if(limit.finite){ yMin = Math.min(yMin, limit.value); yMax = Math.max(yMax, limit.value); }
+  let pad = (yMax - yMin) * 0.15;
+  if(!(pad > 0)) pad = 1;
+  yMin -= pad; yMax += pad;
+
+  const W = cvSeries.width, H = cvSeries.height;
+  const marginL = 52, marginR = 18, marginT = 18, marginB = 30;
+  const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+  const xs = n => marginL + (n - xMin) / Math.max(1, xMax - xMin) * plotW;
+  const ys = v => marginT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+
+  sctx.clearRect(0, 0, W, H);
+  sctx.fillStyle = cssVar('--bg-elevated'); sctx.fillRect(0, 0, W, H);
+
+  // gridlines: 4 horizontal, 4 vertical
+  sctx.strokeStyle = cssVar('--border'); sctx.lineWidth = 1;
+  sctx.fillStyle = cssVar('--ink-faint');
+  sctx.font = '10px monospace';
+  for(let i=0;i<=4;i++){
+    const v = yMin + (yMax - yMin) * i / 4;
+    const y = ys(v);
+    sctx.beginPath(); sctx.moveTo(marginL, y); sctx.lineTo(marginL + plotW, y); sctx.stroke();
+    sctx.fillText(v.toFixed(2), 4, y + 3);
+  }
+  for(let i=0;i<=4;i++){
+    const n = Math.round(xMin + (xMax - xMin) * i / 4);
+    const x = xs(n);
+    sctx.beginPath(); sctx.moveTo(x, marginT); sctx.lineTo(x, marginT + plotH); sctx.stroke();
+    sctx.fillText(String(n), x - 8, marginT + plotH + 18);
+  }
+  if(yMin <= 0 && yMax >= 0){
+    sctx.strokeStyle = cssVar('--ink-faint'); sctx.lineWidth = 1.2;
+    sctx.beginPath(); sctx.moveTo(marginL, ys(0)); sctx.lineTo(marginL + plotW, ys(0)); sctx.stroke();
+  }
+
+  // limit line
+  if(limit.finite){
+    sctx.strokeStyle = cssVar('--purple'); sctx.lineWidth = 1.3; sctx.setLineDash([5,4]);
+    sctx.beginPath(); sctx.moveTo(marginL, ys(limit.value)); sctx.lineTo(marginL + plotW, ys(limit.value)); sctx.stroke();
+    sctx.setLineDash([]);
+  }
+
+  // partial sum curve
+  sctx.strokeStyle = cssVar('--blue'); sctx.lineWidth = 2.2; sctx.lineJoin = 'round';
+  sctx.beginPath();
+  for(let i=0;i<N;i++){
+    const x = xs(i+1), y = ys(partial[i]);
+    if(i===0) sctx.moveTo(x,y); else sctx.lineTo(x,y);
+  }
+  sctx.stroke();
+
+  if(N <= 60){
+    sctx.fillStyle = cssVar('--blue');
+    for(let i=0;i<N;i++){
+      sctx.beginPath(); sctx.arc(xs(i+1), ys(partial[i]), 2.4, 0, 7); sctx.fill();
+    }
+  }
+
+  sSNOut.textContent = fmtN(partial[N-1], 6);
+  sANOut.textContent = fmtN(terms[N-1], 6);
+  sLimitOut.textContent = limit.finite ? `${fmtN(limit.value,6)}  (${limit.note})` : limit.note;
+  sTestOut.textContent = testNote(type, param);
+}
+
+// ---------- init ----------
+onSeriesChange();
+</script>
+
+</body>
+</html>

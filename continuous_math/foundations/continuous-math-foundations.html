@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Continuous Mathematics — The Real Line, Limits, and the Grammar of Smooth Change</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#07110f; --bg-elevated:#0d1a17; --bg-card:#11221e;
+  --border:#1d3830; --border-soft:#152922;
+  --ink:#dcf1ea; --ink-dim:#93b6ab; --ink-faint:#5c8074;
+  --accent:#4fd8bf; --accent-dim:#329c89;
+  --blue:#6f9bc9; --green:#7fbf8f; --red:#d17a7a; --purple:#b389d9;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#eef8f5; --bg-elevated:#e1f0ea; --bg-card:#f8fdfb;
+  --border:#c0ddd2; --border-soft:#d3e9e0;
+  --ink:#0d241d; --ink-dim:#38594e; --ink-faint:#688b7f;
+  --accent:#0e8f76; --accent-dim:#279d84;
+  --blue:#3a5f8a; --green:#3f7d55; --red:#a1453a; --purple:#6a4d94;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(7,17,15,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(238,248,245,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:840px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+h4{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+ul, ol{ margin:0 0 16px 26px; color:var(--ink-dim); }
+li{ margin-bottom:8px; }
+a{ color:var(--accent); }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{ font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right; }
+.mini-toggle{
+  font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s;
+}
+.mini-toggle.on{ color:var(--accent); border-color:var(--accent-dim); }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+.info-line{
+  font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin-top:14px;
+  padding:10px 14px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+}
+.info-line .v{ color:var(--accent); }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+td.mono, th.mono{ font-family:var(--mono); }
+td.yes{ color:var(--green); font-weight:600; font-family:var(--mono); }
+td.no{ color:var(--red); font-weight:600; font-family:var(--mono); }
+
+/* ---- formal proof list ---- */
+.proof-list{ counter-reset:pline; list-style:none; margin:18px 0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.proof-list li{ counter-increment:pline; display:flex; gap:14px; padding:10px 16px; border-bottom:1px solid var(--border-soft); font-family:var(--mono); font-size:13.5px; align-items:baseline; background:var(--bg-card); }
+.proof-list li:nth-child(even){ background:var(--bg-elevated); }
+.proof-list li:last-child{ border-bottom:none; }
+.proof-list li::before{ content:counter(pline); color:var(--ink-faint); min-width:18px; text-align:right; }
+.proof-list .pf-stmt{ flex:1; color:var(--ink); }
+.proof-list .pf-just{ color:var(--accent); font-size:12px; white-space:nowrap; }
+@media(max-width:640px){ .proof-list li{ flex-wrap:wrap; } .proof-list .pf-just{ margin-left:32px; } }
+
+/* ---- dual comparison grid ---- */
+.dual-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0; margin:22px 0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.dual-grid > div{ padding:16px 20px; }
+.dual-grid > div:first-child{ border-right:1px solid var(--border); background:var(--bg-card); }
+.dual-grid h4{ margin-bottom:8px; }
+@media(max-width:640px){ .dual-grid{grid-template-columns:1fr;} .dual-grid>div:first-child{border-right:none;border-bottom:1px solid var(--border);} }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">CONTINUOUS MATH</div>
+  <button class="tab-btn active" data-tab="c1">I · Why Continuous Math</button>
+  <button class="tab-btn" data-tab="c2">II · The Real Line</button>
+  <button class="tab-btn" data-tab="c3">III · Limits</button>
+  <button class="tab-btn" data-tab="c4">IV · Continuity</button>
+  <button class="tab-btn" data-tab="c5">V · Smoothness Hierarchy</button>
+  <button class="tab-btn" data-tab="c6">VI · Size of the Continuum</button>
+  <button class="tab-btn" data-tab="c7">VII · Continuous vs Discrete</button>
+  <button class="tab-btn" data-tab="c8">VIII · Where They Meet</button>
+  <button class="tab-btn" data-tab="c9">IX · Interactive Lab</button>
+  <button class="tab-btn" data-tab="c10">X · Summary &amp; Reference</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="c1">
+<h1>The Mathematics of the Unbroken</h1>
+<div class="subtitle">why a field obsessed with limits, infinitesimal closeness, and a number line with no gaps underlies almost everything that moves, flows, or changes smoothly</div>
+
+<h2>Discrete structure versus continuous change</h2>
+<p>Elsewhere on this site, a companion essay on <a href="../../discrete_math/foundations/discrete-math-foundations.html">discrete mathematics</a> opens by describing objects that are separated, countable, and come with a definite "next one" — the integer after 3 is 4, with nothing of the same kind squeezed in between. <strong>Continuous mathematics</strong> studies the opposite kind of structure: quantities that can be sliced infinitely finely, where between any two values there is always another value in between. A car's speed changes continuously; a temperature curve has no gaps; the real number line has no "next" number after 3, because 3.0001, 3.00001, and infinitely many others sit strictly between 3 and any number you might nominate as its successor.</p>
+<p>That single difference — is there a next one, or isn't there? — is not a minor technicality. It forces the two subjects to build almost entirely different toolkits from the ground up. Discrete mathematics reaches for induction, counting, and the pigeonhole principle. Continuous mathematics reaches for limits, completeness, and the real number line's total absence of gaps. Neither toolkit works on the other subject's objects, and this essay exists to explain why, and to trace how continuous mathematics builds its own machinery from scratch to cope with a world that has no smallest step.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the dimmer switch, revisited</span>
+<p>A plain on/off light switch is a discrete device: exactly two states, nothing reachable in between, and "what is the brightness half a millimeter into the flip?" is not a meaningful question about the switch. A dimmer is a genuinely continuous device: turning the knob a hair's width changes the brightness by a hair's width, and there is no smallest possible turn — between any two knob positions, however close, sits another position you haven't tried yet. Continuous mathematics is the mathematics of dimmers, not switches — and it turns out that almost every quantity nature hands us by default (position, temperature, voltage, time itself) behaves like a dimmer, not a switch. Discreteness, when it shows up in the physical world, is usually something we impose — a digital sensor sampling a continuous signal, a bank account rounding to the cent — rather than something the underlying quantity does on its own.</p>
+</div>
+
+<h2>What continuous mathematics actually contains</h2>
+<p>"Continuous mathematics" is not one theorem or one technique; it is an umbrella over several interlocking branches, all built on top of the same gapless, infinitely-divisible number line.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>The branches this essay draws from, and what each one is for</caption>
+<thead><tr><th>Branch</th><th>What it studies</th><th>A representative question</th></tr></thead>
+<tbody>
+<tr><td>Real analysis</td><td>the real numbers, their completeness, and the limit as a rigorous operation</td><td>Why does <em>every</em> bounded increasing sequence of reals converge to something?</td></tr>
+<tr><td>Calculus (differential &amp; integral)</td><td>instantaneous rates of change and continuous accumulation</td><td>What does "speed at a single instant" even mean, if no time actually elapses?</td></tr>
+<tr><td>Differential equations</td><td>laws that relate a quantity to its own continuous rate of change</td><td>If a population's growth rate is proportional to its size, how does the population evolve?</td></tr>
+<tr><td>Topology &amp; metric spaces</td><td>"closeness" and continuity stripped of any particular numerical distance</td><td>Can a coffee cup be continuously deformed into a donut without tearing it?</td></tr>
+<tr><td>Measure theory &amp; probability</td><td>assigning size or likelihood to sets too irregular for ordinary length or area</td><td>What is the probability that a randomly thrown dart lands on <em>exactly</em> one point?</td></tr>
+<tr><td>Complex analysis</td><td>calculus extended to functions of a complex variable</td><td>Why do functions differentiable once, in the complex sense, turn out to be infinitely differentiable?</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Why this is the grammar underneath the physical world</h2>
+<p>The companion essay on discrete mathematics argues that discrete structures are the grammar computation is written in — logic gates evaluate propositional formulas, database queries are quantifiers in disguise. Continuous mathematics plays the equivalent role for the <em>physical</em> and <em>natural</em> sciences. Newton's laws of motion are differential equations relating a body's position to its own continuously changing velocity and acceleration. Maxwell's equations describing electromagnetism are partial differential equations over continuous fields filling all of space. A control system that keeps an aircraft level, a model of how a disease spreads through a population, a financial model pricing an option, a neural network's gradient descent — all of these are, underneath their engineering packaging, statements written in the language of derivatives, integrals, and limits.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — "continuous mathematics is the grammar of the natural sciences"</span>
+<p>Just as discrete mathematics opens nearly every computer-science curriculum, continuous mathematics — calculus, differential equations, real analysis — opens nearly every physics, engineering, and quantitative-science curriculum, and for the same reason: it is not optional background, it is the language the field's core statements are written in. "The rate at which a quantity changes is proportional to how much of it there currently is" is not a sentence that can even be stated without a derivative; "the total heat that flowed through this surface over this hour" cannot be stated without an integral. Panels III through V build exactly this vocabulary from scratch.</p>
+</div>
+
+<h2>What this essay covers</h2>
+<p>Panel II builds the real number line itself: why the rationals, despite being packed infinitely densely, still have holes, and what "completeness" means as the property that plugs every one of them. Panel III introduces the limit — the single idea that lets continuous mathematics talk rigorously about infinite processes without ever invoking an actual infinity. Panel IV turns limits into the formal definition of continuity, catalogs the ways a function can fail to be continuous, and states the two theorems (the Intermediate Value and Extreme Value Theorems) that continuity buys you for free. Panel V places continuity at the bottom of a strict hierarchy of "niceness" running up through differentiability to full analyticity. Panel VI measures the real line itself, showing that its infinity is a strictly larger one than the infinity of the integers. Panel VII is the direct, side-by-side comparison this essay is really built around: matched concepts across the continuous and discrete worlds, concept by concept. Panel VIII shows the two worlds are not sealed off from each other — how continuous problems get discretized for computation, and how discrete structures dissolve into continuous limits. Panel IX is hands-on: two small interactive tools for feeling the difference between a dense line and a discrete one, and for watching discrete samples converge into a continuous curve. Panel X closes with a compact reference table and pointers to the deeper essays on this site.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="c2">
+<h1>The Real Line — Filling In Every Gap</h1>
+<div class="subtitle">what continuous mathematics is actually built on top of, and why the rationals alone were never going to be enough</div>
+
+<h2>Four number systems, four different textures</h2>
+<p>Before anything else can be built, it matters exactly which set of numbers is being worked with — because the four standard number systems feel almost identical up close (they all contain 1, 2, 3, …) and behave completely differently once you ask the right questions.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Four number systems compared</caption>
+<thead><tr><th>System</th><th>Contains</th><th>Ordered?</th><th>Has a "next" element?</th><th>Dense?</th><th>Complete?</th><th>Countable?</th></tr></thead>
+<tbody>
+<tr><td class="mono">ℕ</td><td>0, 1, 2, 3, …</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td></tr>
+<tr><td class="mono">ℤ</td><td>…, −2, −1, 0, 1, 2, …</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td></tr>
+<tr><td class="mono">ℚ</td><td>all fractions p/q, q ≠ 0</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td></tr>
+<tr><td class="mono">ℝ</td><td>every point on the number line</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Every column matters, but the last two — completeness and countability — are the ones that make ℝ, and not ℚ, the object continuous mathematics is actually built on. Countability is developed fully in Panel VI. This panel is about the other one.</p>
+
+<h2>Density: between any two rationals, another rational</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — dense order</span>
+<p>An ordered set is <strong>dense</strong> if, for any two distinct elements \(a<b\), there is a third element \(c\) with \(a<c<b\). \(\mathbb{Q}\) is dense: given any two fractions, their average is another fraction strictly between them, so the process of finding a "third one in between" never terminates.</p>
+</div>
+
+<div class="ascii">   Start:            1                                   2
+                      |-----------------------------------|
+
+   Midpoint:          1          1.5                      2
+                      |-----------|-----------------------|
+
+   Midpoint again:    1     1.25  1.5                      2
+                      |-----|-----|-----------------------|
+
+   ...and again, and again, forever: 1.375, 1.4375, 1.40625, ...
+   <span class="hl">No matter how many times you bisect, there is always another rational waiting in the gap.</span></div>
+
+<p>This already feels like it should be enough to fill the entire line with no room left over. It is not.</p>
+
+<h2>But density is not completeness</h2>
+<p>Consider the set \(S = \{x \in \mathbb{Q} : x^2 < 2\}\) — every rational whose square is less than 2. \(S\) is bounded above (5 is an upper bound, for instance), so it seems reasonable to ask for its <em>least</em> upper bound: the smallest number that is still ≥ every element of \(S\). Geometrically, that number has to be \(\sqrt2\), the length of the diagonal of a unit square. The trouble is that \(\sqrt2\) is not a rational number.</p>
+
+<div class="ascii">   Suppose  √2 = p/q  in lowest terms  (gcd(p, q) = 1)
+
+   Then:      2  =  p²/q²
+   So:        p² =  2q²    →   p² is even   →   p is even
+   Write p = 2k:   4k² = 2q²   →   q² = 2k²   →   q is even
+
+   But then gcd(p, q) ≥ 2 — <span class="hl">contradicting the assumption that p/q was in lowest terms.</span>
+   ∎  √2 cannot be written as a ratio of integers.</div>
+
+<p>So \(S\) is a perfectly reasonable, bounded set of rationals — and it has no least upper bound <em>inside \(\mathbb{Q}\)</em>. Chase the candidates 1.4, 1.41, 1.414, 1.4142, … and each one is still an underestimate; whichever rational you nominate as "the smallest upper bound," a slightly smaller rational upper bound is always sitting right next to it. \(\mathbb{Q}\) has a genuine hole exactly where \(\sqrt2\) belongs — and, by the same argument style, a hole at every irrational number: at \(\sqrt3\), at \(\pi\), at \(e\), and (as Panel VI will make precise) at vastly more locations than it has actual points.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — density feels like it should be enough; it isn't</span>
+<p>It is tempting to think that a set packed infinitely densely with points has no room left for anything else. \(\mathbb{Q}\) is a counterexample to that intuition: it is dense in exactly the sense defined above, and it still misses almost every point on the line. Density only guarantees that between any two <em>existing</em> points there is a third existing point — it says nothing about points that aren't there at all. Completeness, defined next, is the separate property that actually closes every gap.</p>
+</div>
+
+<h2>Completeness — the least upper bound property</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — completeness (least upper bound property)</span>
+<p>An ordered set has the <strong>least upper bound property</strong> if every non-empty subset that is bounded above has a least upper bound (a <strong>supremum</strong>) that belongs to the set itself. \(\mathbb{R}\) is defined to have this property; \(\mathbb{Q}\) — as the \(\sqrt2\) example shows — does not.</p>
+</div>
+
+<p>This is the single defining property that separates \(\mathbb{R}\) from \(\mathbb{Q}\). Every other hallmark of continuous mathematics — the existence of limits, the theorems in Panel IV, the very possibility of calculus — rests on it. Two standard constructions build \(\mathbb{R}\) explicitly out of \(\mathbb{Q}\) so that completeness holds by design rather than by assumption: a <strong>Dedekind cut</strong> defines a real number as a partition of \(\mathbb{Q}\) into a "below" part and an "above" part with no rational number sitting exactly at the boundary (so the cut itself plugs the gap); the <strong>Cauchy sequence</strong> construction instead defines a real number as an equivalence class of rational sequences that bunch up on each other without necessarily converging to any single rational. Both constructions produce the same object.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — completeness is engineered, not discovered</span>
+<p>It is tempting to think of \(\mathbb{R}\) as something that was already "out there," waiting to be found, with completeness simply a fact we noticed about it. The Dedekind-cut and Cauchy-sequence constructions tell a different story: \(\mathbb{R}\) is <em>built</em>, deliberately, by taking \(\mathbb{Q}\) and adding exactly the missing limit points, so that completeness comes out true by construction. Continuous mathematics does not passively describe a pre-existing gapless line — it engineers one, because a gapless line is the minimum equipment every later panel of this essay needs.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="c3">
+<h1>Limits — Making "Approaches" Precise</h1>
+<div class="subtitle">the finite-tolerance game that lets continuous mathematics talk about infinite processes without invoking any actual infinities</div>
+
+<h2>Why "gets arbitrarily close" isn't good enough on its own</h2>
+<p>Continuous mathematics is full of sentences like "as \(x\) gets closer and closer to 3, \(f(x)\) gets closer and closer to 7." That sentence is intuitive, but it is not yet mathematics — "closer and closer" describes a process without ever pinning down what the process is actually guaranteed to do. The <strong>limit</strong> is the tool that replaces the vague motion picture with a finite, checkable statement. (The historical struggle to get this exactly right — from Newton's and Leibniz's originally shaky infinitesimals through Cauchy and Weierstrass's 19th-century fix — is its own story, told in full in the <a href="../../calculus/philosophy/calculus-philosophy.html">philosophy of calculus essay</a> elsewhere on this site; this panel only needs the destination.)</p>
+
+<h2>The ε–δ definition</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — limit of a function</span>
+<p>\(\displaystyle\lim_{x\to a} f(x) = L\) means: for every \(\varepsilon>0\), there exists \(\delta>0\) such that whenever \(0<|x-a|<\delta\), it follows that \(|f(x)-L|<\varepsilon\).</p>
+</div>
+
+<p>Read it as a game between an adversarial <strong>challenger</strong> and a <strong>defender</strong>. The challenger names any tolerance \(\varepsilon>0\) around \(L\), however small. The defender must produce a tolerance \(\delta>0\) around \(a\) such that every \(x\) inside that \(\delta\)-window (other than \(a\) itself) is guaranteed to land \(f(x)\) inside the challenger's \(\varepsilon\)-window. If the defender can always win — a valid \(\delta\) exists no matter which \(\varepsilon\) the challenger picks — the limit is \(L\). Nothing here mentions infinity, motion, or "eventually" — it is a statement purely about two finite numbers and their relationship, which is exactly what makes it rigorous.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — the limit doesn't care what happens at a itself</span>
+<p>The definition explicitly requires \(0<|x-a|\), which excludes \(x=a\) from consideration entirely. \(\displaystyle\lim_{x\to a}f(x)\) can exist and equal \(L\) even if \(f(a)\) is undefined, or even if \(f(a)\) is defined but not equal to \(L\). The limit describes what \(f\) does <em>around</em> \(a\), never what \(f\) does <em>at</em> \(a\) — a distinction Panel IV turns into the precise definition of continuity.</p>
+</div>
+
+<h2>Sequential limits</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — limit of a sequence</span>
+<p>A sequence \(a_1, a_2, a_3, \dots\) <strong>converges</strong> to \(L\) if, for every \(\varepsilon>0\), there exists a natural number \(N\) such that \(n>N\) implies \(|a_n-L|<\varepsilon\).</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — a first bridge between the two worlds</span>
+<p>A sequence's index \(n\) runs over the discrete, countable set \(\mathbb{N}\) — there is a first term, a next term, and no term in between \(a_7\) and \(a_8\). But the value the sequence converges to, \(L\), lands on the continuum \(\mathbb{R}\), typically a value the sequence itself never actually reaches (\(1, \tfrac12, \tfrac13, \tfrac14,\dots \to 0\), and no term of the sequence is ever exactly 0). Every convergent sequence is already a small bridge between the two worlds this essay compares: discrete stepping-stones, with a continuous destination. Panel VIII returns to this bridge in far more depth.</p>
+</div>
+
+<h2>The limit laws</h2>
+<p>Once a handful of basic limits are established, complicated limits rarely need the ε–δ definition invoked directly — instead, they are built up mechanically from simpler pieces using a short list of laws, the same way complicated derivatives are built from a handful of rules rather than the limit definition every time.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Limit laws (assuming both individual limits exist)</caption>
+<thead><tr><th>Law</th><th>Statement</th></tr></thead>
+<tbody>
+<tr><td>Sum</td><td class="mono">lim [f(x)+g(x)] = lim f(x) + lim g(x)</td></tr>
+<tr><td>Product</td><td class="mono">lim [f(x)·g(x)] = lim f(x) · lim g(x)</td></tr>
+<tr><td>Quotient</td><td class="mono">lim [f(x)/g(x)] = lim f(x) / lim g(x)&nbsp;&nbsp;(provided lim g(x) ≠ 0)</td></tr>
+<tr><td>Constant multiple</td><td class="mono">lim [c·f(x)] = c · lim f(x)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Worked example — proving a limit rigorously</h2>
+<p>Claim: \(\displaystyle\lim_{x\to3}(2x+1) = 7\).</p>
+<div class="proof-list">
+<li><span class="pf-stmt">Let ε &gt; 0 be given.</span><span class="pf-just">challenger moves first</span></li>
+<li><span class="pf-stmt">Choose δ = ε / 2.</span><span class="pf-just">defender's response, chosen to make the algebra below work out</span></li>
+<li><span class="pf-stmt">Suppose 0 &lt; |x − 3| &lt; δ.</span><span class="pf-just">assume the challenger's window is respected</span></li>
+<li><span class="pf-stmt">|(2x+1) − 7| = |2x − 6| = 2|x − 3|</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">2|x − 3| &lt; 2δ = 2·(ε/2) = ε</span><span class="pf-just">since |x−3| &lt; δ, by assumption</span></li>
+<li><span class="pf-stmt">∴ |(2x+1) − 7| &lt; ε</span><span class="pf-just">chained together</span></li>
+</div>
+<p>Because a valid \(\delta\) (namely \(\varepsilon/2\)) was produced for an <em>arbitrary</em> \(\varepsilon\), the defender wins the game no matter what the challenger picks, and the limit is proven rigorously — no picture, no appeal to "gets closer and closer," just two finite numbers and an inequality.</p>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="c4">
+<h1>Continuity — No Jumps, No Breaks, No Holes</h1>
+<div class="subtitle">the formal property that turns "you can draw it without lifting your pencil" into something you can actually check</div>
+
+<h2>The definition</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — continuity at a point</span>
+<p>\(f\) is <strong>continuous at \(a\)</strong> if all three of the following hold: (1) \(f(a)\) is defined; (2) \(\displaystyle\lim_{x\to a}f(x)\) exists; and (3) \(\displaystyle\lim_{x\to a}f(x) = f(a)\). \(f\) is <strong>continuous on an interval</strong> if it is continuous at every point of that interval.</p>
+</div>
+
+<p>Every clause is load-bearing. A function can fail continuity at \(a\) by failing any one of the three — being undefined there, having no limit there, or having a limit that simply disagrees with the function's actual value there.</p>
+
+<h2>A catalog of ways to fail</h2>
+<div class="tbl-wrap">
+<table>
+<caption>The three standard kinds of discontinuity</caption>
+<thead><tr><th>Type</th><th>What happens</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><strong>Removable</strong></td><td>the limit exists, but either \(f(a)\) is undefined or disagrees with it</td><td class="mono">f(x) = (x²−1)/(x−1)</td></tr>
+<tr><td><strong>Jump</strong></td><td>the left-hand and right-hand limits both exist, but disagree with each other</td><td class="mono">f(x) = ⌊x⌋ at every integer</td></tr>
+<tr><td><strong>Infinite / essential</strong></td><td>the function has no finite limit at all, from one or both sides</td><td class="mono">f(x) = 1/x at x = 0</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The removable case gets its name honestly: \((x^2-1)/(x-1)\) simplifies to \(x+1\) for every \(x\neq1\), so its limit as \(x\to1\) is clearly 2 — the discontinuity can be "removed" simply by defining \(f(1)=2\). The jump case cannot be patched this way, because the two one-sided limits themselves genuinely disagree — \(\lfloor x\rfloor\) approaches \(n-1\) from the left of any integer \(n\) and \(n\) from the right, a full unit apart no matter how the single value \(f(n)\) is defined. The infinite case is the most severe: there is no finite number for either side to approach at all.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — a function can be continuous at exactly one point and nowhere else</span>
+<p>Define \(f(x)=x\) when \(x\) is rational and \(f(x)=0\) when \(x\) is irrational. At \(a=0\): both rational and irrational inputs near 0 produce outputs near 0, matching \(f(0)=0\), so \(f\) <em>is</em> continuous at 0. At any \(a\neq0\): the rationals and irrationals are both dense near \(a\) (Panel II), so \(x\) arbitrarily close to \(a\) sometimes gives \(f(x)\) close to \(a\) (rational inputs) and sometimes gives \(f(x)\) close to 0 (irrational inputs) — two different values fighting over the same limit, so no limit exists and \(f\) is discontinuous everywhere except that single point. Continuity is a genuinely local, pointwise property; a function's global shape gives no guarantee about it.</p>
+</div>
+
+<h2>What continuity buys you — IVT and EVT</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — Intermediate Value Theorem (IVT)</span>
+<p>If \(f\) is continuous on \([a,b]\) and \(k\) is any value between \(f(a)\) and \(f(b)\), then there exists some \(c\in[a,b]\) with \(f(c)=k\).</p>
+</div>
+
+<p>This is precisely what justifies the bisection method for finding roots: \(f(x)=x^3-x-2\) satisfies \(f(1)=-2\) and \(f(2)=4\), and since \(f\) is continuous (being a polynomial) and \(0\) lies between \(-2\) and \(4\), the IVT guarantees a root somewhere in \([1,2]\) — with no need to solve the cubic explicitly to know one exists. Repeatedly bisecting the interval and checking the sign of \(f\) at the midpoint homes in on that root (near \(1.521\)) to any desired precision.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — Extreme Value Theorem (EVT)</span>
+<p>If \(f\) is continuous on a closed, bounded interval \([a,b]\), then \(f\) attains both a maximum value and a minimum value somewhere on \([a,b]\).</p>
+</div>
+
+<p>Both theorems quietly lean on Panel II's completeness property — without it, a function could keep approaching a supremum that simply isn't a real number, and neither theorem would have anywhere to land its guaranteed point.</p>
+
+<h2>Continuity is trivial on a discrete domain</h2>
+<div class="callout insight">
+<span class="callout-label">Insight — the explicit bridge back to the discrete world</span>
+<p>Every function whose domain is \(\mathbb{Z}\), or \(\mathbb{N}\), or any other discrete set is automatically continuous everywhere it is defined — in a slightly deflating sense. Continuity only constrains how \(f\) behaves as inputs sneak arbitrarily close to a point, and on a discrete domain no input ever sneaks up on another: each point sits isolated, with room to spare on both sides, so the ε–δ game is won by the defender trivially, by picking \(\delta\) small enough that no other domain point falls inside it at all. Continuity, as a meaningful, checkable property with actual content, requires a <em>dense</em> domain to have any teeth — which is exactly why the word "continuity" never appears as a topic in the companion discrete mathematics essay. On \(\mathbb{Z}\), \(\mathbb{N}\), or any finite set, it holds automatically and says nothing.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="c5">
+<h1>Beyond Continuity — How Smooth is Smooth?</h1>
+<div class="subtitle">continuity is the entry ticket; differentiability, integrability, and analyticity are successively stricter passports</div>
+
+<h2>A nested hierarchy of niceness</h2>
+<p>Continuity turns out to be the <em>weakest</em> useful regularity property a function can have — a whole tower of strictly stronger conditions sits above it, each one a genuinely smaller class of functions than the one below.</p>
+
+<div class="ascii">   ALL FUNCTIONS
+      ⊃  <span class="hl">Continuous</span>            (no jumps, breaks, or holes — Panel IV)
+      ⊃  <span class="hl">Differentiable</span>         (has a well-defined instantaneous rate of change)
+      ⊃  <span class="hl">C¹ — continuously differentiable</span>   (the derivative itself is continuous)
+      ⊃  <span class="hl">C^∞ — smooth</span>           (derivatives of every order exist)
+      ⊃  <span class="hl">Analytic (C^ω)</span>         (equals its own Taylor series near every point)
+
+   Each ⊃ is <span class="hl2">strict</span> — a witness function sits in the larger class but outside the smaller one.</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>A witness for every strict containment in the hierarchy</caption>
+<thead><tr><th>Boundary</th><th>Witness function</th><th>Why it separates the two classes</th></tr></thead>
+<tbody>
+<tr><td>Continuous, not differentiable</td><td class="mono">f(x) = |x|</td><td>a sharp corner at 0 — the left and right slopes disagree (−1 vs. +1)</td></tr>
+<tr><td>Differentiable, not C¹</td><td class="mono">f(x) = x² sin(1/x), f(0)=0</td><td>f′(0)=0 exists, but f′(x) = 2x sin(1/x) − cos(1/x) oscillates forever and has no limit as x→0</td></tr>
+<tr><td>Smooth (C^∞), not analytic</td><td class="mono">f(x) = e^(−1/x²), f(0)=0</td><td>every derivative at 0 is exactly 0, so its Taylor series is the zero function — yet f itself is not zero anywhere near 0</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — continuous everywhere can still mean differentiable nowhere</span>
+<p>The Weierstrass function — an infinite sum of increasingly rapid, increasingly small cosine waves — is continuous at every real number and differentiable at <em>none</em> of them: zoom in anywhere and the graph is jagged at every scale, with no straight tangent line ever emerging. When Weierstrass presented it in 1872, it stunned mathematicians who had assumed continuity and differentiability were nearly the same property. They are not — Panel IV's "no jumps" and this panel's "has a well-defined slope" turn out to be entirely independent demands.</p>
+</div>
+
+<h2>Derivative and integral, in one sentence each</h2>
+<p>This essay does not re-derive the derivative and integral from scratch — the dedicated essays on <a href="../../calculus/derivatives/derivatives.html">derivatives</a> and <a href="../../calculus/integrals/integral.html">integrals</a> elsewhere on this site do that in full. What matters here is how each one is built directly out of Panel III's limit:</p>
+
+<div class="dual-grid">
+<div>
+<h4>Derivative — instantaneous rate</h4>
+<p style="margin-bottom:0;">\(\displaystyle f'(a) = \lim_{h\to0}\frac{f(a+h)-f(a)}{h}\) — the limit of average rates of change over shrinking intervals around \(a\). It exists only where that limit exists, which is a strictly stronger demand than mere continuity at \(a\).</p>
+</div>
+<div>
+<h4>Integral — continuous accumulation</h4>
+<p style="margin-bottom:0;">\(\displaystyle\int_a^b f(x)\,dx = \lim_{\|P\|\to0}\sum_i f(c_i)\,\Delta x_i\) — the limit of finite sums of thin rectangles as their width shrinks to zero. It is, notably, more forgiving than the derivative: a function can be discontinuous at finitely many points and still be integrable.</p>
+</div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — neither operation means anything on a discrete domain</span>
+<p>"Instantaneous rate of change" presupposes there is room to shrink an interval down toward zero width — on \(\mathbb{Z}\), the smallest possible interval already has width 1, and \(h\to0\) simply never gets anywhere. The nearest discrete-world analogue, the <strong>difference</strong> \(f(n+1)-f(n)\), is a single fixed computation rather than a limit of infinitely many shrinking ones. Panel VII lines these two operations up directly.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="c6">
+<h1>How Big Is Infinite? Counting the Uncountable</h1>
+<div class="subtitle">why the real line isn't just infinite the way the integers are infinite — it's a strictly bigger infinity</div>
+
+<h2>Countable infinity</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — countably infinite</span>
+<p>A set is <strong>countably infinite</strong> if its elements can be placed in a one-to-one correspondence with \(\mathbb{N}\) — that is, listed as a first element, a second, a third, and so on, eventually reaching (the index of) any particular element.</p>
+</div>
+
+<p>\(\mathbb{Z}\) is countable — alternate positive and negative integers: \(0,1,-1,2,-2,3,-3,\dots\). More surprisingly, \(\mathbb{Q}\) is countable too, despite being dense (Panel II): arrange every fraction \(p/q\) in a grid by numerator and denominator, and a diagonal zigzag through the grid visits every fraction exactly once, producing a valid list. Density and countability, in other words, are entirely compatible — \(\mathbb{Q}\) has both.</p>
+
+<h2>Cantor's diagonal argument</h2>
+<p>\(\mathbb{R}\) does not have both. In 1874, Georg Cantor proved that no list — however cleverly arranged — can contain every real number between 0 and 1.</p>
+
+<div class="ascii">   Suppose a list claims to contain every real number in (0,1):
+
+   r₁ = 0.<span class="hl">3</span>14159...
+   r₂ = 0.7<span class="hl">1</span>8281...
+   r₃ = 0.55<span class="hl">5</span>555...
+   r₄ = 0.264<span class="hl">3</span>38...
+   ...
+
+   Build a new number d by changing the <span class="hl">nth digit of rₙ</span> to something different, digit by digit.
+   d disagrees with r₁ in the 1st place, with r₂ in the 2nd place, with r₃ in the 3rd place, ...
+   <span class="hl2">d differs from every single entry on the list — so d cannot be on the list.</span>
+   But d is a perfectly good real number in (0,1). The list was never complete. No list ever can be.</div>
+
+<p>Because \(\mathbb{N}\), \(\mathbb{Z}\), and \(\mathbb{Q}\) are all countable but \(\mathbb{R}\) provably is not, \(\mathbb{R}\) is a strictly larger infinity — written \(|\mathbb{R}| = 2^{\aleph_0} > \aleph_0 = |\mathbb{N}|\).</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Countable versus uncountable sets</caption>
+<thead><tr><th>Countable (size ℵ₀)</th><th>Uncountable (size 2^ℵ₀ or larger)</th></tr></thead>
+<tbody>
+<tr><td class="mono">ℕ, ℤ, ℚ</td><td class="mono">ℝ, ℝⁿ for any n ≥ 1</td></tr>
+<tr><td>the algebraic numbers (roots of integer-coefficient polynomials)</td><td>the irrational numbers; the transcendental numbers</td></tr>
+<tr><td>any finite set; any finite union of countable sets</td><td>the power set of ℕ (every subset of the naturals)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — almost every real number is one you will never name</span>
+<p>Every number you have ever written down — every integer, every fraction, \(\pi\), \(e\), \(\sqrt2\), every root of every polynomial — belongs to the countable, describable sliver of \(\mathbb{R}\). There are only countably many finite strings of symbols in any language, mathematical notation included, so only countably many real numbers can ever be individually named or described by any finite formula at all. Since \(\mathbb{R}\) itself is uncountable, this means almost every real number — in a precise, provable sense — is one that no description, no formula, and no amount of mathematical ingenuity will ever single out. Continuous mathematics spends its entire existence reasoning about a space built almost entirely out of numbers no one can ever point to individually.</p>
+</div>
+
+<h2>The continuum hypothesis</h2>
+<p>Cantor asked whether any infinity sits strictly between \(|\mathbb{N}|\) and \(|\mathbb{R}|\) — the <strong>continuum hypothesis</strong> (CH) says no. The question turned out to be unanswerable from the standard axioms of set theory (ZFC) in either direction: Kurt Gödel showed in 1940 that CH cannot be disproven from ZFC, and Paul Cohen showed in 1963 that it cannot be proven from ZFC either. It is, in the technical sense, <strong>independent</strong> — genuinely undecidable by the usual rules of mathematics, not merely unsolved.</p>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="c7">
+<h1>Two Toolkits, Side by Side</h1>
+<div class="subtitle">a direct, structural comparison — not which one is "better," but which one matches the object in front of you</div>
+
+<h2>The core structural contrast</h2>
+<div class="dual-grid">
+<div>
+<h4>The continuous world</h4>
+<p style="margin-bottom:0;">Built on \(\mathbb{R}\): dense, complete, uncountable. No element has a "next" one. Change is tracked with derivatives; totals are tracked with integrals; the central proof tool is the limit. This is the native language of physics, engineering, and anything that flows, moves, or varies smoothly.</p>
+</div>
+<div>
+<h4>The discrete world</h4>
+<p style="margin-bottom:0;">Built on \(\mathbb{Z}\), \(\mathbb{N}\), or finite sets: isolated, well-ordered, countable. Every element (except possibly the last) has a definite next one. Change is tracked with differences; totals are tracked with sums; the central proof tool is induction. This is the native language of computer science, combinatorics, and anything counted or switched.</p>
+</div>
+</div>
+
+<h2>Matched concepts, side by side</h2>
+<div class="tbl-wrap">
+<table>
+<caption>The same job, done by two different toolkits</caption>
+<thead><tr><th>Concept</th><th>Continuous version</th><th>Discrete version</th></tr></thead>
+<tbody>
+<tr><td>Underlying numbers</td><td class="mono">ℝ — dense, complete, uncountable</td><td class="mono">ℤ / ℕ — isolated points, well-ordered, countable</td></tr>
+<tr><td>"Next" element</td><td>none — between any two reals lies another</td><td>yes — every integer has an immediate successor</td></tr>
+<tr><td>Rate of change</td><td class="mono">derivative: lim_{h→0} [f(x+h)−f(x)]/h</td><td class="mono">difference: Δf(n) = f(n+1) − f(n)</td></tr>
+<tr><td>Accumulation</td><td class="mono">integral: ∫ f(x) dx</td><td class="mono">sum: Σ f(n)</td></tr>
+<tr><td>Governing equations</td><td>differential equations (ODEs / PDEs)</td><td>difference / recurrence equations</td></tr>
+<tr><td>Core proof technique</td><td>ε–δ limit arguments; compactness</td><td>mathematical induction; the pigeonhole principle</td></tr>
+<tr><td>Probability</td><td>density functions — any single point has probability 0</td><td>mass functions — a single outcome can have positive probability</td></tr>
+<tr><td>Governing structures</td><td>metric spaces, manifolds, topological spaces</td><td>sets, graphs, relations, partial orders</td></tr>
+<tr><td>Home discipline</td><td>physics, fluid dynamics, control theory, analysis</td><td>computer science, combinatorics, cryptography, logic</td></tr>
+<tr><td>Emblem (Panel I)</td><td>the dimmer switch</td><td>the light switch</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — in the continuous world, a single point can have probability exactly zero</span>
+<p>Throw a dart at a number line and let it land on a uniformly random real number in \([0,1]\). The probability it lands on any one specific point — say, exactly \(0.5\) — is <strong>0</strong>, and this is true of every point individually, yet the dart still has to land somewhere. This is not a contradiction: continuous probability is measured with a <em>density</em>, and only genuine intervals (not single points) accumulate positive probability, via \(P(a\le X\le b)=\int_a^b f(x)\,dx\). In the discrete world this puzzle cannot even arise: a fair coin flip assigns probability \(\tfrac12\) to the single outcome "heads," directly and without contradiction, because \(\mathbb{N}\)-indexed outcomes are isolated rather than packed into a continuum.</p>
+</div>
+
+<h2>Why the two genuinely need different tools</h2>
+<p>Induction works by climbing a discrete ladder: prove a base case, prove that each rung implies the next rung, and conclude every rung holds. That argument structure requires a "next rung" to climb to — it has no target on \(\mathbb{R}\), because there is no next real number after any given one to climb to. Conversely, the ε–δ machinery of Panel III is built entirely around the idea of squeezing a tolerance window down toward zero width — a maneuver that is trivial and uninteresting on \(\mathbb{Z}\), where no window smaller than 1 unit contains anything new to squeeze (Panel IV's closing insight). Each toolkit is finely tuned to the texture of the number system it was built for, and swapping them does not produce a harder version of the same proof — it produces a proof about nothing at all, because the technique's basic assumption (a next element to induct on; a continuum to shrink a window inside of) simply fails to hold.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — not opposites so much as a matched pair</span>
+<p>It is tempting to read "continuous versus discrete" as a rivalry, with one side eventually winning. It is closer to the truth to read it as a matched pair of toolkits, each precision-built for a different texture of object, the way a scalpel and a chisel are not competing designs for the same job. The genuinely interesting mathematics, taken up in Panel VIII, happens at the seams where the two textures meet — where a continuous problem gets approximated discretely, or a discrete structure dissolves into a continuous limit.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="c8">
+<h1>The Bridges Between Them</h1>
+<div class="subtitle">how continuous problems get approximated by discrete computation, and how discrete structures dissolve into continuous limits</div>
+
+<h2>Discretization — approximating the continuous with the discrete</h2>
+<p>No computer can store a general real number (Panel VI already showed that almost none of them are even nameable), and no computer can literally take a limit as \(h\to0\). Every time continuous mathematics needs to be run on a machine, it first has to be chopped into finitely many discrete pieces.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Continuous operations and their standard discrete approximations</caption>
+<thead><tr><th>Continuous operation</th><th>Discrete approximation</th></tr></thead>
+<tbody>
+<tr><td class="mono">f′(x) = lim_{h→0} [f(x+h)−f(x)]/h</td><td>finite differences: forward, backward, or central difference quotients at a small fixed h</td></tr>
+<tr><td class="mono">∫_a^b f(x) dx</td><td>Riemann sums, the trapezoidal rule, Simpson's rule — finitely many sample rectangles or slices</td></tr>
+<tr><td>solution of an ODE dy/dt = f(t,y)</td><td>Euler's method / Runge–Kutta: y_{n+1} = y_n + h·f(t_n, y_n), stepped forward discretely</td></tr>
+<tr><td>a continuous signal (e.g. audio, an analog voltage)</td><td>discrete samples taken at a fixed rate — governed by the Nyquist–Shannon sampling theorem</td></tr>
+<tr><td>a real number</td><td>floating-point: a finite, discrete subset of ℝ with fixed precision (IEEE 754), carrying rounding error</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The recurring theme is that each discrete approximation carries an explicit error term that shrinks toward zero as the discretization is refined — halve the step size \(h\) in Euler's method, or double the number of rectangles in a Riemann sum, and the discrete answer provably tightens toward the true continuous one. That convergence guarantee, not the approximation itself, is what makes numerical computation trustworthy.</p>
+
+<h2>Continuum limits — dissolving the discrete into the continuous</h2>
+<p>The bridge runs the other way just as often: a genuinely discrete process, examined at a large enough scale, starts behaving like a continuous one.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — compound interest, discrete and continuous, in one formula</span>
+<p>Compounding interest \(n\) times a year at annual rate \(r\) is an explicitly discrete, step-by-step process: \(A = P\left(1+\frac{r}{n}\right)^{n}\). Let the number of compounding periods grow without bound — compounding by the day, then the second, then infinitely often — and the discrete formula converges to a strikingly clean continuous one: \(\displaystyle\lim_{n\to\infty}\left(1+\frac{r}{n}\right)^{n} = e^{r}\). Continuous compounding, \(A=Pe^{rt}\), is not a different idea from discrete compounding — it is the exact continuum limit of the discrete process, and \(e\) itself falls directly out of watching that limit unfold.</p>
+</div>
+
+<p>The same pattern recurs at larger scale throughout physics and probability. A <strong>random walk</strong> — a particle stepping randomly left or right by a fixed discrete amount at fixed discrete time intervals — converges, once the step size and time step both shrink together in the right proportion, to <strong>Brownian motion</strong>, a genuinely continuous random process with no discrete steps left in it at all (this convergence result is known as Donsker's invariance principle). A <strong>difference equation</strong> relating \(f(n+1)\) to \(f(n)\) converges to a <strong>differential equation</strong> relating \(f'(t)\) to \(f(t)\) as the time step between updates shrinks to zero. And statistical mechanics builds continuous quantities like temperature and pressure as limits of averaging over astronomically many genuinely discrete particles.</p>
+
+<h2>Borrowing the other world's tools directly</h2>
+<p>Sometimes a field doesn't wait for a limit to appear naturally — it deliberately swaps into the other world's toolkit mid-problem, because that toolkit is easier to work with.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — generating functions turn a discrete sequence into a continuous function on purpose</span>
+<p>Given a purely discrete object — a sequence of counts \(a_0, a_1, a_2, \dots\), say the number of ways to make change for \(n\) cents, or the Fibonacci numbers — encode it as the coefficients of a power series, \(G(x) = \sum_{n} a_n x^n\). \(G\) is now a genuinely continuous, often differentiable (even analytic) function, and every tool from calculus and complex analysis — differentiation, integration, contour integrals, asymptotic estimates of growth rates from where \(G\) blows up — becomes available for answering a question that started out purely about counting. The Fibonacci numbers' generating function, \(x/(1-x-x^2)\), is a perfectly ordinary rational function, and reading off where its denominator vanishes is what reveals the golden ratio governing how fast the Fibonacci numbers grow — a continuous-analysis fact underwriting a discrete-combinatorics one.</p>
+</div>
+
+<p>Optimization runs the same trick in reverse: an <strong>integer program</strong> — optimize a quantity subject to variables that must be whole numbers — is typically NP-hard to solve directly. The standard technique, the <strong>LP relaxation</strong>, temporarily drops the integer constraint, allowing fractional variable values, solves the resulting much easier continuous linear program, and then uses that continuous solution (via rounding, or branch-and-bound search around it) to guide the search for the true discrete, integer-valued answer.</p>
+
+</section>
+
+<!-- ============ PANEL 9 ============ -->
+<section class="panel" id="c9">
+<h1>Interactive Lab</h1>
+<div class="subtitle">two small tools for feeling, not just reading, the difference between a dense line and a discrete one</div>
+
+<h3>Tool 1 — Zoom into the number line</h3>
+<p>The view below zooms in around the fixed point \(x=1.5\), exactly halfway between the integers 1 and 2, on two parallel number lines: the continuous reals on top, the integers on the bottom. Drag the slider to zoom in and watch what happens to each line.</p>
+
+<div class="lab">
+<div class="lab-canvases">
+<div class="canvas-wrap">
+<div class="label">ℝ (top) and ℤ (bottom), zoomed around x = 1.5</div>
+<canvas id="cvZoom" width="640" height="220"></canvas>
+</div>
+</div>
+<div class="controls">
+<div class="control-row">
+<label for="zoomSlider">Zoom level</label>
+<input type="range" id="zoomSlider" min="0" max="6" step="0.02" value="0">
+<span class="readout" id="zoomReadout">×1</span>
+</div>
+</div>
+<div class="info-line">
+Visible window: <span class="v" id="zoomWindow">—</span>
+&nbsp;&nbsp;|&nbsp;&nbsp; real ticks in view: <span class="v" id="zoomRealCount">—</span>
+&nbsp;&nbsp;|&nbsp;&nbsp; integer ticks in view: <span class="v" id="zoomIntCount">—</span>
+</div>
+<div class="legend">
+<span><span class="swatch" style="background:var(--accent)"></span> ℝ — always sprouts new labeled ticks, forever</span>
+<span><span class="swatch" style="background:var(--blue)"></span> ℤ — runs out of ticks almost immediately and stays empty</span>
+</div>
+</div>
+
+<p>Notice that the real line keeps producing new, more finely labeled ticks no matter how far you zoom — there is always another real number to show. The integer line, by contrast, only ever had 1 and 2 nearby; once the window shrinks below half a unit on either side of 1.5, it goes completely empty and <em>stays</em> empty for the rest of the zoom, because there is nothing between two consecutive integers to reveal.</p>
+
+<h3>Tool 2 — From discrete samples to a continuous curve</h3>
+<p>The second tool runs Panel VIII's discretization idea forward: a smooth curve \(f(x)=1.6+\sin x+0.4\sin 3x\) on \([0,2\pi]\), sampled at \(N\) discrete, evenly spaced points and connected with straight segments. Watch the jagged discrete approximation smooth out into what looks like the true continuous curve as \(N\) grows — which is exactly the limiting process behind every Riemann sum and every finite-difference approximation in Panel VIII.</p>
+
+<div class="lab">
+<div class="lab-canvases">
+<div class="canvas-wrap">
+<div class="label">N discrete samples (dots + straight segments) vs. the true continuous curve</div>
+<canvas id="cvBridge" width="640" height="260"></canvas>
+</div>
+</div>
+<div class="controls">
+<div class="control-row">
+<label for="bridgeN">Samples N</label>
+<input type="range" id="bridgeN" min="2" max="200" step="1" value="6">
+<span class="readout" id="bridgeNReadout">6</span>
+</div>
+<div class="control-row">
+<button class="mini-toggle on" id="bridgeToggle">true curve: on</button>
+</div>
+</div>
+<div class="info-line">
+N = <span class="v" id="bridgeNInfo">—</span>
+&nbsp;&nbsp;|&nbsp;&nbsp; mesh width Δx = <span class="v" id="bridgeDx">—</span>
+&nbsp;&nbsp;|&nbsp;&nbsp; max deviation from the true curve = <span class="v" id="bridgeErr">—</span>
+</div>
+<div class="legend">
+<span><span class="swatch" style="background:var(--accent)"></span> discrete samples (dots + segments)</span>
+<span><span class="swatch" style="background:var(--ink-faint)"></span> true continuous curve</span>
+</div>
+</div>
+
+</section>
+
+<!-- ============ PANEL 10 ============ -->
+<section class="panel" id="c10">
+<h1>The Short Version</h1>
+<div class="subtitle">a compact reference table, and where to go for more depth</div>
+
+<h2>The one-paragraph summary</h2>
+<p>Continuous mathematics is built on the real number line, engineered specifically (Panel II) to have no gaps at all, in contrast to the merely dense but genuinely holey rationals. Its central tool is the limit (Panel III), which lets it reason rigorously about infinite processes — approaching, accumulating, shrinking toward zero — without ever invoking an actual infinity. That machinery builds continuity (Panel IV) and, above it, a strict hierarchy of increasingly smooth behavior (Panel V), all resting on a real line that turns out to be an uncountably, unnameably vast infinity in its own right (Panel VI). It is the grammar of the physical, moving, flowing world in the same way discrete mathematics is the grammar of the countable, switch-like, digital world (Panel VII) — and the two are constantly in conversation, continuous problems approximated by discrete computation and discrete structures dissolving into continuous limits at every seam where they touch (Panel VIII).</p>
+
+<h2>Master comparison table</h2>
+<div class="tbl-wrap">
+<table>
+<caption>The continuous and discrete worlds, condensed</caption>
+<thead><tr><th>Question</th><th>Continuous answer</th><th>Discrete answer</th></tr></thead>
+<tbody>
+<tr><td>What are the numbers?</td><td class="mono">ℝ — dense, complete, uncountable</td><td class="mono">ℤ / ℕ — isolated, well-ordered, countable</td></tr>
+<tr><td>Is there a "next" one?</td><td>never</td><td>always (except possibly a last element)</td></tr>
+<tr><td>How is change measured?</td><td>derivative — a limit</td><td>difference — a single subtraction</td></tr>
+<tr><td>How is total measured?</td><td>integral — a limit of sums</td><td>sum — a finite or countable addition</td></tr>
+<tr><td>What proves things?</td><td>ε–δ arguments, compactness</td><td>induction, the pigeonhole principle</td></tr>
+<tr><td>What breaks the other world's tools?</td><td>no next real number to induct on</td><td>no room to shrink a window below 1 unit</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Further reading on this site</h2>
+<ul>
+<li><a href="../../discrete_math/foundations/discrete-math-foundations.html">Discrete Mathematics — Logic, Sets, and the Rules of Inference</a> — this essay's mirror-image companion, covering logic, sets, and countable structure from scratch.</li>
+<li><a href="../../calculus/philosophy/calculus-philosophy.html">The Infinite Made Rigorous</a> — the full history and philosophy behind the limit, from Zeno's paradoxes through Weierstrass and non-standard analysis.</li>
+<li><a href="../../calculus/limits/limits.html">Limits</a>, <a href="../../calculus/limits/limits_formal.html">the formal ε–δ definition in depth</a>, and <a href="../../calculus/limits/limits_sequence.html">limits of sequences</a>.</li>
+<li><a href="../../calculus/derivatives/derivatives.html">Derivatives</a> and <a href="../../calculus/integrals/integral.html">Integrals</a> — the two operations Panel V only summarizes.</li>
+<li><a href="../../calculus/differential_equations/differential-equations-essay.html">Differential Equations</a> — laws written directly in terms of continuous rates of change.</li>
+<li><a href="../../topology/introduction/topology-introduction.html">Introduction to Topology</a> — continuity generalized beyond any particular numerical distance.</li>
+</ul>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  drawZoom(); drawBridge();
+});
+
+// ---------- KaTeX render ----------
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+// ============ LAB 1: ZOOM INTO THE NUMBER LINE ============
+const zoomCv = document.getElementById('cvZoom');
+const zctx = zoomCv.getContext('2d');
+const Z_W = zoomCv.width, Z_H = zoomCv.height;
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomReadout = document.getElementById('zoomReadout');
+const zoomWindowEl = document.getElementById('zoomWindow');
+const zoomRealCountEl = document.getElementById('zoomRealCount');
+const zoomIntCountEl = document.getElementById('zoomIntCount');
+const ZOOM_CENTER = 1.5;
+const ZOOM_BASE_HALFWIDTH = 3;
+
+function niceStep(halfWidth){
+  const raw = (halfWidth*2) / 8; // aim for ~8 ticks across the visible span
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  let step;
+  if(norm < 1.5) step = 1*mag;
+  else if(norm < 3.5) step = 2*mag;
+  else if(norm < 7.5) step = 5*mag;
+  else step = 10*mag;
+  return step;
+}
+function decimalsFor(step){
+  if(step >= 1) return 0;
+  return Math.max(0, Math.ceil(-Math.log10(step)) + 1);
+}
+
+function drawZoom(){
+  const k = parseFloat(zoomSlider.value);
+  const zoomFactor = Math.pow(10, k);
+  const hw = ZOOM_BASE_HALFWIDTH / zoomFactor;
+  const lo = ZOOM_CENTER - hw, hi = ZOOM_CENTER + hw;
+
+  zctx.clearRect(0,0,Z_W,Z_H);
+  zctx.fillStyle = cssVar('--bg-elevated');
+  zctx.fillRect(0,0,Z_W,Z_H);
+
+  const marginX = 30;
+  const xOf = v => marginX + (v-lo)/(hi-lo) * (Z_W - 2*marginX);
+
+  const realY = 75, intY = 165;
+  const tickH = 12;
+
+  // axis lines
+  zctx.strokeStyle = cssVar('--border');
+  zctx.lineWidth = 1.5;
+  [realY, intY].forEach(y=>{
+    zctx.beginPath(); zctx.moveTo(marginX-8,y); zctx.lineTo(Z_W-marginX+8,y); zctx.stroke();
+  });
+
+  // real ticks
+  const step = niceStep(hw);
+  const dec = decimalsFor(step);
+  const startK = Math.ceil(lo/step);
+  const endK = Math.floor(hi/step);
+  let realCount = 0;
+  zctx.font = '11px JetBrains Mono, monospace';
+  zctx.fillStyle = cssVar('--accent');
+  zctx.strokeStyle = cssVar('--accent');
+  zctx.textAlign = 'center';
+  for(let i=startK;i<=endK;i++){
+    const v = i*step;
+    if(v < lo-1e-9 || v > hi+1e-9) continue;
+    const x = xOf(v);
+    zctx.beginPath(); zctx.moveTo(x,realY-tickH); zctx.lineTo(x,realY+tickH); zctx.lineWidth=2; zctx.stroke();
+    zctx.fillText(v.toFixed(dec), x, realY-tickH-6);
+    realCount++;
+  }
+
+  // integer ticks
+  const iStart = Math.ceil(lo);
+  const iEnd = Math.floor(hi);
+  let intCount = 0;
+  zctx.fillStyle = cssVar('--blue');
+  zctx.strokeStyle = cssVar('--blue');
+  for(let n=iStart;n<=iEnd;n++){
+    const x = xOf(n);
+    zctx.beginPath(); zctx.moveTo(x,intY-tickH); zctx.lineTo(x,intY+tickH); zctx.lineWidth=2; zctx.stroke();
+    zctx.fillText(String(n), x, intY+tickH+16);
+    intCount++;
+  }
+  if(intCount===0){
+    zctx.fillStyle = cssVar('--ink-faint');
+    zctx.font = 'italic 12px Cormorant Garamond, serif';
+    zctx.fillText('— nothing here: this whole window sits strictly between 1 and 2 —', (marginX + Z_W-marginX)/2, intY+3);
+  }
+
+  // labels
+  zctx.textAlign = 'left';
+  zctx.font = '10px JetBrains Mono, monospace';
+  zctx.fillStyle = cssVar('--ink-faint');
+  zctx.fillText('ℝ', 8, realY+4);
+  zctx.fillText('ℤ', 8, intY+4);
+
+  zoomReadout.textContent = '×' + zoomFactor.toLocaleString(undefined,{maximumFractionDigits:0});
+  zoomWindowEl.textContent = '[' + lo.toFixed(Math.max(2,dec)) + ', ' + hi.toFixed(Math.max(2,dec)) + ']';
+  zoomRealCountEl.textContent = realCount;
+  zoomIntCountEl.textContent = intCount;
+}
+zoomSlider.addEventListener('input', drawZoom);
+drawZoom();
+
+// ============ LAB 2: DISCRETE SAMPLES -> CONTINUOUS CURVE ============
+const bridgeCv = document.getElementById('cvBridge');
+const bctx = bridgeCv.getContext('2d');
+const B_W = bridgeCv.width, B_H = bridgeCv.height;
+const bridgeNSlider = document.getElementById('bridgeN');
+const bridgeNReadout = document.getElementById('bridgeNReadout');
+const bridgeNInfo = document.getElementById('bridgeNInfo');
+const bridgeDxEl = document.getElementById('bridgeDx');
+const bridgeErrEl = document.getElementById('bridgeErr');
+const bridgeToggleBtn = document.getElementById('bridgeToggle');
+let showTrueCurve = true;
+
+const B_A = 0, B_B = Math.PI*2;
+function f(x){ return 1.6 + Math.sin(x) + 0.4*Math.sin(3*x); }
+
+function drawBridge(){
+  const N = parseInt(bridgeNSlider.value,10);
+  bctx.clearRect(0,0,B_W,B_H);
+  bctx.fillStyle = cssVar('--bg-elevated');
+  bctx.fillRect(0,0,B_W,B_H);
+
+  const marginX = 36, marginTop = 20, marginBottom = 34;
+  const plotW = B_W - 2*marginX, plotH = B_H - marginTop - marginBottom;
+  const xOf = x => marginX + (x-B_A)/(B_B-B_A) * plotW;
+  const yOf = y => marginTop + plotH - (y/2.2) * plotH;
+
+  // axes
+  bctx.strokeStyle = cssVar('--border');
+  bctx.lineWidth = 1;
+  bctx.beginPath(); bctx.moveTo(marginX, marginTop); bctx.lineTo(marginX, marginTop+plotH); bctx.lineTo(marginX+plotW, marginTop+plotH); bctx.stroke();
+
+  // true curve
+  if(showTrueCurve){
+    bctx.strokeStyle = cssVar('--ink-faint');
+    bctx.lineWidth = 1.5;
+    bctx.beginPath();
+    for(let i=0;i<=400;i++){
+      const x = B_A + (B_B-B_A)*i/400;
+      const px = xOf(x), py = yOf(f(x));
+      if(i===0) bctx.moveTo(px,py); else bctx.lineTo(px,py);
+    }
+    bctx.stroke();
+  }
+
+  // discrete samples
+  const dx = (B_B-B_A)/(N-1<1?1:N-1);
+  const pts = [];
+  for(let i=0;i<N;i++){
+    const x = N===1 ? B_A : B_A + i*dx;
+    pts.push([x, f(x)]);
+  }
+  bctx.strokeStyle = cssVar('--accent');
+  bctx.lineWidth = 2;
+  bctx.beginPath();
+  pts.forEach(([x,y],i)=>{
+    const px = xOf(x), py = yOf(y);
+    if(i===0) bctx.moveTo(px,py); else bctx.lineTo(px,py);
+  });
+  bctx.stroke();
+
+  bctx.fillStyle = cssVar('--accent');
+  pts.forEach(([x,y])=>{
+    const px = xOf(x), py = yOf(y);
+    bctx.beginPath(); bctx.arc(px,py,N>60?1.5:3,0,Math.PI*2); bctx.fill();
+  });
+
+  // max deviation between polyline interpolation and true curve
+  let maxErr = 0;
+  const SAMPLES = 300;
+  for(let i=0;i<=SAMPLES;i++){
+    const x = B_A + (B_B-B_A)*i/SAMPLES;
+    // find bracketing segment
+    let seg = Math.min(Math.floor((x-B_A)/dx), pts.length-2);
+    if(seg<0) seg=0;
+    const [x0,y0] = pts[seg], [x1,y1] = pts[Math.min(seg+1,pts.length-1)];
+    const t = x1>x0 ? (x-x0)/(x1-x0) : 0;
+    const interp = y0 + t*(y1-y0);
+    const err = Math.abs(interp - f(x));
+    if(err>maxErr) maxErr = err;
+  }
+
+  bridgeNReadout.textContent = N;
+  bridgeNInfo.textContent = N;
+  bridgeDxEl.textContent = dx.toFixed(4);
+  bridgeErrEl.textContent = maxErr.toFixed(5);
+}
+bridgeNSlider.addEventListener('input', drawBridge);
+bridgeToggleBtn.addEventListener('click', ()=>{
+  showTrueCurve = !showTrueCurve;
+  bridgeToggleBtn.classList.toggle('on', showTrueCurve);
+  bridgeToggleBtn.textContent = 'true curve: ' + (showTrueCurve ? 'on' : 'off');
+  drawBridge();
+});
+drawBridge();
+</script>
+
+</body>
+</html>

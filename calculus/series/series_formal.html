@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convergence of Series — A Formal Treatment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f7f4ee;
+  --bg2:      #efebe2;
+  --bg-card:  #ffffff;
+  --ink:      #1a1810;
+  --ink2:     #3d3a30;
+  --ink3:     #7a7060;
+  --rule:     #d4cec0;
+  --gold:     #b5822a;
+  --gold-lt:  #e8c87a;
+  --teal:     #2a7a6a;
+  --teal-lt:  #7ac8b4;
+  --rose:     #8a2a3a;
+  --rose-lt:  #e87a8a;
+  --blue:     #2a4a7a;
+  --blue-lt:  #7aaae8;
+  --canvas-bg:  #ffffff;
+  --grid-line:  #f0ede6;
+  --ax-line:    #b0aa98;
+  --ax-text:    #9a9280;
+  --band-fill:  rgba(42,122,106,0.12);
+  --band-str:   rgba(42,122,106,0.7);
+  --n0-str:     rgba(181,130,42,0.85);
+  --sum-line:   #2a4a7a;
+  --limit-str:  rgba(138,42,58,0.75);
+}
+[data-theme="dark"] {
+  --bg:       #161616;
+  --bg2:      #222222;
+  --bg-card:  #1e1e1e;
+  --ink:      #e4e0d8;
+  --ink2:     #b0a898;
+  --ink3:     #888070;
+  --rule:     #3d3a30;
+  --gold:     #d4a350;
+  --gold-lt:  #e8c87a;
+  --teal:     #4db6a1;
+  --teal-lt:  #7ac8b4;
+  --rose:     #cc6677;
+  --rose-lt:  #e87a8a;
+  --blue:     #6b9bed;
+  --blue-lt:  #7aaae8;
+  --canvas-bg:  #1a1a1a;
+  --grid-line:  #2a2a2a;
+  --ax-line:    #555555;
+  --ax-text:    #888888;
+  --band-fill:  rgba(77,182,161,0.15);
+  --band-str:   rgba(77,182,161,0.75);
+  --n0-str:     rgba(212,163,80,0.9);
+  --sum-line:   #6b9bed;
+  --limit-str:  rgba(204,102,119,0.8);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.7;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ── HEADER ── */
+.site-header {
+  border-bottom: 2px solid var(--ink);
+  padding: 2.5rem 2rem 2rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.site-header .title-block h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+.site-header .title-block h1 em { font-style: italic; color: var(--teal); }
+.site-header .title-block .subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  margin-top: 0.6rem;
+  max-width: 46ch;
+  line-height: 1.5;
+}
+.header-right { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.header-formula {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  color: var(--ink2);
+  white-space: nowrap;
+  border-left: 3px solid var(--teal);
+  padding-left: 1rem;
+}
+.header-formula sub, .header-formula sup { font-size: 0.62em; font-style: normal; font-family: 'JetBrains Mono', monospace; }
+
+/* ── NAV TABS ── */
+.tab-nav {
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.9rem 1.4rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+.theme-toggle-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--ink3);
+  background: var(--bg-card); border: 1px solid var(--rule); border-radius: 20px;
+  padding: 0.5rem 0.9rem; cursor: pointer; white-space: nowrap;
+}
+
+/* ── PANELS ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── INTERACTIVE ── */
+.interactive-layout { display: grid; grid-template-columns: 1fr 360px; gap: 0; min-height: 600px; }
+@media (max-width: 860px) { .interactive-layout { grid-template-columns: 1fr; } }
+
+.viz-pane { border-right: 1px solid var(--rule); padding: 1.5rem; position: relative; }
+.canvas-container {
+  position: relative; background: var(--canvas-bg); border: 1px solid var(--rule);
+  border-radius: 2px; overflow: hidden; width: 100%;
+}
+canvas { display: block; width: 100%; height: auto; }
+
+.viz-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-top: 1rem; }
+@media (max-width: 640px) { .viz-stats { grid-template-columns: repeat(2, 1fr); } }
+.stat-chip { background: var(--bg-card); border: 1px solid var(--rule); padding: 0.65rem 0.75rem; border-radius: 2px; }
+.stat-chip .lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink3); }
+.stat-chip .val { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-style: italic; color: var(--teal); line-height: 1.25; margin-top: 0.15rem; }
+.stat-chip.gold .val { color: var(--gold); }
+.stat-chip.rose .val { color: var(--rose); font-size: 1.05rem; }
+.stat-chip.blue .val { color: var(--blue); }
+
+.ctrl-pane { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; overflow-y: auto; }
+.ctrl-head {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink3); margin-bottom: 0.8rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--rule);
+}
+.btn-group { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.grp-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; padding: 0.4rem 0.7rem;
+  background: var(--bg-card); border: 1px solid var(--rule); color: var(--ink3); border-radius: 2px;
+  cursor: pointer; transition: all 0.12s;
+}
+.grp-btn:hover { border-color: var(--ink2); color: var(--ink2); }
+.grp-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+.slider-block { margin-bottom: 0.9rem; }
+.slider-block:last-child { margin-bottom: 0; }
+.slider-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--ink2); margin-bottom: 0.4rem; }
+.slider-label .sval { font-family: 'JetBrains Mono', monospace; color: var(--teal); }
+input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 2px; background: var(--rule); border-radius: 1px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--teal);
+  cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 0 0 1px var(--teal);
+}
+input[type=range]::-moz-range-thumb {
+  width: 13px; height: 13px; border-radius: 50%; background: var(--teal); cursor: pointer;
+  border: 2px solid var(--bg); box-shadow: 0 0 0 1px var(--teal);
+}
+
+.inline-formula {
+  background: var(--bg-card); border: 1px solid var(--rule); border-left: 3px solid var(--teal);
+  padding: 0.8rem 1rem; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem;
+  line-height: 1.8; color: var(--ink2); border-radius: 0 2px 2px 0;
+}
+.inline-formula sub, .inline-formula sup { font-size: 0.65em; font-style: normal; font-family: 'JetBrains Mono', monospace; }
+
+.anno-toggle { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; }
+.anno-toggle input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--teal); cursor: pointer; }
+.anno-toggle span { font-size: 0.78rem; color: var(--ink2); }
+
+/* ── SHARED PROSE COMPONENTS (theory / intuition / steps / gallery / glossary) ── */
+.prose-body { max-width: 800px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.prose-body h2 {
+  font-family: 'Cormorant Garamond', serif; font-size: 1.95rem; font-weight: 400; color: var(--ink);
+  margin: 2.6rem 0 1rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.5rem;
+}
+.prose-body h2:first-child { margin-top: 0; }
+.prose-body h3 {
+  font-family: 'Cormorant Garamond', serif; font-size: 1.28rem; font-style: italic; font-weight: 400;
+  color: var(--gold); margin: 1.9rem 0 0.6rem;
+}
+.prose-body p { color: var(--ink2); margin-bottom: 1rem; line-height: 1.85; }
+.prose-body a { color: var(--teal); }
+.prose-body strong { color: var(--ink); }
+
+.definition, .insight-box, .warning-box {
+  padding: 1.2rem 1.5rem; margin: 1.6rem 0; border-radius: 0 3px 3px 0; border: 1px solid var(--rule);
+}
+.definition { background: var(--bg-card); border-left: 4px solid var(--teal); }
+.definition .def-title, .insight-box .ins-title, .warning-box .warn-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 0.6rem;
+}
+.definition .def-title { color: var(--teal); }
+.definition p { margin: 0; color: var(--ink2); }
+.insight-box { background: rgba(42,122,106,0.05); border-color: rgba(42,122,106,0.3); border-left: 4px solid var(--teal); }
+.insight-box .ins-title { color: var(--teal); }
+.insight-box p { margin: 0; color: var(--ink2); }
+.warning-box { background: rgba(138,42,58,0.05); border-color: rgba(138,42,58,0.2); border-left: 4px solid var(--rose); }
+.warning-box .warn-title { color: var(--rose); }
+.warning-box p { margin: 0; color: var(--ink2); font-size: 0.94rem; }
+.note-box {
+  background: var(--bg2); border: 1px solid var(--rule); padding: 1rem 1.2rem; border-radius: 3px;
+  margin: 1.2rem 0; font-size: 0.88rem; color: var(--ink3);
+}
+.note-box strong { color: var(--ink2); }
+
+.math-display {
+  text-align: center; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.4rem;
+  padding: 1.3rem 1rem; background: var(--bg2); border: 1px solid var(--rule); border-radius: 3px;
+  margin: 1.5rem 0; color: var(--ink); line-height: 1.9; overflow-x: auto;
+}
+.math-display sub, .math-display sup { font-size: 0.6em; font-style: normal; font-family: 'JetBrains Mono', monospace; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+.two-col-card { background: var(--bg-card); border: 1px solid var(--rule); padding: 1.2rem; border-radius: 3px; }
+.two-col-card .tc-label { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink3); margin-bottom: 0.5rem; }
+.two-col-card .tc-title { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.08rem; color: var(--teal); margin-bottom: 0.5rem; }
+.two-col-card p { font-size: 0.86rem; color: var(--ink2); margin: 0; line-height: 1.65; }
+
+.prose-body table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.87rem; }
+.prose-body th {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink3); padding: 0.6rem 0.9rem; border-bottom: 2px solid var(--rule); text-align: left;
+}
+.prose-body td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--rule); color: var(--ink2); vertical-align: top; }
+.prose-body td:first-child { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem; }
+.prose-body tr:last-child td { border-bottom: none; }
+
+.proof-list { counter-reset: pline; list-style: none; margin: 1.4rem 0; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.proof-list li {
+  counter-increment: pline; display: flex; gap: 12px; padding: 9px 15px; border-bottom: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace; font-size: 12.5px; align-items: baseline; background: var(--bg-card);
+}
+.proof-list li:nth-child(even) { background: var(--bg2); }
+.proof-list li:last-child { border-bottom: none; }
+.proof-list li::before { content: counter(pline); color: var(--ink3); min-width: 16px; text-align: right; }
+.proof-list .pf-stmt { flex: 1; color: var(--ink); }
+.proof-list .pf-just { color: var(--teal); font-size: 11px; white-space: nowrap; }
+@media (max-width: 620px) { .proof-list li { flex-wrap: wrap; } .proof-list .pf-just { margin-left: 28px; } }
+
+/* ── STEP-BY-STEP ── */
+.steps-body { max-width: 820px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+.step-card { display: grid; grid-template-columns: 52px 1fr; gap: 1.2rem; margin-bottom: 2.5rem; position: relative; }
+.step-card::before { content: ''; position: absolute; left: 25px; top: 52px; bottom: -2.5rem; width: 1px; background: var(--rule); }
+.step-card:last-child::before { display: none; }
+.step-num {
+  width: 52px; height: 52px; border-radius: 50%; background: var(--teal); color: #fff; display: flex;
+  align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 1.35rem;
+  font-style: italic; flex-shrink: 0;
+}
+.step-content h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; margin-top: 0.9rem; }
+.step-content h3:first-child { margin-top: 0.3rem; }
+.step-content p { color: var(--ink2); margin-bottom: 0.8rem; font-size: 0.93rem; }
+.step-content .math-inline {
+  background: var(--bg2); border: 1px solid var(--rule); border-left: 3px solid var(--teal); padding: 0.7rem 1rem;
+  font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.08rem; border-radius: 0 2px 2px 0;
+  margin: 0.8rem 0; color: var(--ink2);
+}
+.step-content .math-inline sub, .step-content .math-inline sup { font-size: 0.65em; font-style: normal; font-family: 'JetBrains Mono', monospace; }
+.step-content .highlight { background: rgba(42,122,106,0.07); border: 1px solid rgba(42,122,106,0.25); padding: 0.7rem 1rem; border-radius: 3px; margin: 0.8rem 0; font-size: 0.88rem; color: var(--ink2); }
+.step-content .highlight strong { color: var(--teal); }
+.step-content .deep-note { background: rgba(42,74,122,0.06); border: 1px solid rgba(42,74,122,0.2); border-left: 3px solid var(--blue); padding: 0.8rem 1rem; border-radius: 0 2px 2px 0; margin: 0.8rem 0; font-size: 0.85rem; color: var(--ink2); }
+.step-content .deep-note strong { color: var(--blue); }
+.step-content .warning-note { background: rgba(138,42,58,0.05); border: 1px solid rgba(138,42,58,0.2); border-left: 3px solid var(--rose); padding: 0.7rem 1rem; border-radius: 0 2px 2px 0; margin: 0.8rem 0; font-size: 0.85rem; color: var(--ink2); }
+.step-content .warning-note strong { color: var(--rose); }
+
+/* ── GALLERY ── */
+.gallery-body { max-width: 920px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+.gallery-body h2 {
+  font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 400; color: var(--ink);
+  margin: 2rem 0 0.5rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.4rem;
+}
+.gallery-body h2:first-child { margin-top: 0; }
+.gallery-body > p { color: var(--ink2); margin-bottom: 0.8rem; font-size: 0.92rem; }
+.ex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0; }
+@media (max-width: 700px) { .ex-grid { grid-template-columns: 1fr; } }
+.ex-card { background: var(--bg-card); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.ex-card-head {
+  padding: 0.7rem 1rem; background: var(--bg2); border-bottom: 1px solid var(--rule); font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink3); display: flex; justify-content: space-between; align-items: center;
+}
+.ex-card-head .badge { background: var(--teal); color: #fff; font-size: 0.55rem; padding: 0.1rem 0.4rem; border-radius: 2px; }
+.ex-card-head .badge.hard { background: var(--rose); }
+.ex-card-body { padding: 1.2rem; }
+.ex-card-body .ex-fn { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15rem; color: var(--ink); margin-bottom: 0.8rem; }
+.ex-card-body .ex-step { font-size: 0.84rem; color: var(--ink2); margin-bottom: 0.5rem; padding-left: 0.8rem; border-left: 2px solid var(--rule); }
+.ex-card-body .ex-step strong { color: var(--ink); }
+.ex-card-body .ex-result {
+  margin-top: 0.8rem; background: var(--bg2); border: 1px solid var(--rule); border-left: 3px solid var(--teal);
+  padding: 0.6rem 0.8rem; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem; color: var(--ink2); border-radius: 0 2px 2px 0;
+}
+
+/* ── GLOSSARY ── */
+.gloss-body { max-width: 800px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+.gloss-item { display: grid; grid-template-columns: 200px 1fr; gap: 1rem; padding: 1.15rem 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.gloss-item:last-child { border-bottom: none; }
+.gloss-term { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15rem; color: var(--teal); padding-top: 0.15rem; }
+.gloss-def { color: var(--ink2); font-size: 0.89rem; }
+.gloss-def .symbol {
+  display: inline-block; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; color: var(--ink);
+  background: var(--bg2); padding: 0 0.3rem; border-radius: 2px; margin: 0 1px;
+}
+.gloss-def .deep-expand { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--rule); font-size: 0.82rem; color: var(--ink3); font-style: italic; }
+@media (max-width: 540px) { .gloss-item { grid-template-columns: 1fr; gap: 0.3rem; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="title-block">
+    <h1>The <em>Formal</em> Convergence of Series</h1>
+    <div class="subtitle">the ε–N definition, Cauchy's criterion, and the completeness of ℝ — with the deep intuition behind each</div>
+  </div>
+  <div class="header-right">
+    <div class="header-formula">
+      Σa<sub>k</sub> = L &nbsp;⟺&nbsp; ∀ε&gt;0, ∃N<sub>0</sub> : n≥N<sub>0</sub> ⟹ |S<sub>n</sub>−L|&lt;ε
+    </div>
+    <button id="themeToggle" class="theme-toggle-btn">🌓 Theme</button>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="interactive">① Interactive</button>
+  <button class="tab-btn" data-tab="theory">② Theory</button>
+  <button class="tab-btn" data-tab="intuition">③ Deep Intuition</button>
+  <button class="tab-btn" data-tab="steps">④ Step-by-Step</button>
+  <button class="tab-btn" data-tab="examples">⑤ Worked Examples</button>
+  <button class="tab-btn" data-tab="glossary">⑥ Glossary</button>
+</nav>
+
+<!-- ============ INTERACTIVE ============ -->
+<div class="tab-panel active" id="tab-interactive">
+  <div class="interactive-layout">
+    <div class="viz-pane">
+      <div class="canvas-container" id="canvasContainer">
+        <canvas id="mainCanvas" width="680" height="440"></canvas>
+      </div>
+      <div class="viz-stats">
+        <div class="stat-chip gold">
+          <div class="lbl">N₀ (defender's move)</div>
+          <div class="val" id="n0Val">—</div>
+        </div>
+        <div class="stat-chip">
+          <div class="lbl">ε (challenger's move)</div>
+          <div class="val" id="epsVal2">—</div>
+        </div>
+        <div class="stat-chip blue">
+          <div class="lbl">tail |S<sub>max</sub>−S<sub>N₀</sub>|</div>
+          <div class="val" id="tailVal">—</div>
+        </div>
+        <div class="stat-chip rose">
+          <div class="lbl">challenge met?</div>
+          <div class="val" id="challengeVal2">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl-pane">
+      <div class="ctrl-section">
+        <div class="ctrl-head">Series Σaₖ</div>
+        <div class="btn-group">
+          <button class="grp-btn active" data-s="geo">geometric: rᵏ</button>
+          <button class="grp-btn" data-s="harm">harmonic: 1/k</button>
+          <button class="grp-btn" data-s="altharm">alt. harmonic: (−1)ᵏ⁺¹/k</button>
+          <button class="grp-btn" data-s="pser">p-series: 1/kᵖ</button>
+          <button class="grp-btn" data-s="tele">telescoping: 1/(k(k+1))</button>
+        </div>
+        <div style="margin-top:0.7rem; font-size:0.78rem; color:var(--ink3); font-style:italic;" id="sDesc">
+          Sₙ = Σ (1/2)ᵏ, converges to L = 1
+        </div>
+      </div>
+
+      <div class="ctrl-section" id="paramSection">
+        <div class="ctrl-head">Parameter</div>
+        <div class="slider-block">
+          <div class="slider-label"><span id="paramLabel">ratio r</span><span class="sval" id="paramVal">0.60</span></div>
+          <input type="range" id="paramSlider" min="-1.5" max="1.5" step="0.01" value="0.6">
+        </div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">ε — The Challenger's Demand</div>
+        <div class="slider-block">
+          <div class="slider-label"><span>ε (tolerance around L)</span><span class="sval" id="epsVal">0.05</span></div>
+          <input type="range" id="epsSlider" min="0.005" max="0.5" step="0.005" value="0.05">
+        </div>
+        <div style="font-size:0.78rem; color:var(--ink3); margin-top:0.3rem;">
+          The adversary demands: keep Sₙ within ±ε of L, forever, from some point on.
+        </div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">N — Terms Plotted</div>
+        <div class="slider-block">
+          <div class="slider-label"><span>max N shown</span><span class="sval" id="nMaxVal">60</span></div>
+          <input type="range" id="nMaxSlider" min="10" max="400" step="1" value="60">
+        </div>
+        <div style="font-size:0.78rem; color:var(--ink3); margin-top:0.3rem;">
+          The Defender's response N₀ is computed automatically: the smallest N₀ (within the window shown) after which every Sₙ stays inside the ε-band.
+        </div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-head">Live Condition</div>
+        <div class="inline-formula" id="liveCond">
+          n ≥ N<sub>0</sub> &nbsp;⟹&nbsp; |S<sub>n</sub> − L| &lt; ε
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ THEORY ============ -->
+<div class="tab-panel" id="tab-theory">
+  <div class="prose-body">
+
+    <h2>From a Binary Operation to an Infinite Question</h2>
+    <p>Addition, as an axiom of the real numbers, consumes exactly two numbers and returns one. Every finite sum, however long, is just that operation applied over and over — a million-term sum is 999,999 applications of <em>+</em>, still a finite chain. Nowhere among the field axioms of ℝ is there a rule for adding infinitely many numbers at once. So when Σ<sub>k=1</sub><sup>∞</sup> a<sub>k</sub> is written down, no operation already sitting inside arithmetic is being invoked — a genuinely new question is being asked, and only the machinery of limits is equipped to answer it rigorously.</p>
+
+    <div class="definition">
+      <div class="def-title">Definition — partial sum</div>
+      <p>For a sequence a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>, … of real numbers, the <strong>N-th partial sum</strong> is the ordinary, finite sum S<sub>N</sub> = a<sub>1</sub> + a<sub>2</sub> + ⋯ + a<sub>N</sub>. Nothing exotic has happened yet — every S<sub>N</sub> is computed exactly as any finite sum is.</p>
+    </div>
+
+    <p>The entire theory of infinite series consists of exactly one move: stop asking "what is the sum of infinitely many numbers" and ask instead what the ordinary <em>sequence</em> S<sub>1</sub>, S<sub>2</sub>, S<sub>3</sub>, … does as N grows. That is a sequence-limit question, no different in kind from any other, and the Theory tab of the companion <a href="../limits/limits_formal.html">formal limit essay</a> builds the ε–δ apparatus this entire theory borrows wholesale.</p>
+
+    <h2>The ε–N Definition of Convergence</h2>
+    <div class="definition">
+      <div class="def-title">Definition — convergence of a series (Weierstrass-style)</div>
+      <p>The series Σa<sub>k</sub> <strong>converges</strong> to L if: for every ε &gt; 0, there exists a natural number N<sub>0</sub> such that n ≥ N<sub>0</sub> implies |S<sub>n</sub> − L| &lt; ε. If no such L exists, the series <strong>diverges</strong>.</p>
+    </div>
+    <div class="math-display">
+      ∀ε &gt; 0, ∃N<sub>0</sub> ∈ ℕ : n ≥ N<sub>0</sub> ⟹ |S<sub>n</sub> − L| &lt; ε
+    </div>
+    <p>Parse the quantifiers exactly as in the limit definition. <em>∀ε &gt; 0</em> means the statement must hold for every positive tolerance simultaneously — for ε = 1, for ε = 10<sup>−9</sup>, for every other positive number. <em>∃N<sub>0</sub></em> means a single index answers the challenge; N<sub>0</sub> is allowed — expected — to depend on ε, typically growing as ε shrinks. Nothing here mentions the individual terms a<sub>k</sub> directly; convergence is, by definition, purely a statement about the sequence of partial sums.</p>
+
+    <h2>The Necessary Condition: Terms Must Vanish</h2>
+    <p>Since a<sub>k</sub> = S<sub>k</sub> − S<sub>k−1</sub> for k ≥ 2, if S<sub>k</sub> → L then a<sub>k</sub> = S<sub>k</sub> − S<sub>k−1</sub> → L − L = 0. This is an immediate, cheap screening test: if a<sub>k</sub> does not tend to 0, the series cannot converge — no further test is needed.</p>
+    <div class="warning-box">
+      <div class="warn-title">The converse is false</div>
+      <p>The harmonic series Σ1/k has terms tending to 0, and yet it diverges — grouping terms in doubling blocks (1) + (½) + (⅓+¼) + (⅕+⅙+⅐+⅛) + ⋯ shows each block of length 2<sup>m</sup> sums to at least ½, so infinitely many blocks force S<sub>N</sub> past any bound. Terms shrinking to zero is necessary; it is nowhere close to sufficient. The companion <a href="infinite-series-essay.html">Infinite Series essay</a> works this argument in full, with Oresme's original grouping.</p>
+    </div>
+
+    <h2>Cauchy's Criterion: Certifying Convergence Without Naming L</h2>
+    <p>The ε–N definition above has a real practical problem: it requires already knowing (or guessing) a candidate value L before it can be checked at all. Cauchy's criterion removes that requirement entirely, by making convergence a statement purely about how the terms of the sequence relate to <em>each other</em>.</p>
+    <div class="definition">
+      <div class="def-title">Definition — Cauchy criterion for series</div>
+      <p>Σa<sub>k</sub> converges if and only if: for every ε &gt; 0, there exists N<sub>0</sub> such that for all m &gt; n ≥ N<sub>0</sub>,</p>
+    </div>
+    <div class="math-display">
+      |S<sub>m</sub> − S<sub>n</sub>| = |a<sub>n+1</sub> + a<sub>n+2</sub> + ⋯ + a<sub>m</sub>| &lt; ε
+    </div>
+    <p>A sequence satisfying this property — its terms bunch arbitrarily close <em>together</em>, with no reference to any external target — is called a <strong>Cauchy sequence</strong>. The claim "Σa<sub>k</sub> converges ⟺ (S<sub>N</sub>) is Cauchy" is not automatic; it is exactly equivalent to the statement that ℝ is <strong>complete</strong>, and Panel III below is built around explaining why.</p>
+
+    <h2>Absolute and Conditional Convergence</h2>
+    <div class="definition">
+      <div class="def-title">Definition</div>
+      <p>Σa<sub>k</sub> is <strong>absolutely convergent</strong> if Σ|a<sub>k</sub>| converges. It is <strong>conditionally convergent</strong> if Σa<sub>k</sub> converges but Σ|a<sub>k</sub>| does not.</p>
+    </div>
+    <p>Absolute convergence implies convergence — a fact worth proving directly from Cauchy's criterion, since the proof is short and shows the criterion earning its keep:</p>
+    <ol class="proof-list">
+      <li><span class="pf-stmt">Suppose Σ|aₖ| converges.</span><span class="pf-just">hypothesis</span></li>
+      <li><span class="pf-stmt">Let ε &gt; 0. By Cauchy's criterion applied to Σ|aₖ|, ∃N₀ : m&gt;n≥N₀ ⟹ |aₙ₊₁|+⋯+|aₘ| &lt; ε.</span><span class="pf-just">Cauchy criterion, Σ|aₖ| side</span></li>
+      <li><span class="pf-stmt">|Sₘ−Sₙ| = |aₙ₊₁+⋯+aₘ| ≤ |aₙ₊₁|+⋯+|aₘ|</span><span class="pf-just">triangle inequality</span></li>
+      <li><span class="pf-stmt">∴ |Sₘ−Sₙ| &lt; ε for all m&gt;n≥N₀</span><span class="pf-just">chaining 2 and 3</span></li>
+      <li><span class="pf-stmt">So (Sₙ) is Cauchy, hence converges.</span><span class="pf-just">Cauchy criterion, Σaₖ side</span></li>
+    </ol>
+
+    <h2>The Monotone Convergence Theorem — the Engine Behind Positive-Term Tests</h2>
+    <p>When every a<sub>k</sub> ≥ 0, the partial sums S<sub>N</sub> form a monotonically non-decreasing sequence. Such a sequence converges precisely when it is bounded above:</p>
+    <div class="definition">
+      <div class="def-title">Theorem — monotone convergence</div>
+      <p>Every bounded, monotonic sequence of real numbers converges. (In fact it converges to its supremum, if increasing, or its infimum, if decreasing.)</p>
+    </div>
+    <p>This theorem is where completeness does its most direct, visible work in the whole subject: the supremum is only guaranteed to exist, as an honest real number, because ℝ has the least-upper-bound property (built out in full in the companion <a href="../../continuous_math/foundations/continuous-math-foundations.html">Continuous Mathematics Foundations</a> essay). Every comparison-style test — comparison, ratio, root, integral — ultimately reduces a convergence question to a boundedness question, and the monotone convergence theorem is what cashes boundedness in for an actual limit.</p>
+
+    <div class="prose-body" style="padding:0;">
+    <table>
+      <thead><tr><th>Tool</th><th>What it needs</th><th>What it certifies</th></tr></thead>
+      <tbody>
+        <tr><td>ε–N definition</td><td>a candidate value L</td><td>Sₙ → L, directly</td></tr>
+        <tr><td>Cauchy criterion</td><td>nothing external — purely internal</td><td>a limit exists <em>somewhere</em> in ℝ, without naming it</td></tr>
+        <tr><td>Monotone convergence</td><td>aₖ ≥ 0 and an upper bound</td><td>convergence, via completeness, for positive-term series</td></tr>
+        <tr><td>Absolute convergence</td><td>Σ|aₖ| convergent</td><td>Σaₖ convergent, and order-independent</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="note-box"><strong>Scope note:</strong> This essay assumes the individual convergence tests (ratio, root, integral, comparison, alternating) as covered in depth by the companion <a href="infinite-series-essay.html">Infinite Series essay</a>. Its own focus is narrower and deeper: the formal ε–N scaffolding those tests all rest on, and — in Panel III — the reasons that scaffolding is shaped the way it is.</div>
+
+  </div>
+</div>
+
+<!-- ============ DEEP INTUITION ============ -->
+<div class="tab-panel" id="tab-intuition">
+  <div class="prose-body">
+
+    <h2>The Challenge–Response Game, Replayed for Sums</h2>
+    <p>The clearest way to feel the ε–N definition is as a game between an adversarial <strong>Challenger</strong> and a <strong>Defender</strong> — the exact same game the companion <a href="../limits/limits_formal.html">ε–δ essay</a> plays for ordinary function limits, replayed here on the sequence of partial sums instead of on a graph.</p>
+    <p>The Challenger's move is ε: a tolerance band, (L−ε, L+ε), around the claimed limit L. The Challenger is saying, "I demand the running total land inside this band." The Defender's move is N<sub>0</sub>: an index past which every single partial sum, with no exceptions, is guaranteed to sit inside that band.</p>
+    <div class="insight-box">
+      <div class="ins-title">The definition as a game</div>
+      <p>Σaₖ = L means: the Defender always wins. No matter how small the Challenger makes ε, the Defender can always name an N₀ that works. If there is even one ε for which no N₀ works — however small the failures, however far out they occur — the series does not converge to L.</p>
+    </div>
+
+    <h3>Why the Challenger moves first</h3>
+    <p>The order ∀ε, ∃N<sub>0</sub> is not a stylistic choice. Reversing it to ∃N<sub>0</sub>, ∀ε would demand a single N<sub>0</sub> that works for every ε at once — meaning the partial sums would have to stop moving entirely past N<sub>0</sub>, not merely settle down. That is a wildly stronger, and almost always false, claim. The actual definition only asks that the <em>wiggle room</em> shrink toward zero as ε shrinks, never that it vanish outright — and letting the Challenger fix ε first is exactly what encodes that weaker, correct demand.</p>
+
+    <h2>Why Infinite Addition Needed a Rule At All</h2>
+    <p>It is tempting to think Σa<sub>k</sub> is simply "what you get" by adding up a list, extended past any finite stopping point by sheer momentum. But momentum is not a mathematical object. The real content of the ε–N definition is that it replaces a picture of unending motion with a finite, checkable fact about two numbers, ε and N<sub>0</sub>, and their relationship — nothing in the definition ever asks you to imagine an infinite process actually finishing. Series convergence was never a new kind of arithmetic bolted onto ℝ; it is a single, extraordinarily fruitful reading of the ordinary sequence limit, applied to one specific kind of sequence — the one built by repeated partial addition.</p>
+
+    <h2>Why Cauchy's Criterion Is the Deeper Idea</h2>
+    <p>The ε–N definition has a quiet dependency the Cauchy criterion does not: to even state it, you must already have a candidate L in hand. For most series that arise in practice, no such candidate is obvious — nobody guesses the value of Σ1/k² before proving it converges. Cauchy's criterion sidesteps the problem entirely by asking a question with no outside reference at all: do the terms of the sequence eventually bunch up <em>against one another</em>? That is a purely internal, self-contained question — it can be checked without ever knowing, or even suspecting, what the series converges to.</p>
+    <p>The genuinely deep fact is that, over the real numbers, "the terms bunch up against each other" and "the sequence converges to some real number" turn out to be the exact same statement. That equivalence is not free — it is precisely what completeness buys.</p>
+    <div class="warning-box">
+      <div class="warn-title">Why this can fail — the hole at √2</div>
+      <p>Build a sequence of rationals converging toward √2: 1, 1.4, 1.41, 1.414, 1.4142, … This sequence is Cauchy in exactly the sense above — its terms bunch closer and closer together, and the Cauchy criterion, checked purely by comparing terms to each other, is satisfied. And yet, considered as a sequence of <em>rational</em> numbers with a limit required to be rational, it converges to nothing at all: √2 is not a rational number, so there is no rational L for it to land on. Internal consistency (Cauchy) and actual convergence come apart the instant the number system has holes in it.</p>
+    </div>
+    <p>ℝ is built — via Dedekind cuts, or equivalently via classes of Cauchy sequences of rationals, exactly as the companion <a href="../../continuous_math/foundations/continuous-math-foundations.html">Continuous Mathematics Foundations</a> essay details — specifically so that this failure cannot happen: every Cauchy sequence of reals is guaranteed a real number to land on, because the real line was constructed to have no gaps left over. Cauchy's criterion for series convergence is, in this exact sense, one of the more direct payoffs of having built ℝ to be complete in the first place, not a separate fact requiring its own separate justification.</p>
+
+    <h2>The Necessary Condition Is Cauchy's Criterion in Miniature</h2>
+    <p>Panel II's fact that a<sub>k</sub> → 0 is necessary for convergence looks, at first glance, like a separate observation bolted onto the theory. It is not — it is the shortest possible special case of Cauchy's criterion, obtained by taking the tail as short as it can possibly be: m = n+1. The general criterion demands the tail sum a<sub>n+1</sub> + ⋯ + a<sub>m</sub> shrink to 0 for <em>every</em> choice of m and n past N<sub>0</sub>; specializing to the one-term tail a<sub>n+1</sub> alone recovers exactly "a<sub>k</sub> → 0." Nothing new was proved in Panel II — the necessary condition was always sitting inside Cauchy's criterion, waiting to be read off as its simplest instance.</p>
+
+    <h2>Why Bounded and Monotonic Is Enough — the Staircase Picture</h2>
+    <p>Restrict to a<sub>k</sub> ≥ 0. Every partial sum is then at least as large as the one before it — the sequence (S<sub>N</sub>) can only climb, never retreat, like a staircase with no landing that ever steps back down. If that staircase never climbs past some fixed ceiling, intuition says it has to be "settling in" against the highest step it can actually reach.</p>
+    <div class="insight-box">
+      <div class="ins-title">Why intuition alone isn't quite a proof — and what fixes it</div>
+      <p>"Settling in against the highest reachable step" is exactly the definition of a <strong>supremum</strong> — the least upper bound of the set of partial sums. The staircase picture only becomes a theorem once you know that a bounded set of real numbers is <em>guaranteed</em> to have a supremum that is itself a real number. That guarantee is precisely completeness (the least-upper-bound property) — over ℚ alone, a bounded increasing sequence of rationals can climb forever toward a ceiling and still have no rational supremum to settle against, the same √2-shaped hole as before. Over ℝ, the hole is filled by construction, and "bounded" and "convergent" become synonyms for non-negative series. This single fact — quiet, almost invisible — is what makes the comparison test, the integral test, and (underneath a change of variables) the ratio and root tests actually work.</p>
+    </div>
+
+    <h2>Absolute Convergence — the "Total Distance Walked" Picture</h2>
+    <p>Picture the partial sums as a point walking along the number line, taking one step of size a<sub>k</sub> at each tick — forward if a<sub>k</sub> &gt; 0, backward if a<sub>k</sub> &lt; 0. The quantity Σ|a<sub>k</sub>| is the <em>total distance walked</em>, counting every step's length regardless of direction — the odometer reading, not the final displacement.</p>
+    <div class="two-col">
+      <div class="two-col-card">
+        <div class="tc-label">Absolute convergence</div>
+        <div class="tc-title">a finite odometer reading</div>
+        <p>If the total distance walked is finite, the walker's remaining travel budget shrinks to zero as N grows — there is only ever a vanishing amount of ground left to cover, in either direction, no matter how the remaining steps happen to be arranged. The point is forced to settle at one specific location, and no reordering of the still-untaken steps can move that destination.</p>
+      </div>
+      <div class="two-col-card">
+        <div class="tc-label">Conditional convergence</div>
+        <div class="tc-title">an infinite odometer, delicately cancelling</div>
+        <p>The forward-only distance and the backward-only distance are each separately infinite — the walker's total travel budget never runs low in <em>either</em> direction. Convergence to a single point happens only because of the specific order forward and backward steps arrive in. Change that interleaving, and the cancellation pattern that produced a finite destination is gone.</p>
+      </div>
+    </div>
+    <p>This is the geometric content behind the triangle-inequality proof in Panel II — not merely a symbol-pushing fact, but a statement about how much room a sequence of steps has left to still move around in.</p>
+
+    <h2>Why Order Stops Being Free</h2>
+    <p>Finite addition is commutative without exception — reorder a finite list of numbers however you like, and the total is unchanged, because only a finite travel budget is ever in play and it all gets spent exactly once regardless of sequence. Infinite addition inherits that safety only when the travel budget in each direction is separately finite, i.e., only under absolute convergence.</p>
+    <div class="warning-box">
+      <div class="warn-title">Riemann's rearrangement theorem, read through the walking picture</div>
+      <p>If Σaₖ converges conditionally, its positive terms alone sum to +∞ and its negative terms alone sum to −∞ — an infinite forward budget and an infinite backward budget, each on its own unlimited. That is exactly enough freedom to walk the point to <em>any</em> target T: spend forward budget until the position first exceeds T, then backward budget until it first drops below T, then forward again, forever. Because aₖ → 0, each overshoot and undershoot shrinks, and the walk converges to T exactly — for whichever T was chosen in advance. Absolutely convergent series have no such freedom: with only a finite budget in each direction, every possible reordering is forced to spend down to the same destination.</p>
+    </div>
+    <p>Conditional convergence is the precise borderline where "sum over an unordered set" and "limit of one specific ordered sequence of partial sums" — comfortably identical for finite sums — come apart. A series was never really "the sum of a set of numbers"; a set carries no built-in order, so a sum over a set would be automatically order-independent by definition. A series is the limit of one particular sequence of partial sums, built by adding terms in one particular order, and it is only the extra hypothesis of absolute convergence that makes the order stop mattering.</p>
+
+    <div class="insight-box">
+      <div class="ins-title">One line to carry away</div>
+      <p>Every idea in this panel is downstream of a single fact: ℝ has no missing points. The ε–N definition turns "approaches" into two finite numbers and a checkable relationship; Cauchy's criterion turns that into a purely internal check because completeness guarantees internal consistency has somewhere real to land; the monotone convergence theorem turns "bounded" into "convergent" for the same reason; and absolute convergence turns out to be exactly the amount of structure needed to make an infinite sum behave like a finite one. Series convergence, from top to bottom, is completeness of the real line doing quiet, load-bearing work.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ STEP-BY-STEP ============ -->
+<div class="tab-panel" id="tab-steps">
+  <div class="steps-body">
+
+    <div style="margin-bottom:2rem;">
+      <p style="color:var(--ink3); font-size:0.85rem; font-style:italic;">Two complete formal proofs: a convergence proof for a geometric series directly from the ε–N definition, and a divergence proof for the harmonic series directly from Cauchy's criterion.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>State what must be proven</h3>
+        <p>Claim: Σ<sub>k=1</sub><sup>∞</sup> (1/2)<sup>k</sup> = 1. By the ε–N definition, this requires:</p>
+        <div class="math-inline">∀ε &gt; 0, ∃N₀ ∈ ℕ : n ≥ N₀ ⟹ |Sₙ − 1| &lt; ε</div>
+        <p>where S<sub>n</sub> = ½ + ¼ + ⋯ + (½)<sup>n</sup>. Scratch work first, formal proof second.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Scratch work — get a closed form for Sₙ</h3>
+        <p>The geometric partial-sum formula gives S<sub>n</sub> = 1 − (½)<sup>n</sup>, so:</p>
+        <div class="math-inline">|Sₙ − 1| = |−(½)ⁿ| = (½)ⁿ</div>
+        <p>We need (½)<sup>n</sup> &lt; ε. Taking logarithms: n·ln(½) &lt; ln ε, and since ln(½) &lt; 0, this flips to n &gt; ln ε / ln(½) = log₂(1/ε).</p>
+        <div class="highlight"><strong>Candidate:</strong> choose N₀ = ⌈log₂(1/ε)⌉ + 1. Any n ≥ N₀ then satisfies (½)ⁿ &lt; ε. ✓</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Write the formal proof</h3>
+        <div class="math-inline">Let ε &gt; 0 be given. Choose N₀ = ⌈log₂(1/ε)⌉ + 1.</div>
+        <p>Suppose n ≥ N₀. Then n &gt; log₂(1/ε), so 2<sup>n</sup> &gt; 1/ε, so (½)<sup>n</sup> &lt; ε. Since S<sub>n</sub> = 1 − (½)<sup>n</sup>:</p>
+        <div class="math-inline">|Sₙ − 1| = (½)ⁿ &lt; ε</div>
+        <div class="highlight"><strong>Conclusion:</strong> |Sₙ − 1| &lt; ε for all n ≥ N₀. Since ε was arbitrary, Σ(½)ᵏ = 1. □</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Understanding what N₀ is doing</h3>
+        <p>N₀ = ⌈log₂(1/ε)⌉ + 1 grows only logarithmically as ε shrinks — halving ε adds roughly one more term to N₀. That slow growth is a direct fingerprint of geometric decay: each new term shrinks the remaining error by a fixed factor, so the Defender's required response barely has to grow at all as the Challenger tightens the demand.</p>
+        <div class="deep-note"><strong>Contrast this in the Interactive tab:</strong> switch to the p-series with p just above 1, and watch how much larger N₀ has to grow for the same ε — a direct visual read on how much harder the Defender's job gets when convergence is only barely guaranteed.</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>A divergence proof: the harmonic series fails Cauchy's criterion</h3>
+        <p>Claim: Σ1/k diverges. Rather than chase a (nonexistent) limit L directly, disprove the Cauchy criterion: exhibit one ε for which <em>no</em> N₀ works.</p>
+        <div class="math-inline">Take ε = ½. For any N₀, choose n = N₀ and m = 2N₀.</div>
+        <p>Then S<sub>m</sub> − S<sub>n</sub> is a sum of exactly N₀ terms, each one at least 1/m = 1/(2N₀):</p>
+        <div class="math-inline">Sₘ − Sₙ = 1/(N₀+1) + ⋯ + 1/(2N₀) ≥ N₀ · 1/(2N₀) = ½</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <h3>Finish the disproof</h3>
+        <div class="highlight"><strong>Conclusion:</strong> for ε = ½, every candidate N₀ admits an m &gt; n ≥ N₀ (namely n=N₀, m=2N₀) with |Sₘ − Sₙ| ≥ ε. No N₀ can ever satisfy Cauchy's criterion for this ε. □</div>
+        <p>This is exactly Oresme's doubling-block argument from Panel II, repackaged as a direct Cauchy-criterion disproof: block after block, each of a different size, always contributes at least ½ to the running total, so the tail sums never shrink no matter how far out N₀ is pushed.</p>
+        <div class="warning-note"><strong>Why not just check aₖ → 0?</strong> It's true that 1/k → 0, so the cheap necessary-condition test is silent here — it cannot rule divergence in or out. This is exactly why Cauchy's criterion (checking a whole tail, not just one term) is strictly more powerful than the necessary condition alone, which Panel III showed is only its shortest possible special case.</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <h3>The general method</h3>
+        <p>Two reusable patterns emerge. To <strong>prove</strong> convergence directly: find a closed (or tightly bounded) form for S<sub>n</sub> − L, then invert the inequality |S<sub>n</sub> − L| &lt; ε to solve for how large n must be, and let N₀ be that bound, rounded up. To <strong>disprove</strong> convergence (or certify divergence) without any candidate L: find one ε and, for every N₀, an explicit pair m &gt; n ≥ N₀ making the tail sum at least ε — grouping terms into blocks of geometrically growing size is the standard trick whenever individual terms shrink too slowly.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ WORKED EXAMPLES ============ -->
+<div class="tab-panel" id="tab-examples">
+  <div class="gallery-body">
+
+    <h2>Direct ε–N Proofs</h2>
+    <div class="ex-grid">
+      <div class="ex-card">
+        <div class="ex-card-head"><span>Geometric series</span><span class="badge">Easy</span></div>
+        <div class="ex-card-body">
+          <div class="ex-fn">Σ (1/3)ᵏ = 3/2</div>
+          <div class="ex-step"><strong>Closed form:</strong> Sₙ = (1 − (1/3)ⁿ⁺¹)/(1−1/3), so |Sₙ − 3/2| = (3/2)(1/3)ⁿ⁺¹</div>
+          <div class="ex-step"><strong>Need:</strong> (3/2)(1/3)ⁿ⁺¹ &lt; ε ⟹ n &gt; log₃(3/(2ε)) − 1</div>
+          <div class="ex-step"><strong>Choose:</strong> N₀ = ⌈log₃(3/(2ε))⌉</div>
+          <div class="ex-result">Logarithmic growth of N₀ in 1/ε — the geometric signature ✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head"><span>Telescoping series</span><span class="badge">Easy</span></div>
+        <div class="ex-card-body">
+          <div class="ex-fn">Σ 1/(k(k+1)) = 1</div>
+          <div class="ex-step"><strong>Closed form:</strong> Sₙ = 1 − 1/(n+1) &nbsp;(interior terms cancel)</div>
+          <div class="ex-step"><strong>Need:</strong> 1/(n+1) &lt; ε ⟹ n &gt; 1/ε − 1</div>
+          <div class="ex-step"><strong>Choose:</strong> N₀ = ⌈1/ε⌉</div>
+          <div class="ex-result">|Sₙ − 1| = 1/(n+1) &lt; ε for n ≥ N₀ ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Boundary and Conditional Cases</h2>
+    <div class="ex-grid">
+      <div class="ex-card">
+        <div class="ex-card-head"><span>p-series boundary</span><span class="badge">Medium</span></div>
+        <div class="ex-card-body">
+          <div class="ex-fn">Σ 1/kᵖ: p=1 diverges, p=1+δ converges</div>
+          <div class="ex-step"><strong>p = 1:</strong> the harmonic series — Panel IV's Cauchy-criterion disproof applies verbatim.</div>
+          <div class="ex-step"><strong>p = 1+δ, δ&gt;0:</strong> the integral test bounds Sₙ by 1 + ∫₁ⁿ x⁻ᵖdx = 1 + (1−n⁻δ)/δ, bounded above by 1+1/δ — a finite ceiling.</div>
+          <div class="ex-step"><strong>By monotone convergence:</strong> bounded + increasing ⟹ convergent, with no closed form for L required.</div>
+          <div class="ex-result">An arbitrarily small nudge in p flips divergence to convergence ✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head"><span>Alternating harmonic</span><span class="badge">Medium</span></div>
+        <div class="ex-card-body">
+          <div class="ex-fn">Σ (−1)ᵏ⁺¹/k = ln 2 (conditional)</div>
+          <div class="ex-step"><strong>Leibniz bound:</strong> |S − Sₙ| ≤ aₙ₊₁ = 1/(n+1)</div>
+          <div class="ex-step"><strong>So an explicit N₀ falls out directly:</strong> N₀ = ⌈1/ε⌉ − 1 guarantees |S − Sₙ| &lt; ε</div>
+          <div class="ex-step"><strong>But:</strong> Σ|(−1)ᵏ⁺¹/k| = Σ1/k diverges — convergence here depends on the alternating order.</div>
+          <div class="ex-result">Convergent, yet its rearrangements can be forced to any target (Panel III) ✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head"><span>Absolute convergence, verified</span><span class="badge">Medium</span></div>
+        <div class="ex-card-body">
+          <div class="ex-fn">Σ (−1)ᵏ/k² converges absolutely</div>
+          <div class="ex-step"><strong>Σ|aₖ| = Σ1/k²</strong> — a p-series with p=2 &gt; 1, convergent by the boundary case above.</div>
+          <div class="ex-step"><strong>By Panel II's proof:</strong> absolute convergence of Σ1/k² forces (Sₙ) to be Cauchy, hence convergent.</div>
+          <div class="ex-step"><strong>Payoff:</strong> every rearrangement of this series converges to the identical sum, −π²/12.</div>
+          <div class="ex-result">No fragile cancellation — the odometer reading itself is finite ✓</div>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-card-head"><span>Forcing a rearrangement</span><span class="badge hard">Hard</span></div>
+        <div class="ex-card-body">
+          <div class="ex-fn">Reorder Σ(−1)ᵏ⁺¹/k to sum to any target T</div>
+          <div class="ex-step"><strong>Positive terms</strong> 1, ⅓, ⅕, … sum to +∞; <strong>negative terms</strong> −½, −¼, −⅙, … sum to −∞.</div>
+          <div class="ex-step"><strong>Algorithm:</strong> add positive terms (in order) until the running total first exceeds T; then negative terms until it first drops below T; repeat forever.</div>
+          <div class="ex-step"><strong>Why it lands exactly on T:</strong> aₖ → 0, so each overshoot/undershoot shrinks to 0 — the walk in Panel III's picture converges to T by construction.</div>
+          <div class="ex-result">Same terms, same original order-free "set" — a different sum for every reordering ✓</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ GLOSSARY ============ -->
+<div class="tab-panel" id="tab-glossary">
+  <div class="gloss-body">
+
+    <div class="gloss-item">
+      <div class="gloss-term">Partial sum S<sub>N</sub></div>
+      <div class="gloss-def">The ordinary, finite sum of the first N terms: <span class="symbol">Sₙ = a₁+⋯+aₙ</span>. Every question about series convergence is secretly a question about this one sequence.</div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">N₀</div>
+      <div class="gloss-def">The Defender's response to the Challenger's ε — an index past which every partial sum is guaranteed within ε of the claimed limit.
+        <div class="deep-expand">Allowed to depend on ε; typically grows as ε shrinks. Any valid N₀ suffices, not necessarily the smallest one.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Cauchy sequence</div>
+      <div class="gloss-def">A sequence whose terms bunch arbitrarily close <em>to each other</em>, with no reference to any external limit: <span class="symbol">∀ε&gt;0 ∃N₀ : m,n≥N₀ ⟹ |Sₘ−Sₙ|&lt;ε</span>.</div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Cauchy criterion (series)</div>
+      <div class="gloss-def">Σaₖ converges iff its tail sums shrink: <span class="symbol">∀ε&gt;0 ∃N₀ : m&gt;n≥N₀ ⟹ |aₙ₊₁+⋯+aₘ|&lt;ε</span>. Equivalent to ordinary convergence only because ℝ is complete.</div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Completeness / least upper bound property</div>
+      <div class="gloss-def">Every non-empty, bounded-above subset of ℝ has a supremum in ℝ. The property that separates ℝ from ℚ, and the fact underneath both the monotone convergence theorem and the Cauchy criterion's validity.
+        <div class="deep-expand">See the companion Continuous Mathematics Foundations essay for the Dedekind-cut and Cauchy-sequence constructions of ℝ that build this property in from scratch.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Monotone convergence theorem</div>
+      <div class="gloss-def">A bounded, monotonic sequence of reals always converges — to its supremum (if increasing) or infimum (if decreasing). The engine behind every positive-term convergence test.</div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Tail sum</div>
+      <div class="gloss-def"><span class="symbol">aₙ₊₁+aₙ₊₂+⋯+aₘ</span> — the piece of the series left over after index n, up to index m. Cauchy's criterion is exactly the demand that tail sums shrink to 0.</div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Absolute convergence</div>
+      <div class="gloss-def">Σ|aₖ| converges. Strictly stronger than plain convergence; guarantees every rearrangement sums to the same value.</div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Conditional convergence</div>
+      <div class="gloss-def">Σaₖ converges but Σ|aₖ| does not. Convergence here depends essentially on the order of the terms — see Riemann's rearrangement theorem.
+        <div class="deep-expand">The positive terms alone diverge to +∞ and the negative terms alone diverge to −∞; only a specific interleaving produces a finite sum.</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Rearrangement theorem (Riemann)</div>
+      <div class="gloss-def">A conditionally convergent series can be reordered to converge to any prescribed real number, to diverge to ±∞, or to oscillate forever — while an absolutely convergent series converges to the same value under every reordering.</div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-term">Necessary condition (aₖ → 0)</div>
+      <div class="gloss-def">If Σaₖ converges, then aₖ → 0. Necessary but not sufficient (the harmonic series is the standard counterexample). The shortest possible special case of the Cauchy criterion, with tail length 1.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═════════════ THEME ═════════════ */
+const root = document.documentElement;
+document.getElementById('themeToggle').addEventListener('click', () => {
+  root.dataset.theme = root.dataset.theme === 'dark' ? '' : 'dark';
+  draw();
+});
+
+/* ═════════════ TABS ═════════════ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ═════════════ SERIES CONFIG ═════════════ */
+const SCFG = {
+  geo:     { label:'geometric: rᵏ', hasParam:true,  paramLabel:'ratio r', paramMin:-1.5, paramMax:1.5, paramStep:0.01, paramDefault:0.6, desc:p=>`Sₙ = Σ (${fmtR(p)})ᵏ, ${Math.abs(p)<1?'converges to L = '+fmtN(1/(1-p),4):'diverges'}` },
+  harm:    { label:'harmonic: 1/k', hasParam:false, desc:()=>'Sₙ = Σ 1/k — diverges (no L exists)' },
+  altharm: { label:'alt. harmonic: (−1)ᵏ⁺¹/k', hasParam:false, desc:()=>'Sₙ = Σ (−1)ᵏ⁺¹/k, converges to L = ln 2 ≈ 0.6931 (conditionally)' },
+  pser:    { label:'p-series: 1/kᵖ', hasParam:true, paramLabel:'power p', paramMin:0.2, paramMax:4, paramStep:0.05, paramDefault:1.5, desc:p=>`Sₙ = Σ 1/kᵖ, p=${fmtN(p,2)} — ${p>1?'converges':'diverges'}` },
+  tele:    { label:'telescoping: 1/(k(k+1))', hasParam:false, desc:()=>'Sₙ = Σ 1/(k(k+1)), converges to L = 1' }
+};
+
+function fmtR(x){ return (x>=0?'':'') + x.toFixed(2); }
+function fmtN(n,d){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+
+const S = { type:'geo', param:0.6, eps:0.05, nMax:60 };
+
+function computeSeries(type, param, N){
+  const terms = new Array(N);
+  for(let i=0;i<N;i++){
+    const k = i+1; let a;
+    switch(type){
+      case 'geo': a = Math.pow(param, i); break;
+      case 'harm': a = 1/k; break;
+      case 'altharm': a = (i%2===0?1:-1)/k; break;
+      case 'pser': a = 1/Math.pow(k, param); break;
+      case 'tele': a = 1/(k*(k+1)); break;
+    }
+    terms[i] = a;
+  }
+  const partial = new Array(N);
+  let s = 0;
+  for(let i=0;i<N;i++){ s += terms[i]; partial[i] = s; }
+
+  let limit = { finite:false, value:null };
+  switch(type){
+    case 'geo':
+      if(Math.abs(param) < 1) limit = { finite:true, value: 1/(1-param) };
+      break;
+    case 'altharm':
+      limit = { finite:true, value: Math.log(2) };
+      break;
+    case 'pser':
+      if(param > 1){
+        if(Math.abs(param-2) < 1e-6){ limit = { finite:true, value: Math.PI*Math.PI/6 }; }
+        else {
+          const M = 200000; let s2 = 0;
+          for(let k=1;k<=M;k++) s2 += 1/Math.pow(k, param);
+          s2 += Math.pow(M, 1-param)/(param-1);
+          limit = { finite:true, value: s2 };
+        }
+      }
+      break;
+    case 'tele':
+      limit = { finite:true, value: 1 };
+      break;
+  }
+  return { terms, partial, limit };
+}
+
+/* find smallest N0 (1..N) such that ALL n in [N0,N] satisfy |S_n - L| < eps */
+function findN0(partial, L, eps, N){
+  let lastFail = 0;
+  for(let i=0;i<N;i++){
+    if(Math.abs(partial[i]-L) >= eps) lastFail = i+1;
+  }
+  return lastFail + 1; // could exceed N -> means no valid N0 within window
+}
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function draw(){
+  const cfg = SCFG[S.type];
+  const N = S.nMax;
+  const { terms, partial, limit } = computeSeries(S.type, S.param, N);
+
+  document.getElementById('sDesc').textContent = cfg.desc(S.param);
+  document.getElementById('epsVal2').textContent = S.eps.toFixed(3);
+
+  let n0Text = '—', tailText = '—', challengeText = '—';
+  let n0Index = null;
+
+  if(limit.finite){
+    const n0 = findN0(partial, limit.value, S.eps, N);
+    if(n0 <= N){
+      n0Index = n0;
+      n0Text = String(n0);
+      const tail = Math.abs(partial[N-1] - partial[n0-1]);
+      tailText = tail.toExponential(2);
+      challengeText = 'YES — defender wins';
+    } else {
+      n0Text = '> ' + N;
+      challengeText = 'not yet (raise N shown)';
+      tailText = Math.abs(partial[N-1] - limit.value).toExponential(2);
+    }
+  } else {
+    n0Text = 'none';
+    challengeText = 'NO — series diverges';
+    tailText = Math.abs(partial[N-1] - partial[Math.max(0,Math.floor(N/2)-1)]).toExponential(2);
+  }
+  document.getElementById('n0Val').textContent = n0Text;
+  document.getElementById('tailVal').textContent = tailText;
+  document.getElementById('challengeVal2').textContent = challengeText;
+
+  // --- canvas ---
+  const canvas = document.getElementById('mainCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const marginL = 56, marginR = 20, marginT = 20, marginB = 34;
+  const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+
+  let yMin = Math.min(0, ...partial), yMax = Math.max(0, ...partial);
+  if(limit.finite){ yMin = Math.min(yMin, limit.value - S.eps); yMax = Math.max(yMax, limit.value + S.eps); }
+  let pad = (yMax - yMin) * 0.12;
+  if(!(pad > 0)) pad = 1;
+  yMin -= pad; yMax += pad;
+
+  const xs = n => marginL + (n-1)/Math.max(1,N-1) * plotW;
+  const ys = v => marginT + (1 - (v-yMin)/(yMax-yMin)) * plotH;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = cssVar('--canvas-bg'); ctx.fillRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle = cssVar('--grid-line'); ctx.lineWidth = 1;
+  ctx.fillStyle = cssVar('--ax-text'); ctx.font = '10px "JetBrains Mono", monospace';
+  for(let i=0;i<=5;i++){
+    const v = yMin + (yMax-yMin)*i/5;
+    const y = ys(v);
+    ctx.beginPath(); ctx.moveTo(marginL,y); ctx.lineTo(marginL+plotW,y); ctx.stroke();
+    ctx.fillText(v.toFixed(2), 4, y+3);
+  }
+  for(let i=0;i<=5;i++){
+    const n = Math.round(1 + (N-1)*i/5);
+    const x = xs(n);
+    ctx.beginPath(); ctx.moveTo(x,marginT); ctx.lineTo(x,marginT+plotH); ctx.stroke();
+    ctx.fillText(String(n), x-8, marginT+plotH+18);
+  }
+  ctx.strokeStyle = cssVar('--ax-line'); ctx.lineWidth = 1.2;
+  ctx.strokeRect(marginL, marginT, plotW, plotH);
+
+  // epsilon band around L
+  if(limit.finite){
+    ctx.fillStyle = cssVar('--band-fill');
+    const yTop = ys(limit.value + S.eps), yBot = ys(limit.value - S.eps);
+    ctx.fillRect(marginL, yTop, plotW, yBot-yTop);
+    ctx.strokeStyle = cssVar('--band-str'); ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(marginL,yTop); ctx.lineTo(marginL+plotW,yTop); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(marginL,yBot); ctx.lineTo(marginL+plotW,yBot); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // limit line
+    ctx.strokeStyle = cssVar('--limit-str'); ctx.lineWidth = 1.3; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(marginL, ys(limit.value)); ctx.lineTo(marginL+plotW, ys(limit.value)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // N0 vertical marker
+  if(n0Index && n0Index <= N){
+    ctx.strokeStyle = cssVar('--n0-str'); ctx.lineWidth = 1.6; ctx.setLineDash([3,3]);
+    const x = xs(n0Index);
+    ctx.beginPath(); ctx.moveTo(x, marginT); ctx.lineTo(x, marginT+plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = cssVar('--n0-str'); ctx.font = 'italic 12px "Cormorant Garamond", serif';
+    ctx.fillText('N₀', x+4, marginT+14);
+  }
+
+  // partial sum curve
+  ctx.strokeStyle = cssVar('--sum-line'); ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for(let i=0;i<N;i++){
+    const x = xs(i+1), y = ys(partial[i]);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  if(N <= 90){
+    for(let i=0;i<N;i++){
+      const inBand = limit.finite && Math.abs(partial[i]-limit.value) < S.eps;
+      ctx.fillStyle = inBand ? cssVar('--teal') : cssVar('--sum-line');
+      ctx.beginPath(); ctx.arc(xs(i+1), ys(partial[i]), 2.3, 0, 7); ctx.fill();
+    }
+  }
+}
+
+/* ═════════════ CONTROLS ═════════════ */
+document.querySelectorAll('[data-s]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-s]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    S.type = btn.dataset.s;
+    const cfg = SCFG[S.type];
+    const paramSection = document.getElementById('paramSection');
+    if(cfg.hasParam){
+      paramSection.style.display = '';
+      S.param = cfg.paramDefault;
+      document.getElementById('paramLabel').textContent = cfg.paramLabel;
+      const sl = document.getElementById('paramSlider');
+      sl.min = cfg.paramMin; sl.max = cfg.paramMax; sl.step = cfg.paramStep; sl.value = S.param;
+      document.getElementById('paramVal').textContent = S.param.toFixed(2);
+    } else {
+      paramSection.style.display = 'none';
+    }
+    draw();
+  });
+});
+
+document.getElementById('paramSlider').addEventListener('input', e=>{
+  S.param = +e.target.value;
+  document.getElementById('paramVal').textContent = S.param.toFixed(2);
+  draw();
+});
+document.getElementById('epsSlider').addEventListener('input', e=>{
+  S.eps = +e.target.value;
+  document.getElementById('epsVal').textContent = S.eps.toFixed(3);
+  draw();
+});
+document.getElementById('nMaxSlider').addEventListener('input', e=>{
+  S.nMax = +e.target.value;
+  document.getElementById('nMaxVal').textContent = S.nMax;
+  draw();
+});
+
+draw();
+</script>
+
+</body>
+</html>

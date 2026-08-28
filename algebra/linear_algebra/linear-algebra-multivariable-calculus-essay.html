@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linear Algebra Meets Calculus — The Derivative as a Matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; white-space:pre; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+ul.reading{ margin:0 0 16px 0; padding-left:0; list-style:none; }
+ul.reading li{ color:var(--ink-dim); margin-bottom:12px; padding-left:20px; position:relative; }
+ul.reading li::before{ content:'→'; position:absolute; left:0; color:var(--accent); }
+a{ color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent-dim); }
+a:hover{ color:var(--ink); border-color:var(--ink-faint); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">ALGEBRA ↔ CALCULUS</div>
+  <button class="tab-btn active" data-tab="t1">I · One Object, Two Traditions</button>
+  <button class="tab-btn" data-tab="t2">II · The Matrix, Recalled</button>
+  <button class="tab-btn" data-tab="t3">III · The Derivative, Recast</button>
+  <button class="tab-btn" data-tab="t4">IV · Why Composition Multiplies</button>
+  <button class="tab-btn" data-tab="t5">V · The Sense of a Mapping</button>
+  <button class="tab-btn" data-tab="t6">VI · Tangent Spaces</button>
+  <button class="tab-btn" data-tab="t7">VII · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t8">VIII · Where It All Meets</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Linear Algebra Meets Calculus</h1>
+<div class="subtitle">two subjects that grew up apart, and the one object — a matrix attached to a point — both were quietly reaching for</div>
+
+<h2>Why a slope can't survive more than one variable</h2>
+<p>Taught back to back, linear algebra and calculus can feel like two different kinds of mathematics in two different kinds of clothes. Linear algebra solves systems of equations, studies abstract vector spaces, multiplies grids of numbers. Calculus measures rates of change, draws tangent lines, computes areas under curves. Nothing about "eigenvector" seems to have much to do with "derivative," and it is entirely possible to pass both courses without ever being told that, past a certain point, they are the same subject.</p>
+<p>They are the same subject because of one narrow, load-bearing fact: <strong>the derivative of a function of several variables cannot be a number.</strong> In one variable, \(f'(a)\) answers "how fast does \(f\) change as \(x\) moves?" with a single value, because there is only one direction to move in — forward or backward along the same line. The instant a function takes more than one input, that question stops being well-posed as asked. Moving away from a point \(a\) in direction \(\mathbf u\) can produce an entirely different rate of change than moving in direction \(\mathbf v\), and there is no single number that reports "the" rate of change in every direction at once.</p>
+
+<div class="ascii">   ONE VARIABLE                              SEVERAL VARIABLES
+
+   one direction to move in                  a whole sphere of directions
+   f'(a) = the one rate                      one rate per direction —
+                                              no single number reports them all
+
+        ←────●────→                                    ↑
+           a                                     ↖      │      ↗
+                                                    ╲    │    ╱
+        f'(a) is enough                       ←──────── a ────────→
+                                                    ╱    │    ╲
+                                                  ↙      │      ↘
+                                                         ↓
+                                              a single slope has nowhere
+                                              left to point</div>
+
+<h3>The forced promotion</h3>
+<p>Calculus's response to this is not a convenient trick — it is close to the only option left. If a single number cannot describe how \(F\) responds to a nudge in every direction simultaneously, the object that replaces it has to itself accept a direction as input and hand back a rate as output: it has to be a function of the nudge \(\mathbf h\). Demanding that this replacement genuinely deserves to be called <em>the</em> derivative, rather than merely <em>a</em> reasonable local formula, pins down exactly what kind of function it is allowed to be — Panel III makes this precise, including why the pinning-down is forced rather than assumed. The answer, once it is pinned down, already has a name and a fully worked-out theory behind it in linear algebra: a <strong>linear map</strong>, and — the moment a basis is fixed to write it down in — a <strong>matrix</strong>.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>A slope is a \(1\times1\) matrix that never had to learn it was one. For \(f:\mathbb R\to\mathbb R\), \(f'(a)\) literally <em>is</em> the Jacobian of \(f\) at \(a\) — a \(1\times1\) matrix, whose lone entry is a partial derivative and whose lone column is the image of the number \(1\). Ordinary single-variable calculus is the special case of everything in this essay where the dimensions are too small for the difference between "a matrix" and "a number" to be visible at all.</p>
+</div>
+
+<h2>What this essay is the seam between</h2>
+<p>This essay sits between two much longer ones already living elsewhere in this collection, and does not try to replace either. <a href="functions-as-mappings-essay.html">Functions as Mappings</a> works out, from first principles, what a matrix actually is: not a grid of numbers, but a parts list — the images of a handful of basis vectors, stacked side by side, with matrix-vector multiplication defined to do nothing but recombine those parts. <a href="../../calculus/derivatives/jacobian-essay.html">The Jacobian</a> works out what a multivariable derivative actually is: the one linear map that best stands in for a nonlinear function in an infinitesimal neighborhood of a single point. Each essay proves its own half of the story completely on its own terms.</p>
+<p>What this essay adds is the argument that those two halves are not merely compatible — they are, quite literally, one object described from two directions. Once that is seen clearly, several things that look like separate facts (why the chain rule multiplies, why a matrix means nothing without a chosen basis, why "linear" gets forced onto the derivative rather than chosen for convenience) turn out to be the same fact, said twice in two vocabularies.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — how to read this essay</span>
+<p>Panels II and III each open by recalling, in a few compressed sentences, a fact the companion essays derive in full — this essay leans on both rather than re-deriving them from scratch. What is new here, and not found in either companion, is concentrated in Panels III's uniqueness argument, all of Panel IV's proof, and all of Panels V and VI.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>The Matrix, Recalled</h1>
+<div class="subtitle">not a grid of numbers — a parts list, and one that means nothing without a chosen basis</div>
+
+<h2>What a matrix actually is, compressed to its essentials</h2>
+<p>Skip the row-times-column mechanics learned first in school — that is a computational shortcut, not the definition, and the companion essay linked in Panel I works through exactly why in detail. Start instead from a linear map \(T:\mathbb R^n\to\mathbb R^m\), meaning \(T(\mathbf u+\mathbf v)=T(\mathbf u)+T(\mathbf v)\) and \(T(c\mathbf u)=cT(\mathbf u)\) for every pair of vectors and every scalar \(c\). Because every \(\mathbf x\in\mathbb R^n\) decomposes <em>uniquely</em> as \(\mathbf x=x_1\mathbf e_1+\cdots+x_n\mathbf e_n\) in the standard basis, linearity forces:</p>
+<div class="katex-display" data-katex="T(\mathbf x) = x_1T(\mathbf e_1) + x_2T(\mathbf e_2) + \cdots + x_nT(\mathbf e_n)"></div>
+<p>Read that equation right to left: \(T\) is completely pinned down, on its entire — possibly infinite — domain, by just \(n\) vectors: \(T(\mathbf e_1),\dots,T(\mathbf e_n)\).</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — the matrix, restated</span>
+<p>Stack those \(n\) images as the columns of an \(m\times n\) array \(A\), and define matrix-vector multiplication to reproduce exactly the equation above:</p>
+<div class="katex-display" data-katex="A = \big[\,T(\mathbf e_1)\ \ T(\mathbf e_2)\ \ \cdots\ \ T(\mathbf e_n)\,\big], \qquad A\mathbf x := x_1\mathbf a_1+x_2\mathbf a_2+\cdots+x_n\mathbf a_n"></div>
+<p>A matrix is not a table of numbers that happens to combine correctly with vectors. It is the parts list itself, and \(A\mathbf x\) is nothing but your input's own coordinates telling that parts list how much of each part to use.</p>
+</div>
+
+<h3>The clause that is easy to skip past: a matrix needs a basis to mean anything</h3>
+<p>"Column \(j\) is \(T(\mathbf e_j)\)" is not a basis-free sentence. It presupposes a basis for the domain (which vectors get to be called \(\mathbf e_1,\dots,\mathbf e_n\)) and a basis for the codomain (the coordinates used to write each \(T(\mathbf e_j)\) down as a column of numbers). Change either basis and the array of numbers changes — even though the underlying map \(T\) has not moved a single point differently than before. If \(P\) is the matrix whose columns are a new basis \(\{\mathbf b_i\}\) written in the old coordinates, the two representations of the same map are related by \(A' = P^{-1}AP\).</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the matrix is not the map</span>
+<p>"The matrix of \(T\)" is always shorthand for "the matrix of \(T\) relative to a chosen pair of bases." The map \(T\) is the invariant object; the grid of numbers is a coordinate photograph of it, and a different choice of basis produces a legitimately different photograph of the exact same subject. This distinction is not pedantry saved for later — Panel III needs it immediately, because the Jacobian is, without exception, a matrix in precisely this basis-dependent sense, and Panel VI returns to it once the domain itself is allowed to curve.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Derivative, Recast</h1>
+<div class="subtitle">why the best local approximation to a curved map is forced to be exactly the object Panel II already built</div>
+
+<h2>What "best local approximation" is actually asking for</h2>
+<p>Say \(F:\mathbb R^n\to\mathbb R^m\) is differentiable at \(a\) if there is <em>some</em> function \(L\), defined near \(\mathbf 0\), with</p>
+<div class="katex-display" data-katex="F(a+\mathbf h) - F(a) = L(\mathbf h) + o(\|\mathbf h\|) \quad\text{as } \mathbf h\to\mathbf 0"></div>
+<p>Nothing in that sentence, so far, says \(L\) has to be linear — and it is worth taking that omission seriously for a moment, because closing it is exactly what forces the rest of this essay.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — why linearity isn't a formality</span>
+<p>Suppose some \(L_0\) already satisfies the approximation above. Define a second candidate, \(L_1(\mathbf h) = L_0(\mathbf h) + \|\mathbf h\|^{3/2}\). Since \(\|\mathbf h\|^{3/2}/\|\mathbf h\| = \|\mathbf h\|^{1/2}\to0\), the extra term is itself \(o(\|\mathbf h\|)\), so</p>
+<div class="katex-display" data-katex="F(a+\mathbf h)-F(a)-L_1(\mathbf h) = \big[F(a+\mathbf h)-F(a)-L_0(\mathbf h)\big] - \|\mathbf h\|^{3/2} = o(\|\mathbf h\|)"></div>
+<p>— \(L_1\) satisfies the identical defining approximation. But \(L_1\) is not linear: \(L_1(2\mathbf h) = L_0(2\mathbf h) + 2^{3/2}\|\mathbf h\|^{3/2} = 2L_0(\mathbf h)+2\sqrt2\,\|\mathbf h\|^{3/2}\), which does not equal \(2L_1(\mathbf h) = 2L_0(\mathbf h)+2\|\mathbf h\|^{3/2}\) for any \(\mathbf h\ne\mathbf 0\). Without insisting \(L\) be linear, "the derivative" is not unique at all — infinitely many impostors satisfy the exact same asymptotic condition, one for every function that is itself \(o(\|\mathbf h\|)\).</p>
+</div>
+
+<p>This is exactly why the definition builds "\(L\) is linear" into its hypothesis, rather than deriving linearity afterward as a bonus. Requiring linearity is the single clause standing between "some function that happens to approximate \(F\) well near \(a\)" — of which there are infinitely many, none more canonical than the rest — and "the derivative," a single well-defined object. Once linearity is required, uniqueness follows immediately: a linear map's behavior along a ray \(\mathbf h=t\mathbf u\) scales exactly with \(t\), leaving no room for two different linear maps to be tied for closest fit. The full argument is Panel II of the companion Jacobian essay; this essay's job was only the step that essay takes for granted — showing the requirement earns its place rather than being handed down by convention.</p>
+
+<h3>Read literally, the Jacobian is Panel II's parts list, one derivative deep</h3>
+<p>Once \(L\) is required linear, Panel II's entire machinery becomes available with no modification whatsoever: \(L\) has a matrix, and relative to the standard bases, its column \(j\) is \(L(\mathbf e_j)\) — exactly the definition that made a matrix a parts list in the first place. Setting \(\mathbf h=t\mathbf e_j\) in the defining approximation and letting \(t\to0\) turns \(L(\mathbf e_j)\) into a plain single-variable limit:</p>
+<div class="katex-display" data-katex="L(\mathbf e_j) = \lim_{t\to0}\frac{F(a+t\mathbf e_j)-F(a)}{t} = \frac{\partial F}{\partial x_j}(a)"></div>
+<p>which is, coordinate by coordinate, exactly the vector of partial derivatives \(\partial f_i/\partial x_j(a)\). Column \(j\) of the Jacobian is not notation copied down from a table — it is Panel II's "column \(i\) is \(T(\mathbf e_i)\)" restated with \(T\) replaced by this one particular linear map: the derivative itself.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — what's exact, and what's approximate</span>
+<p>Keep the two halves of this sentence separate, because they are easy to blur. The Jacobian, once assembled at a point \(a\), <em>is</em> an honest linear map — every fact of linear algebra (rank, determinant, eigenvalues, singular value decomposition) applies to it exactly, with no asterisk, the instant \(a\) is fixed. What is approximate is only the <em>relationship</em> between that linear map and the true, possibly curved, \(F\) at points away from \(a\) — the \(o(\|\mathbf h\|)\) gap the companion Jacobian essay spends an entire panel making rigorous, and Panel VII of this essay makes visible. Linear algebra is not "approximately" true of the derivative; calculus is what is approximately true of \(F\), using a fact from linear algebra that itself holds without approximation.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Why Composition Multiplies</h1>
+<div class="subtitle">the chain rule is not a separate law — it is one algebra fact and one calculus fact, shaking hands</div>
+
+<h2>Two facts, not one</h2>
+<p>"The chain rule multiplies Jacobians" is usually presented and memorized as a single rule. It is really the fusion of two independent facts — one that belongs entirely to linear algebra and needs no limit to prove, and one that belongs entirely to calculus and needs the \(o(\|\mathbf h\|)\) machinery of Panel III. Separating them is the fastest route to understanding <em>why</em> the rule is true, rather than only remembering that it is.</p>
+
+<div class="callout definition">
+<span class="callout-label">Fact A — algebra: composing linear maps multiplies their matrices</span>
+<p>If \(S:\mathbb R^n\to\mathbb R^m\) has matrix \(B\) and \(T:\mathbb R^m\to\mathbb R^p\) has matrix \(A\), both built by Panel II's rule, then \(T\circ S\) is linear too, and its matrix is the ordinary product \(AB\). Column \(i\) of \(T\circ S\)'s matrix is \((T\circ S)(\mathbf e_i)=T\big(S(\mathbf e_i)\big)=T(\text{col}_i B) = A\cdot\text{col}_i(B)\) — apply \(A\) to column \(i\) of \(B\), for every \(i\) — and stacking those columns side by side is exactly the row-times-column rule for \(AB\). No limits anywhere in this proof; it is a corollary of Panel II alone.</p>
+</div>
+
+<h2>The calculus half: derivatives of composites compose</h2>
+<p>Fact A says nothing yet about derivatives. The genuinely calculus-flavored claim is that if \(H\) is differentiable at \(a\) with derivative (linear map) \(DH(a)\), and \(F\) is differentiable at \(b:=H(a)\) with derivative \(DF(b)\), then \(F\circ H\) is differentiable at \(a\) with derivative the literal composition \(DF(b)\circ DH(a)\) — not yet a statement about matrices at all, just about linear maps.</p>
+
+<div class="callout definition">
+<span class="callout-label">Claim &amp; proof</span>
+<p><strong>Claim.</strong> \(D(F\circ H)(a) = DF(b)\circ DH(a)\), where \(b=H(a)\).</p>
+<p><strong>Proof.</strong> Write \(\mathbf k(\mathbf h):=H(a+\mathbf h)-H(a) = DH(a)\mathbf h+o(\|\mathbf h\|)\), so \(\mathbf k(\mathbf h)\to\mathbf 0\) as \(\mathbf h\to\mathbf 0\), and \(\|\mathbf k(\mathbf h)\|\le C\|\mathbf h\|\) for small \(\mathbf h\) and some constant \(C\) (automatic in finite dimensions, since every linear map between finite-dimensional spaces is bounded). Differentiability of \(F\) at \(b\) gives \(F(b+\mathbf k)-F(b)=DF(b)\mathbf k+o(\|\mathbf k\|)\) as \(\mathbf k\to\mathbf 0\). Substitute \(\mathbf k=\mathbf k(\mathbf h)\):</p>
+<div class="katex-display" data-katex="F(H(a+\mathbf h))-F(H(a)) = DF(b)\big[DH(a)\mathbf h+o(\|\mathbf h\|)\big] + o(\|\mathbf k(\mathbf h)\|)"></div>
+<p>Since \(DF(b)\) is a fixed linear map, applying it to an \(o(\|\mathbf h\|)\) vector still gives \(o(\|\mathbf h\|)\); and \(\|\mathbf k(\mathbf h)\|=O(\|\mathbf h\|)\) means \(o(\|\mathbf k(\mathbf h)\|)=o(\|\mathbf h\|)\) as well. Everything collapses to</p>
+<div class="katex-display" data-katex="F(H(a+\mathbf h))-F(H(a)) = DF(b)DH(a)\,\mathbf h + o(\|\mathbf h\|)"></div>
+<p>which is exactly the defining approximation of Panel III, with linear map \(DF(b)\circ DH(a)\) in the role of \(L\). By Panel III's uniqueness, this is the derivative. \(\blacksquare\)</p>
+</div>
+
+<h2>Assembling the chain rule from the two halves</h2>
+<p>Now combine them. Fact A says: the matrix of a composition of linear maps, relative to standard bases, is the product of the two matrices. The claim just proved says: \(D(F\circ H)(a)\) <em>is</em> a composition of linear maps, namely \(DF(b)\circ DH(a)\). Panel III already identified the matrix of a derivative, relative to standard bases, as the Jacobian. Substituting:</p>
+<div class="katex-display" data-katex="J_{F\circ H}(a) = J_F(H(a))\,J_H(a)"></div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Notice how little of this was calculus. The only place a limit was ever taken was in proving that a composite's derivative is the composite of the derivatives — a fact stated purely in terms of linear maps, with no coordinates or matrices in sight. The instant that fact was in hand, it handed off to Fact A, which required no limit at all, having been settled entirely inside linear algebra. The chain rule is not an independent computational rule bolted onto matrix multiplication after the fact; it is matrix multiplication, imported wholesale, applied to the two specific linear maps that one calculus argument produced.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>The Sense of a Mapping</h1>
+<div class="subtitle">one word, three traditions, and the operation calculus performs on all of them: localization</div>
+
+<h2>Three traditions reaching for the same word</h2>
+<p>"Mapping" gets used loosely across mathematics, and it is worth pulling apart the three separate traditions that converge on it, because the convergence is not an accident of vocabulary — it is the actual content of this essay, restated historically instead of algebraically.</p>
+
+<div class="ascii">   SET THEORY                LINEAR ALGEBRA              CALCULUS
+
+   f: A → B assigns           a map respecting +          F is approximated,
+   each element of A          and scalar mult.,           at each point a,
+   exactly one element        classified completely       by ONE instance of
+   of B — no structure        by a finite parts            the linear-algebra
+   required at all            list (Panel II)              object — glued
+                                                            smoothly point
+   "relocate an               "relocate a WHOLE            to point
+   element, arbitrarily"      space, UNIFORMLY"
+                                                            "relocate a point,
+                                                            INFINITESIMALLY,
+                                                            differently
+                                                            everywhere"</div>
+
+<p>The first tradition is set-theoretic: a function \(f:A\to B\) assigns to every element of \(A\) exactly one element of \(B\), with nothing in that definition requiring \(A\) or \(B\) to be numbers, or requiring a formula to exist at all — the companion Functions-as-Mappings essay opens with exactly this picture. This is "mapping" at its most permissive: relocate an element, arbitrarily, one at a time.</p>
+
+<p>The second is geometric, and crystallized in Felix Klein's 1872 <em>Erlangen program</em>: define a geometry not by a list of axioms about points and lines, but by naming a space together with a group of transformations — rotations and translations for Euclidean geometry, a far larger group for projective geometry — and declaring "geometric" to mean "invariant under that group." Here "mapping" firmly means relocating <em>every</em> point of a space at once, uniformly, by one fixed rule, and the entire subject becomes the question of what a transformation preserves.</p>
+
+<p>Linear algebra is the geometric tradition's most rigid, best-understood special case: only maps compatible with vector addition and scaling are admitted, and Panel II's theorem is exactly the statement that this restriction is rigid enough to collapse "the whole map" down to a finite list of vectors.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — Klein's Erlangen program</span>
+<p>Klein's insight was that Euclidean geometry, projective geometry, and the (at the time, newly discovered) non-Euclidean geometries were not competing descriptions of "true" space, but different choices of transformation group applied to the same underlying question: which properties of a figure survive which class of relocations. It is the direct historical ancestor of treating a "map" as a first-class object worth classifying, rather than a mere computational tool — the same shift in attitude Panel I asked of the reader with a single-variable function.</p>
+</div>
+
+<h2>Where calculus fits: not a fourth tradition, but an operation on the other three</h2>
+<p>Calculus needed a notion of "how does output respond to input" for maps that are neither globally linear (tradition two's tame special case) nor merely an arbitrary set function with no structure to exploit (tradition one). Panel III's forced promotion is calculus reaching, at every single point, for exactly the object tradition two had already completely solved: attach one linear map — one instance of the Erlangen-style, fully classified object — to each point of the domain, and let it vary smoothly from point to point.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — what emerges</span>
+<p>Lined up this way, calculus does not invent a new species of mapping. It performs an operation <em>on</em> the general notion of mapping: <strong>localization</strong>. A wildly curving relocation of space — tradition two's most general case, no longer required to be uniform — gets chopped into an infinite continuum of the one totally tame kind of relocation tradition three had already classified completely, glued together by nothing more than the requirement that neighboring linear maps vary continuously (the \(C^1\) criterion of the companion Jacobian essay's Panel II). The object a differentiable \(F\) actually possesses — one matrix per point — is a single mathematical object none of the three older traditions had a name for on its own: not a map, not a matrix, but a <em>matrix-valued function on a space</em>, which is precisely what differential geometry later formalized as a tensor field, and precisely what Panel VI of the companion Jacobian essay computes explicitly under the name "metric tensor."</p>
+</div>
+
+<p>Three questions about the same three-letter word, in increasing order of how much structure they demand: set theory asks only <em>is it a function at all</em>. Geometry and linear algebra ask <em>what can this transformation preserve or discard, uniformly, everywhere at once</em>. Calculus asks <em>which single, everywhere-preserving transformation is this wilder map secretly imitating, right here, right now</em> — and then asks the same question again, infinitesimally close by, where the answer is generally a little different.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Tangent Spaces</h1>
+<div class="subtitle">a fresh copy of a vector space, attached to every single point</div>
+
+<h2>A question worth asking plainly</h2>
+<p>Panel III assembled, at each point \(a\) of a domain, a linear map \(DF(a):\mathbb R^n\to\mathbb R^m\). It is worth asking plainly what the "\(\mathbb R^n\)" being mapped <em>from</em>, specifically at the point \(a\), really is. For a flat domain sitting inside \(\mathbb R^n\) itself, this looks like a silly question — surely it is just \(\mathbb R^n\) again? The moment \(F\) is a curve's parametrization, or a surface, or — further out — a domain that is itself genuinely curved, the honest answer is subtler: it is a fresh copy of a vector space, attached specifically to the point \(a\), called the <strong>tangent space</strong> at \(a\), written \(T_aM\).</p>
+
+<h3>Velocity as the cleanest example</h3>
+<p>For a curve \(\gamma:\mathbb R\to\mathbb R^3\), differentiable at \(t=a\), Panel III's promotion gives a linear map \(D\gamma(a):\mathbb R\to\mathbb R^3\). Fed the single basis vector of \(\mathbb R\) — the number \(1\) — it hands back one vector, \(\gamma'(a)\): the curve's velocity at that instant. That output vector does not live loosely "in \(\mathbb R^3\) in general." Conceptually it lives in the tangent space to \(\mathbb R^3\) at the specific point \(\gamma(a)\) — a distinct copy of \(\mathbb R^3\) attached to that one location, even though, for a flat ambient space, that copy happens to be identifiable with \(\mathbb R^3\) itself, which is exactly why the distinction is invisible in a first course. The distinction becomes unavoidable the moment the ambient space curves: a sphere's tangent plane at the north pole and its tangent plane at the equator are both genuine two-dimensional vector spaces, but they are not the same plane, and a vector "in" one does not automatically make sense "in" the other without an explicit rule for comparing them.</p>
+
+<div class="ascii">   FLAT DOMAIN (ℝⁿ itself)               CURVED DOMAIN (a surface)
+
+   every tangent space looks              tangent plane at the north pole
+   identical to ℝⁿ — the                  ≠ tangent plane at the equator —
+   distinction is real but                genuinely different 2D vector
+   invisible                              spaces, one attached to each point
+
+    T_a ≅ ℝⁿ  everywhere,                       ___
+    same plane, just relabeled                 /   \___
+                                               |  ⊕    |  ← T at pole
+    ─────●───────●───────●─────                \___⊕__/  ← T at equator
+         a       b       c                    two different planes,
+                                               both tangent, neither
+                                               the same underlying set</div>
+
+<h3>Why this matters for the essay's thesis</h3>
+<p>Every fact built so far rests on one identification: a linear map has a matrix once bases are chosen (Panel II), and the derivative is a linear map (Panel III). Tangent spaces are what make that identification precise even when the domain and codomain are curved rather than flat: \(DF(a)\) is honestly a linear map \(T_aM\to T_{F(a)}N\) between two specific, generally different, vector spaces — one attached to \(a\), the other attached to \(F(a)\) — and it only <em>looks</em> like "just a matrix acting on \(\mathbb R^n\)" because, for the flat domains most of calculus is first taught on, every tangent space happens to be identifiable with the same \(\mathbb R^n\), collapsing a real distinction down to an invisible one until it is genuinely needed.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — a row and a column are not the same kind of object</span>
+<p>Push this one step further and an asymmetry Panel II's notation quietly papers over becomes visible. Column \(j\) of a Jacobian is a tangent <em>vector</em> — it lives in the output tangent space \(T_{F(a)}N\), the image of an input basis direction. Row \(i\), for a scalar output, is the gradient \(\nabla f(a)^{\mathsf T}=\begin{bmatrix}\partial f/\partial x_1 &amp; \cdots &amp; \partial f/\partial x_n\end{bmatrix}\) — an object that <em>eats</em> a tangent vector at \(a\) and returns a number, which is to say it lives not in \(T_aM\) itself but in its dual space. Writing both as rows and columns of the same array, and multiplying them with the same row-times-column rule, is a genuine convenience — but it papers over the fact that a vector and a covector are different kinds of object, a distinction that only stops being safely ignorable once lengths and angles enter the picture. Making that safe again is exactly what the metric tensor, built out of \(J^{\mathsf T}J\) in the companion Jacobian essay's closing panel, is for.</p>
+</div>
+
+<h3>One computation, two names</h3>
+<p>A last thread worth pulling: switching from one basis of a vector space to another (Panel II's \(A'=P^{-1}AP\), pure linear algebra) and switching from one coordinate chart to another on a curved space (pure differential geometry) are, formula for formula, the same computation — both transform a matrix by conjugating or multiplying through by the Jacobian of the change-of-coordinates map. Linear algebra's "change of basis" and calculus's "change of coordinates" were never two ideas that happened to resemble each other; localization (Panel V) turns the first into the second automatically, the moment the basis itself is allowed to be a different one at every point.</p>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="t7">
+<h1>Interactive Lab</h1>
+<div class="subtitle">the same recipe from Panel II, drawn anchored at a point instead of at the origin</div>
+
+<p>Panel II defined a matrix as a parts list: column \(i\) is where basis vector \(\mathbf e_i\) lands, and \(A\mathbf x\) recombines those columns using \(\mathbf x\)'s own coordinates as the recipe's proportions. Panel III showed the Jacobian is exactly that same parts list, computed fresh at every point. This lab makes both claims literal, together, at once. Drag <strong>P</strong> in the domain canvas to choose the point of linearization; the sliders set a small nudge \(\mathbf h=(h_x,h_y)\) away from it. On the right, <span style="color:var(--blue)">\(\mathbf a_1=J(P)\mathbf e_1\)</span> and <span style="color:var(--green)">\(\mathbf a_2=J(P)\mathbf e_2\)</span> — the Jacobian's columns at \(P\) — are drawn anchored at \(F(P)\) rather than at the origin, because, per Panel VI, they are tangent vectors living specifically at \(F(P)\), not free-floating arrows. The dashed path rebuilds the recipe \(h_x\mathbf a_1+h_y\mathbf a_2\) tip-to-tail from \(F(P)\), landing on the <span style="color:var(--accent)">gold predicted point</span>; the <span style="color:var(--red)">rust point</span> is the true \(F(P+\mathbf h)\), computed directly, with no approximation involved.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">DOMAIN — drag P, the point of linearization</div>
+      <canvas id="domainCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">IMAGE — the parts list, anchored at F(P)</div>
+      <canvas id="imageCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Map F(u,v)</label>
+      <select id="mapSelect">
+        <option value="shear">shear — linear, exact everywhere</option>
+        <option value="square" selected>(u² − v², 2uv) — complex squaring</option>
+        <option value="polar">(u·cos v, u·sin v) — polar-like</option>
+        <option value="saddle">(u + v, u·v) — saddle</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Nudge h&#8339;</label>
+      <input type="range" id="hxSlider" min="-0.6" max="0.6" step="0.02" value="0.4">
+      <span class="readout" id="hxReadout">0.40</span>
+    </div>
+    <div class="control-row">
+      <label>Nudge h&#7523;</label>
+      <input type="range" id="hySlider" min="-0.6" max="0.6" step="0.02" value="-0.3">
+      <span class="readout" id="hyReadout">-0.30</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">POINT P</div>
+      <div class="v" id="pointReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">JACOBIAN J(P) — columns a1, a2</div>
+      <div class="v" id="jacReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">PREDICTED F(P) + hxa1 + hya2</div>
+      <div class="v" id="predReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">ACTUAL F(P + h)</div>
+      <div class="v" id="actReadout">…</div>
+    </div>
+    <div class="block">
+      <div class="k">‖error‖</div>
+      <div class="v" id="errReadout">…</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue)"></span> a1 = J(P)e1</span>
+    <span><span class="swatch" style="background:var(--green)"></span> a2 = J(P)e2</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> P / predicted (recipe)</span>
+    <span><span class="swatch" style="background:var(--red)"></span> P+h / actual F(P+h)</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Switch to <code>shear</code> and the gold and rust points land exactly on top of each other, for any \(\mathbf h\), at any \(P\) — a linear map is its own perfect linearization everywhere, with nothing left over to approximate (Panel I's insight, made visible). Switch to <code>square</code> or <code>saddle</code> and drag both sliders toward \(0\): the rust point collapses onto the gold one, the identical convergence the companion Jacobian essay's own lab demonstrates by shrinking a whole neighborhood, shown here instead by shrinking one single recipe. Drag \(P\) itself around and watch \(\mathbf a_1,\mathbf a_2\) rotate and rescale — the columns are a genuinely different parts list at every point, exactly Panel III's claim that a nonlinear map carries not one matrix, but an entire field of them.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="t8">
+<h1>Where It All Meets</h1>
+<div class="subtitle">one sentence, said in two vocabularies, and where to read each half in full</div>
+
+<h2>The single sentence</h2>
+<p>Linear algebra answers "what is the complete, exact behavior of a map that respects vector addition and scaling" with one clean object, the matrix — a finite parts list built from a basis (Panel II). Calculus answers "what is the best available stand-in for a map that respects nothing in particular" by admitting that no single global answer exists, and instead attaching one instance of linear algebra's answer to every point (Panel III), gluing the results together with continuity, and calling the whole assignment differentiation. Composition of either kind of map behaves identically — multiply the matrices (Panel IV) — because a calculus-flavored fact about the derivative of a composite hands off, after one clean substitution, to an algebra-flavored fact about composite linear maps that never needed a limit to prove. And the entire vocabulary both subjects reach for, "mapping," turns out, traced back through set theory, nineteenth-century transformation geometry, and analysis (Panel V), to be one idea worn three ways: relocate; relocate uniformly; relocate infinitesimally, differently at every point (Panel VI).</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — one line to carry away</span>
+<p>A matrix is not "used by" calculus the way a hammer is used by a carpenter. The Jacobian is not <em>like</em> a matrix from linear algebra, by loose analogy — it <em>is</em> one, full stop, at every single point, with every theorem of linear algebra applying to it exactly and without modification. What calculus contributes is not a new kind of object, but the operation of attaching that one already-understood object to every point of a possibly-curved domain, and asking how it changes as the point does.</p>
+</div>
+
+<h2>Further reading, in this collection</h2>
+<ul class="reading">
+<li><a href="functions-as-mappings-essay.html">Functions as Mappings — The Matrix as a Basis Recipe</a> — the full derivation of "matrix as parts list," change of basis, eigenvectors, and function spaces that Panel II here only compresses.</li>
+<li><a href="../../calculus/derivatives/jacobian-essay.html">The Jacobian — How Maps Warp Space</a> — the full derivation of the Jacobian, the determinant as a volume-scaling factor, the Hessian, the Implicit and Inverse Function Theorems, and the metric tensor that Panel III and Panel VI here lean on.</li>
+<li><a href="../../topology/introduction/topology-introduction.html">Introduction to Topology</a> — where "mapping" sheds its last dependence on coordinates and distance, kept alive as a continuous function between spaces defined by open sets alone.</li>
+<li><a href="../../calculus/philosophy/calculus-philosophy.html">The Infinite Made Rigorous</a> — the historical struggle to make "infinitesimal" precise, from Newton and Leibniz through Cauchy and Weierstrass, whose resolution is exactly what licenses the \(o(\|\mathbf h\|)\) definition Panel III leans on throughout.</li>
+</ul>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6','t7','t8'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderLab();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ INTERACTIVE LAB ============
+const domainCv = document.getElementById('domainCanvas');
+const imageCv = document.getElementById('imageCanvas');
+const dctx = domainCv.getContext('2d');
+const ictx = imageCv.getContext('2d');
+const mapSelect = document.getElementById('mapSelect');
+const hxSlider = document.getElementById('hxSlider');
+const hySlider = document.getElementById('hySlider');
+const hxReadout = document.getElementById('hxReadout');
+const hyReadout = document.getElementById('hyReadout');
+const jacReadout = document.getElementById('jacReadout');
+const pointReadout = document.getElementById('pointReadout');
+const predReadout = document.getElementById('predReadout');
+const actReadout = document.getElementById('actReadout');
+const errReadout = document.getElementById('errReadout');
+
+let P = {x:0.9, y:0.6};
+let dragging = false;
+const DOM_RANGE = 2.0;
+
+const maps = {
+  shear:  { F:(u,v)=>[u+0.6*v, v],        J:(u,v)=>[[1,0.6],[0,1]],                                       range:3.6 },
+  square: { F:(u,v)=>[u*u-v*v, 2*u*v],    J:(u,v)=>[[2*u,-2*v],[2*v,2*u]],                                 range:10.0 },
+  polar:  { F:(u,v)=>[u*Math.cos(v), u*Math.sin(v)], J:(u,v)=>[[Math.cos(v),-u*Math.sin(v)],[Math.sin(v),u*Math.cos(v)]], range:2.8 },
+  saddle: { F:(u,v)=>[u+v, u*v],          J:(u,v)=>[[1,1],[v,u]],                                          range:5.0 }
+};
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function worldToScreen(x,y,range){
+  const s = 300 / (2*range);
+  return [150 + x*s, 150 - y*s];
+}
+function screenToWorld(px,py,range){
+  const s = 300 / (2*range);
+  return [(px-150)/s, (150-py)/s];
+}
+
+function drawGrid(ctx, range){
+  ctx.clearRect(0,0,300,300);
+  ctx.fillStyle = cssVar('--bg-elevated');
+  ctx.fillRect(0,0,300,300);
+  ctx.strokeStyle = cssVar('--border');
+  ctx.lineWidth = 1;
+  const step = range <= 2.5 ? 0.5 : (range <= 5.5 ? 1 : 2);
+  const top = Math.ceil(range/step)*step;
+  for(let g=-top; g<=top+1e-9; g+=step){
+    let [x1,y1] = worldToScreen(g,-range,range);
+    let [x2,y2] = worldToScreen(g,range,range);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    [x1,y1] = worldToScreen(-range,g,range);
+    [x2,y2] = worldToScreen(range,g,range);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  ctx.strokeStyle = cssVar('--ink-faint');
+  ctx.lineWidth = 1.2;
+  let [ax1,ay1] = worldToScreen(-range,0,range), [ax2,ay2] = worldToScreen(range,0,range);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+  [ax1,ay1] = worldToScreen(0,-range,range); [ax2,ay2] = worldToScreen(0,range,range);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+}
+
+function drawArrow(ctx, x1,y1,x2,y2, color, width, range){
+  const [sx1,sy1] = worldToScreen(x1,y1,range);
+  const [sx2,sy2] = worldToScreen(x2,y2,range);
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width;
+  ctx.beginPath(); ctx.moveTo(sx1,sy1); ctx.lineTo(sx2,sy2); ctx.stroke();
+  const ang = Math.atan2(sy2-sy1, sx2-sx1);
+  const head = 7;
+  ctx.beginPath();
+  ctx.moveTo(sx2, sy2);
+  ctx.lineTo(sx2 - head*Math.cos(ang-0.4), sy2 - head*Math.sin(ang-0.4));
+  ctx.lineTo(sx2 - head*Math.cos(ang+0.4), sy2 - head*Math.sin(ang+0.4));
+  ctx.closePath(); ctx.fill();
+}
+
+function drawDashed(ctx, x1,y1,x2,y2, color, range){
+  const [sx1,sy1] = worldToScreen(x1,y1,range);
+  const [sx2,sy2] = worldToScreen(x2,y2,range);
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(sx1,sy1); ctx.lineTo(sx2,sy2); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawDot(ctx, x,y, color, range, r){
+  const [sx,sy] = worldToScreen(x,y,range);
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(sx,sy,r,0,7); ctx.fill();
+}
+
+function drawDomain(){
+  drawGrid(dctx, DOM_RANGE);
+  const hx = parseFloat(hxSlider.value), hy = parseFloat(hySlider.value);
+  drawArrow(dctx, P.x,P.y, P.x+hx,P.y+hy, cssVar('--blue'), 2, DOM_RANGE);
+  drawDot(dctx, P.x, P.y, cssVar('--accent'), DOM_RANGE, 6);
+  drawDot(dctx, P.x+hx, P.y+hy, cssVar('--red'), DOM_RANGE, 4);
+}
+
+function drawImage(){
+  const map = maps[mapSelect.value];
+  const range = map.range;
+  drawGrid(ictx, range);
+
+  // faint global curved grid, sampled numerically since F need not be linear
+  ictx.strokeStyle = cssVar('--ink-faint');
+  ictx.globalAlpha = 0.35;
+  ictx.lineWidth = 1;
+  const N = 24;
+  for(let g=-2; g<=2; g+=0.5){
+    ictx.beginPath();
+    for(let i=0;i<=N;i++){
+      const u = -2 + 4*i/N;
+      const [x,y] = map.F(u,g);
+      const [sx,sy] = worldToScreen(x,y,range);
+      if(i===0) ictx.moveTo(sx,sy); else ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+    ictx.beginPath();
+    for(let i=0;i<=N;i++){
+      const v = -2 + 4*i/N;
+      const [x,y] = map.F(g,v);
+      const [sx,sy] = worldToScreen(x,y,range);
+      if(i===0) ictx.moveTo(sx,sy); else ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+  }
+  ictx.globalAlpha = 1;
+
+  const Jm = map.J(P.x,P.y); // [[J11,J12],[J21,J22]]
+  const a1 = [Jm[0][0], Jm[1][0]];
+  const a2 = [Jm[0][1], Jm[1][1]];
+  const FP = map.F(P.x,P.y);
+
+  drawArrow(ictx, FP[0],FP[1], FP[0]+a1[0],FP[1]+a1[1], cssVar('--blue'), 2, range);
+  drawArrow(ictx, FP[0],FP[1], FP[0]+a2[0],FP[1]+a2[1], cssVar('--green'), 2, range);
+
+  const hx = parseFloat(hxSlider.value), hy = parseFloat(hySlider.value);
+  const mid = [FP[0]+hx*a1[0], FP[1]+hx*a1[1]];
+  const predicted = [mid[0]+hy*a2[0], mid[1]+hy*a2[1]];
+  const actual = map.F(P.x+hx, P.y+hy);
+
+  drawDashed(ictx, FP[0],FP[1], mid[0],mid[1], cssVar('--blue'), range);
+  drawDashed(ictx, mid[0],mid[1], predicted[0],predicted[1], cssVar('--green'), range);
+  drawArrow(ictx, FP[0],FP[1], predicted[0],predicted[1], cssVar('--accent'), 2.2, range);
+  drawDashed(ictx, predicted[0],predicted[1], actual[0],actual[1], cssVar('--red'), range);
+
+  drawDot(ictx, FP[0],FP[1], cssVar('--accent'), range, 5);
+  drawDot(ictx, predicted[0],predicted[1], cssVar('--accent'), range, 4);
+  drawDot(ictx, actual[0],actual[1], cssVar('--red'), range, 5);
+
+  return {Jm, FP, predicted, actual};
+}
+
+function updateReadouts(state){
+  const {Jm, predicted, actual} = state;
+  const hx = parseFloat(hxSlider.value), hy = parseFloat(hySlider.value);
+  hxReadout.textContent = hx.toFixed(2);
+  hyReadout.textContent = hy.toFixed(2);
+  pointReadout.textContent = `(${P.x.toFixed(2)}, ${P.y.toFixed(2)})`;
+  jacReadout.textContent = `[ ${Jm[0][0].toFixed(2).padStart(6)}  ${Jm[0][1].toFixed(2).padStart(6)} ]\n[ ${Jm[1][0].toFixed(2).padStart(6)}  ${Jm[1][1].toFixed(2).padStart(6)} ]`;
+  predReadout.textContent = `(${predicted[0].toFixed(3)}, ${predicted[1].toFixed(3)})`;
+  actReadout.textContent = `(${actual[0].toFixed(3)}, ${actual[1].toFixed(3)})`;
+  const err = Math.hypot(actual[0]-predicted[0], actual[1]-predicted[1]);
+  errReadout.textContent = err.toFixed(4);
+}
+
+function renderLab(){
+  drawDomain();
+  const state = drawImage();
+  updateReadouts(state);
+}
+
+function domainEventToWorld(e){
+  const rect = domainCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (300/rect.width);
+  const py = (clientY-rect.top) * (300/rect.height);
+  return screenToWorld(px,py,DOM_RANGE);
+}
+domainCv.addEventListener('mousedown', e=>{
+  const [x,y] = domainEventToWorld(e);
+  if(Math.hypot(x-P.x,y-P.y) < 0.6){ dragging = true; }
+});
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const [x,y] = domainEventToWorld(e);
+  P.x = Math.max(-1.6,Math.min(1.6,x));
+  P.y = Math.max(-1.6,Math.min(1.6,y));
+  renderLab();
+});
+window.addEventListener('mouseup', ()=> dragging=false);
+domainCv.addEventListener('touchstart', e=>{
+  const [x,y] = domainEventToWorld(e);
+  if(Math.hypot(x-P.x,y-P.y) < 0.8){ dragging = true; }
+}, {passive:true});
+domainCv.addEventListener('touchmove', e=>{
+  if(!dragging) return;
+  const [x,y] = domainEventToWorld(e);
+  P.x = Math.max(-1.6,Math.min(1.6,x));
+  P.y = Math.max(-1.6,Math.min(1.6,y));
+  renderLab();
+}, {passive:true});
+window.addEventListener('touchend', ()=> dragging=false);
+
+mapSelect.addEventListener('change', renderLab);
+hxSlider.addEventListener('input', renderLab);
+hySlider.addEventListener('input', renderLab);
+
+renderLab();
+</script>
+
+</body>
+</html>

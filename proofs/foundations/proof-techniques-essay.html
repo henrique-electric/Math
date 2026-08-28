@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathematical Proof — How and Why It Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0c0a12; --bg-elevated:#141220; --bg-card:#181628;
+  --border:#2b2740; --border-soft:#1f1c30;
+  --ink:#e4e0f0; --ink-dim:#a49bc0; --ink-faint:#665e85;
+  --accent:#b98ee8; --accent-dim:#8f6bc0;
+  --blue:#6f9bc9; --green:#6fbf8f; --red:#d17a7a; --purple:#e0a0d0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f3fa; --bg-elevated:#ece7f5; --bg-card:#fcfaff;
+  --border:#d9d0ea; --border-soft:#e6e0f2;
+  --ink:#211c33; --ink-dim:#4f4570; --ink-faint:#7d719c;
+  --accent:#7a4bb0; --accent-dim:#9268bf;
+  --blue:#3a5f8a; --green:#3f7d55; --red:#a1453a; --purple:#8a4d94;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(12,10,18,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,243,250,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:840px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+h4{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+ul, ol{ margin:0 0 16px 26px; color:var(--ink-dim); }
+li{ margin-bottom:8px; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- table ---- */
+.tbl-wrap{ overflow-x:auto; margin:20px 0; }
+table{ border-collapse:collapse; width:100%; font-size:.92em; }
+table caption{ text-align:left; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; letter-spacing:.04em; }
+th, td{ padding:8px 14px; text-align:left; border-bottom:1px solid var(--border-soft); }
+th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); text-transform:uppercase; border-bottom:1px solid var(--border); }
+td{ color:var(--ink-dim); }
+tr:last-child td{ border-bottom:none; }
+td.tt-t, span.tt-t{ color:var(--green); font-weight:600; font-family:var(--mono); }
+td.tt-f, span.tt-f{ color:var(--red); font-weight:600; font-family:var(--mono); }
+td.mono, th.mono{ font-family:var(--mono); }
+
+/* ---- rule cards ---- */
+.rule-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0; }
+.rule-card{ background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; }
+.rule-card .rc-name{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--accent); text-transform:uppercase; margin-bottom:8px; }
+.rule-card .rc-form{ font-family:var(--mono); font-size:13.5px; color:var(--ink); line-height:1.7; white-space:pre-wrap; }
+.rule-card .rc-note{ font-size:.83em; color:var(--ink-faint); margin-top:8px; }
+@media(max-width:640px){ .rule-grid{grid-template-columns:1fr;} }
+
+/* ---- formal proof list ---- */
+.proof-list{ counter-reset:pline; list-style:none; margin:18px 0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.proof-list li{ counter-increment:pline; display:flex; gap:14px; padding:10px 16px; border-bottom:1px solid var(--border-soft); font-family:var(--mono); font-size:13.5px; align-items:baseline; background:var(--bg-card); }
+.proof-list li:nth-child(even){ background:var(--bg-elevated); }
+.proof-list li:last-child{ border-bottom:none; }
+.proof-list li::before{ content:counter(pline); color:var(--ink-faint); min-width:18px; text-align:right; }
+.proof-list .pf-stmt{ flex:1; color:var(--ink); }
+.proof-list .pf-just{ color:var(--accent); font-size:12px; white-space:nowrap; }
+@media(max-width:640px){ .proof-list li{ flex-wrap:wrap; } .proof-list .pf-just{ margin-left:32px; } }
+
+/* ---- claim / matcher cards ---- */
+.claim-grid{ display:grid; gap:16px; margin:24px 0; }
+.claim-card{ background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:18px 22px; }
+.claim-card .cc-num{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--ink-faint); text-transform:uppercase; margin-bottom:8px; }
+.claim-card .cc-claim{ font-size:1.05em; color:var(--ink); margin-bottom:14px; }
+.claim-card details{ border-top:1px solid var(--border-soft); padding-top:12px; }
+.claim-card summary{ font-family:var(--mono); font-size:12.5px; color:var(--accent); cursor:pointer; letter-spacing:.03em; user-select:none; }
+.claim-card summary:hover{ color:var(--ink); }
+.claim-card .cc-answer{ margin-top:14px; }
+.claim-card .cc-technique{ display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--bg); background:var(--accent); padding:4px 10px; border-radius:20px; margin-bottom:10px; font-weight:600; }
+.claim-card .cc-why{ color:var(--ink-dim); font-size:.95em; margin-bottom:0; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} table{font-size:.82em;} th,td{padding:6px 8px;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">PROOFS</div>
+  <button class="tab-btn active" data-tab="pf1">I · Why Proof</button>
+  <button class="tab-btn" data-tab="pf2">II · Anatomy</button>
+  <button class="tab-btn" data-tab="pf3">III · Direct Proof</button>
+  <button class="tab-btn" data-tab="pf4">IV · Contraposition</button>
+  <button class="tab-btn" data-tab="pf5">V · Contradiction</button>
+  <button class="tab-btn" data-tab="pf6">VI · Cases</button>
+  <button class="tab-btn" data-tab="pf7">VII · Induction</button>
+  <button class="tab-btn" data-tab="pf8">VIII · Existence &amp; Uniqueness</button>
+  <button class="tab-btn" data-tab="pf9">IX · Disproof</button>
+  <button class="tab-btn" data-tab="pf10">X · Pitfalls</button>
+  <button class="tab-btn" data-tab="pf11">XI · Technique Matcher</button>
+  <button class="tab-btn" data-tab="pf12">XII · Gallery &amp; Reference</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="pf1">
+<h1>Why Mathematics Runs on Proof</h1>
+<div class="subtitle">the discipline that turns a plausible claim into a permanent fact — and what makes that leap possible</div>
+
+<h2>Evidence is not proof</h2>
+<p>Every other empirical science accepts a claim once the evidence for it becomes overwhelming, and stays ready to revise that claim the moment better evidence arrives. Mathematics works differently, and the difference is not a matter of degree — it is a difference in kind. A mathematical claim is not accepted because it has survived a thousand tests; it is accepted only once it has been shown, by an unbroken chain of logically forced steps, to follow from things already agreed to be true. Until that chain exists, no number of confirming examples counts as an answer — it counts as a hint.</p>
+
+<p>The cleanest way to feel why this distinction matters is to watch a pattern that looks airtight fail. In 1772, Leonhard Euler noticed that the polynomial \(n^2 - n + 41\) produces a prime number for every integer \(n\) from 1 through 40 — forty consecutive successes, with no exceptions.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Euler's polynomial n² − n + 41, sampled</caption>
+<thead><tr><th class="mono">n</th><th class="mono">n² − n + 41</th><th>Prime?</th></tr></thead>
+<tbody>
+<tr><td class="mono">1</td><td class="mono">41</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">2</td><td class="mono">43</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">10</td><td class="mono">131</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">20</td><td class="mono">421</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">40</td><td class="mono">1601</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">41</td><td class="mono">41 × 41 = 1681</td><td class="tt-f">No</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Forty out of forty is, by any everyday standard of evidence, an extraordinarily strong pattern — the kind of run that would convince a jury, a scientist, or a betting market. It is worthless as a proof, and the polynomial itself shows exactly why: at \(n=41\), every term picks up a factor of 41, so the output is forced to be \(41\times41\), which is composite by construction rather than by accident. The pattern didn't weaken gradually; it held with no exceptions and then broke completely, at a point no amount of checking smaller cases could have revealed. This is the central fact proof exists to handle: a finite list of confirming cases, no matter how long, can never rule out a counterexample sitting just past the last case checked.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — this is not a cherry-picked oddity</span>
+<p>The Pólya conjecture (that most integers up to any bound have an odd number of prime factors) was checked by hand for every integer up to hundreds of thousands and believed true for decades — its first counterexample doesn't appear until n = 906,150,257. The claim that \(2^{2^n}+1\) is always prime — Fermat's own conjecture about numbers now named after him — holds for n = 0, 1, 2, 3, 4, and fails at n = 5, a number Fermat never had the means to check by hand. Mathematics is full of patterns that hold for a long, long time and then stop, which is exactly why "checked and never found false" is never treated as a stopping point.</p>
+</div>
+
+<h2>What a proof actually is</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — proof</span>
+<p>A <strong>proof</strong> is a finite sequence of statements, each one either an accepted starting point (an axiom, a definition, or a previously established result) or a statement obtained from earlier ones in the sequence by a rule of inference guaranteed to preserve truth, ending in the claim being proved.</p>
+</div>
+
+<p>Two things in that definition are doing all the work. <strong>Finite</strong> means the chain has to actually terminate — infinitely much evidence is not a proof, but forty logically connected steps that end in the target claim are, no matter how short. <strong>Guaranteed to preserve truth</strong> means every single link in the chain has to be the kind of step that cannot turn a true statement into a false one — not "usually doesn't," not "hasn't yet," but categorically cannot, as a matter of the step's logical form. Panel II makes this precise; Panels III–VIII catalog the specific chain-building strategies — the <em>techniques</em> — that mathematicians actually reach for.</p>
+
+<p>Once a proof like this exists and has been checked, the result is settled permanently, in a sense evidence-based fields don't have available to them. Euclid's proof that there are infinitely many primes, written around 300 BCE, is exactly as valid today as the day it was written — no discovery in the intervening 2,300 years could possibly overturn it, because it was never resting on how the world happens to be, only on what follows necessarily from what came before. This permanence is the entire point of the discipline: it is what lets a modern proof cite a 2,300-year-old theorem as a settled fact and build on top of it without re-deriving it, the same way a 21st-century bridge design can rely on Newtonian mechanics without re-running Newton's experiments.</p>
+
+<h2>Deductive reasoning versus inductive reasoning</h2>
+<p>The n² − n + 41 example is a case of <strong>inductive reasoning</strong> in the everyday, philosophical sense of that phrase: generalizing a rule from a run of observed cases. Inductive reasoning is how science, and most of ordinary human judgment, works — and it is not worthless; it is exactly how a conjecture gets proposed in the first place. What it is not, ever, is a substitute for proof, because no finite run of successes logically forces the next case to succeed too.</p>
+
+<p><strong>Deductive reasoning</strong> is the opposite: starting from statements already known to be true and applying logically valid steps that are guaranteed — not merely likely — to produce more true statements. Every proof technique in this essay is a deductive strategy. A direct proof, a proof by contradiction, a proof by cases — all of them build a chain in which each link is forced by the one before it, so that if the starting points are true, the ending point cannot fail to be true as well.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — "mathematical induction" is not inductive reasoning</span>
+<p>Panel VII of this essay covers a technique called <strong>mathematical induction</strong>, and the name is a genuine trap: despite sharing a word with "inductive reasoning" above, mathematical induction is a fully deductive, fully rigorous proof technique — nothing about it involves generalizing from a run of examples and hoping the pattern holds. It works by proving one statement is true for a starting case, and separately proving that truth for any one case forces truth for the next case, which together deductively force the statement for every case at once. The shared name is a historical accident of English, not a hint that the two ideas are related in method or in reliability.</p>
+</div>
+
+<h2>What this essay covers</h2>
+<p>Panel II builds the logical skeleton every proof shares — axioms, definitions, valid inference, and the shape most theorems actually take. Panels III–VII are the five workhorse techniques: direct proof, contraposition, contradiction, cases, and induction. Panel VIII covers existence and uniqueness claims specifically, since they call for a slightly different template than a plain conditional. Panel IX turns the machinery around to cover disproof — how a single counterexample can demolish a universal claim outright. Panel X is a tour of the ways proofs go wrong, including two classic broken "proofs" worth studying precisely because they look correct at a glance. Panel XI is a hands-on matcher: eight claims, each asking which technique fits before revealing the answer. Panel XII closes with fuller worked proofs and a one-page reference table of every technique side by side.</p>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="pf2">
+<h1>The Anatomy of a Proof</h1>
+<div class="subtitle">axioms, definitions, theorems, and the chain of inference that connects them</div>
+
+<h2>The starting materials</h2>
+<p>No proof starts from nothing — every proof, without exception, is built on top of a foundation the proof itself does not establish. That foundation has three parts.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>What a proof is allowed to start from or cite</caption>
+<thead><tr><th>Starting material</th><th>What it is</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><strong>Axioms</strong> (postulates)</td><td>statements accepted without proof, by explicit agreement, as the ground floor of the system</td><td>"Through any two distinct points there is exactly one line" (Euclidean geometry)</td></tr>
+<tr><td><strong>Definitions</strong></td><td>agreed meanings for terms, fixed so every proof means the same thing by them</td><td>"An integer n is <em>even</em> if n = 2k for some integer k"</td></tr>
+<tr><td><strong>Previously proved theorems</strong></td><td>results already established by an earlier, separate proof, now available to build on without re-deriving</td><td>"The sum of two even integers is even" (Panel III), cited freely afterward</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Axioms are the one item on this list that is not itself proved, and that is by design rather than by gap: a system needs <em>some</em> unproved starting point, on pain of infinite regress — if every statement needed a prior statement to justify it, no proof could ever get off the ground. What makes an axiom system worth trusting isn't that its axioms are proved (they aren't, and structurally can't be, from within the system); it's that they are stated explicitly, agreed to in advance, and kept to a small, examined list, so that everything downstream is honest about exactly what it depends on.</p>
+
+<div class="callout note">
+<span class="callout-label">Note — Euclid's Elements set the template still used today</span>
+<p>Around 300 BCE, Euclid's <em>Elements</em> organized geometry as a short list of definitions and postulates followed by theorem after theorem, each one proved using only the postulates and theorems that came strictly before it in the book. That structure — a small explicit foundation, then a strictly ordered chain of results each resting only on what precedes it — is still exactly the structure of a modern mathematics textbook, over two thousand years later. Almost nothing else in intellectual history has that kind of staying power.</p>
+</div>
+
+<h2>Valid steps: what is allowed to connect one line to the next</h2>
+<p>Given a starting collection of true statements, a proof advances by applying <strong>rules of inference</strong> — argument patterns that are guaranteed, by their logical shape alone, to produce a true conclusion whenever their premises are true. <em>Modus ponens</em> — from \(p\) and \(p\to q\), conclude \(q\) — is the single most-used rule of inference in ordinary mathematical writing, and it is the same rule at work whether the proof is about integers, matrices, or topological spaces, because its validity has nothing to do with the subject matter and everything to do with the shape "if \(p\) then \(q\), and \(p\) holds, so \(q\) holds."</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — validity and soundness</span>
+<p>An argument is <strong>valid</strong> if its conclusion is guaranteed true whenever all its premises are true — validity is purely about logical form, and never asks whether the premises actually are true. An argument is <strong>sound</strong> if it is valid <em>and</em> its premises are, in fact, true. A proof needs both: a valid structure built entirely on genuinely true starting material. A valid argument built on a false premise can still hand you a false conclusion; only soundness guarantees the conclusion is true.</p>
+</div>
+
+<h2>The chain, drawn out</h2>
+<div class="ascii">   Axioms  +  Definitions  +  Previously proved theorems
+                        │
+                        │   each step licensed by a rule of inference
+                        ▼
+      Line 1   ──  justified directly by an axiom, a definition, or a cited theorem
+      Line 2   ──  justified by Line 1  +  a valid rule of inference
+      Line 3   ──  justified by Lines 1–2  +  a valid rule of inference
+        ⋮
+      Line n   ──  is the statement being proved                              ∎</div>
+
+<p>Every technique in Panels III–VIII is, underneath its name, a specific strategy for filling in that chain — a recipe for which intermediate lines to write down, in which order, so the final line is forced. What differs between "direct proof" and "proof by contradiction" is not the standard of rigor (both are fully rigorous) but the route: which statement gets assumed at the top, and what gets derived from it.</p>
+
+<h2>What a theorem's statement is actually claiming</h2>
+<p>Before choosing a technique, it helps to notice that almost every theorem in mathematics is one of a small number of grammatical shapes, and the shape strongly suggests the technique.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>The recurring shapes of a mathematical claim</caption>
+<thead><tr><th>Shape</th><th>Symbolic form</th><th>What proving it requires</th></tr></thead>
+<tbody>
+<tr><td>Universal statement</td><td class="mono">∀x ∈ D, P(x)</td><td>show P holds for an arbitrary, unspecified member of D</td></tr>
+<tr><td>Universal conditional</td><td class="mono">∀x ∈ D, P(x) → Q(x)</td><td>assume an arbitrary x has property P, derive that it has property Q</td></tr>
+<tr><td>Existence statement</td><td class="mono">∃x ∈ D, P(x)</td><td>produce, or otherwise guarantee, at least one witness (Panel VIII)</td></tr>
+<tr><td>Uniqueness statement</td><td class="mono">∃!x ∈ D, P(x)</td><td>existence, plus: any two objects satisfying P must be equal (Panel VIII)</td></tr>
+<tr><td>Biconditional</td><td class="mono">P ↔ Q</td><td>two separate proofs: P → Q, and then Q → P</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>By far the most common shape is the universal conditional, and it comes with its own standard opening move worth naming explicitly, because it looks like a sleight of hand the first time a student sees it.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — "let x be arbitrary" proves every case at once</span>
+<p>To prove "\(\forall x \in D,\ P(x)\)," a proof does not check every member of \(D\) one at a time — for an infinite domain like the integers, that would never finish. Instead, it lets \(x\) stand for one single, completely unspecified member of \(D\), assumes nothing about \(x\) beyond membership in \(D\), and derives \(P(x)\) using only facts true of every element of \(D\). Because \(x\) was never given any special property that singled it out, whatever gets proved about it is automatically true of every member of \(D\) — this move is called <strong>universal generalization</strong>, and it is the reason a proof of "every integer squared is non-negative" can be four lines long instead of infinitely long.</p>
+</div>
+
+<p>Panels III and IV attack the universal conditional directly (assume P(x), derive Q(x)) or by its logical mirror image (assume ¬Q(x), derive ¬P(x)). Panel V handles claims that resist both by assuming the entire target statement is false and deriving an outright contradiction. Panel VI splits a hypothesis into cases when it doesn't come as one clean condition. Panel VII is reserved for exactly one recurring shape — a universal statement whose domain is the natural numbers, where the domain's own step-by-step structure can be used as the engine of the proof.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="pf3">
+<h1>Direct Proof</h1>
+<div class="subtitle">walking straight from the hypothesis to the conclusion, one forced step at a time</div>
+
+<h2>The template</h2>
+<p>A <strong>direct proof</strong> of \(p \to q\) does exactly what the name suggests: assume \(p\) is true, then use definitions, algebra, and already-established results to derive \(q\) — no detour through a negation, an assumed contradiction, or a split into cases. It is the plainest of the five core techniques, and for that reason it is almost always the first thing worth attempting before reaching for anything heavier in Panels IV–VII.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — direct proof</span>
+<p>To prove \(p \to q\) directly: assume \(p\). Using \(p\), definitions, algebraic manipulation, and previously established theorems, derive \(q\) through a chain of statements each justified by the one before it.</p>
+</div>
+
+<h2>Worked example — sum of two even integers</h2>
+<p><strong>Claim.</strong> For all integers \(a\) and \(b\), if \(a\) and \(b\) are both even, then \(a+b\) is even.</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Let a and b be arbitrary integers, and assume a and b are both even.</span><span class="pf-just">assumption</span></li>
+<li><span class="pf-stmt">Since a is even, a = 2j for some integer j.</span><span class="pf-just">definition of even</span></li>
+<li><span class="pf-stmt">Since b is even, b = 2k for some integer k.</span><span class="pf-just">definition of even</span></li>
+<li><span class="pf-stmt">a + b = 2j + 2k</span><span class="pf-just">substitution</span></li>
+<li><span class="pf-stmt">a + b = 2(j + k)</span><span class="pf-just">factoring</span></li>
+<li><span class="pf-stmt">j + k is an integer, so a + b = 2(some integer)</span><span class="pf-just">closure of ℤ under +</span></li>
+<li><span class="pf-stmt">Therefore a + b is even.</span><span class="pf-just">definition of even ∎</span></li>
+</div>
+
+<p>Notice the whole proof is one forced chain: the definition of "even" hands you the algebraic form \(2j\), ordinary algebra hands you \(2(j+k)\), and the same definition read backward hands you the conclusion. Nothing was assumed except \(a\) and \(b\) being even, and nothing about \(a\) or \(b\) beyond that was ever used — which is exactly what makes the argument work for every pair of even integers at once, per the universal generalization move from Panel II.</p>
+
+<h2>Worked example — the square of an odd integer is odd</h2>
+<p><strong>Claim.</strong> For every integer \(n\), if \(n\) is odd, then \(n^2\) is odd.</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Let n be an arbitrary integer, and assume n is odd.</span><span class="pf-just">assumption</span></li>
+<li><span class="pf-stmt">n = 2k + 1 for some integer k.</span><span class="pf-just">definition of odd</span></li>
+<li><span class="pf-stmt">n² = (2k + 1)² = 4k² + 4k + 1</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">n² = 2(2k² + 2k) + 1</span><span class="pf-just">factoring out 2</span></li>
+<li><span class="pf-stmt">2k² + 2k is an integer, so n² = 2(some integer) + 1</span><span class="pf-just">closure of ℤ</span></li>
+<li><span class="pf-stmt">Therefore n² is odd.</span><span class="pf-just">definition of odd ∎</span></li>
+</div>
+
+<h2>Worked example — the product of two rationals is rational</h2>
+<p><strong>Claim.</strong> For all rational numbers \(x\) and \(y\), \(xy\) is rational.</p>
+<div class="proof-list">
+<li><span class="pf-stmt">Let x, y be arbitrary rationals.</span><span class="pf-just">assumption</span></li>
+<li><span class="pf-stmt">x = a/b for integers a, b with b ≠ 0.</span><span class="pf-just">definition of rational</span></li>
+<li><span class="pf-stmt">y = c/d for integers c, d with d ≠ 0.</span><span class="pf-just">definition of rational</span></li>
+<li><span class="pf-stmt">xy = (a/b)(c/d) = (ac)/(bd)</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">ac and bd are integers, and bd ≠ 0 since b ≠ 0 and d ≠ 0.</span><span class="pf-just">closure of ℤ; zero-product property</span></li>
+<li><span class="pf-stmt">Therefore xy is rational.</span><span class="pf-just">definition of rational ∎</span></li>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — direct proof is the default, not a last resort</span>
+<p>There is no prize for reaching for the most sophisticated technique available. Most proofs in an introductory course, and a large share of the proofs in any working mathematician's day, are direct proofs, precisely because most claims unfold cleanly once the relevant definitions are unpacked. Contraposition (Panel IV) and contradiction (Panel V) earn their place specifically for the claims where a direct chain from \(p\) doesn't present itself — the exceptions, not the rule.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="pf4">
+<h1>Proof by Contraposition</h1>
+<div class="subtitle">proving the logically identical twin of a statement, when the twin is easier to handle</div>
+
+<h2>Why this is legitimate</h2>
+<p>A conditional \(p \to q\) and its <strong>contrapositive</strong> \(\neg q \to \neg p\) are logically equivalent — they agree on every possible truth assignment of \(p\) and \(q\), with no exception. That equivalence, established by truth table or by the algebra of logic laws, is the entire justification for this technique: proving the contrapositive proves the original, in full, because they are not two different claims that happen to often agree — they are the same claim, said with the roles of affirmation and denial swapped.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — proof by contraposition</span>
+<p>To prove \(p \to q\), it suffices to prove its contrapositive \(\neg q \to \neg p\): assume \(q\) is false, and derive that \(p\) must be false. Because \(p\to q \equiv \neg q \to \neg p\), a valid proof of one is automatically a valid proof of the other.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — contrapositive ≠ converse</span>
+<p>The contrapositive \(\neg q \to \neg p\) is logically equivalent to the original; the <strong>converse</strong> \(q \to p\) is not, and proving the converse proves nothing about the original statement at all. "If it is a dog, it is a mammal" has a true contrapositive ("if it is not a mammal, it is not a dog") and a false converse ("if it is a mammal, it is a dog" — cats disagree). Reaching for contraposition and accidentally proving the converse instead is one of the most common structural errors in introductory proof-writing; before submitting a contrapositive proof, check that the two negated, swapped statements actually match \(\neg q \to \neg p\) and not \(q \to p\).</p>
+</div>
+
+<h2>When to reach for it</h2>
+<p>Contraposition earns its keep specifically when the hypothesis \(p\) is awkward to work with directly — often because it is itself a negative statement, or an existence claim, or otherwise resists being "unpacked" algebraically — while its denial \(\neg p\) hands you something concrete instead. The classic textbook example makes this vivid.</p>
+
+<h2>Worked example — if n² is even, then n is even</h2>
+<p><strong>Claim.</strong> For every integer \(n\), if \(n^2\) is even, then \(n\) is even.</p>
+<p>A direct attempt stalls almost immediately: assuming \(n^2 = 2k\) gives \(n = \sqrt{2k}\), and nothing about that expression obviously simplifies to "2 times an integer." The contrapositive, by contrast, hands over exactly the algebraic form Panel III already knows how to use.</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Contrapositive to prove: if n is odd, then n² is odd.</span><span class="pf-just">restate as ¬q → ¬p</span></li>
+<li><span class="pf-stmt">Let n be an arbitrary integer, and assume n is odd.</span><span class="pf-just">assumption</span></li>
+<li><span class="pf-stmt">n = 2k + 1 for some integer k.</span><span class="pf-just">definition of odd</span></li>
+<li><span class="pf-stmt">n² = 4k² + 4k + 1 = 2(2k² + 2k) + 1</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">Therefore n² is odd.</span><span class="pf-just">definition of odd</span></li>
+<li><span class="pf-stmt">Since the contrapositive holds, the original conditional holds: if n² is even, n is even.</span><span class="pf-just">p → q ≡ ¬q → ¬p ∎</span></li>
+</div>
+
+<h2>Worked example — if 3n + 2 is odd, then n is odd</h2>
+<p><strong>Claim.</strong> For every integer \(n\), if \(3n+2\) is odd, then \(n\) is odd.</p>
+<div class="proof-list">
+<li><span class="pf-stmt">Contrapositive to prove: if n is even, then 3n + 2 is even.</span><span class="pf-just">restate as ¬q → ¬p</span></li>
+<li><span class="pf-stmt">Let n be an arbitrary integer, and assume n is even.</span><span class="pf-just">assumption</span></li>
+<li><span class="pf-stmt">n = 2k for some integer k.</span><span class="pf-just">definition of even</span></li>
+<li><span class="pf-stmt">3n + 2 = 3(2k) + 2 = 6k + 2 = 2(3k + 1)</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">Therefore 3n + 2 is even.</span><span class="pf-just">definition of even</span></li>
+<li><span class="pf-stmt">Since the contrapositive holds, the original holds: if 3n + 2 is odd, n is odd.</span><span class="pf-just">p → q ≡ ¬q → ¬p ∎</span></li>
+</div>
+
+<p>In both examples the tell is the same: the hypothesis ("n² is even," "3n + 2 is odd") doesn't factor cleanly, while its denial ("n odd," "n even") plugs directly into an algebraic identity of the standard even/odd form \(2k\) or \(2k+1\). Whenever a hypothesis is phrased as "is even," "is odd," "is not equal to," or another denial-flavored condition, testing the contrapositive first is usually worth the thirty seconds it takes.</p>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="pf5">
+<h1>Proof by Contradiction</h1>
+<div class="subtitle">assume the claim is false, and let that assumption collapse under its own weight</div>
+
+<h2>The template, and why it works</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — proof by contradiction (reductio ad absurdum)</span>
+<p>To prove a statement \(P\), assume \(\neg P\) is true, and derive from it a statement \(R \wedge \neg R\) for some \(R\) — a logical impossibility, since no statement and its denial can both be true under bivalence. Having derived an impossibility from \(\neg P\), conclude that \(\neg P\) must in fact be false, and therefore \(P\) is true.</p>
+</div>
+
+<p>The justification is a single tautology: \(\big[\neg P \to (R \wedge \neg R)\big] \to P\). If \(\neg P\) genuinely, validly implies something impossible, \(\neg P\) cannot itself be true — a true statement, run through valid inference, can never force an impossibility — so the only remaining option, under bivalence, is that \(P\) is true. This is exactly the law of excluded middle from the logic essay doing the heavy lifting: there is no third truth value \(\neg P\) could quietly retreat into.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight — contradiction and contraposition are close cousins</span>
+<p>To prove \(p \to q\) by contradiction, assume \(p\) <em>and</em> \(\neg q\) together, and derive an impossibility — this is subtly different from proof by contraposition, which assumes only \(\neg q\) and tries to derive \(\neg p\) specifically. Contradiction is the more flexible of the two: it allows any impossibility at all as the target, using every piece of information available (both \(p\) and \(\neg q\)), while contraposition commits in advance to landing exactly on \(\neg p\). For proving a standalone claim that isn't phrased as a conditional at all — like "\(\sqrt2\) is irrational" below — contraposition doesn't even apply, since there is no \(p \to q\) shape to flip; contradiction is the only one of the two available.</p>
+</div>
+
+<h2>Worked example — √2 is irrational</h2>
+<p><strong>Claim.</strong> \(\sqrt2\) is irrational.</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Assume, for contradiction, that √2 is rational.</span><span class="pf-just">assume ¬P</span></li>
+<li><span class="pf-stmt">Then √2 = a/b for integers a, b with b ≠ 0, and a/b in lowest terms (gcd(a, b) = 1).</span><span class="pf-just">definition of rational; every fraction reduces</span></li>
+<li><span class="pf-stmt">Squaring: 2 = a²/b², so a² = 2b².</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">So a² is even.</span><span class="pf-just">definition of even</span></li>
+<li><span class="pf-stmt">Therefore a is even (Panel IV's contrapositive result).</span><span class="pf-just">n² even → n even</span></li>
+<li><span class="pf-stmt">So a = 2k for some integer k, giving a² = 4k².</span><span class="pf-just">definition of even</span></li>
+<li><span class="pf-stmt">Substituting into a² = 2b²: 4k² = 2b², so b² = 2k².</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">So b² is even, hence b is even.</span><span class="pf-just">same result as line 5</span></li>
+<li><span class="pf-stmt">But then a and b are both even, so gcd(a, b) ≥ 2 — contradicting gcd(a, b) = 1 from line 2.</span><span class="pf-just">R ∧ ¬R</span></li>
+<li><span class="pf-stmt">Therefore the assumption was false: √2 is irrational.</span><span class="pf-just">¬(¬P) ≡ P ∎</span></li>
+</div>
+
+<h2>Worked example — Euclid's proof of the infinitude of primes</h2>
+<p><strong>Claim.</strong> There are infinitely many prime numbers.</p>
+<div class="proof-list">
+<li><span class="pf-stmt">Assume, for contradiction, that there are only finitely many primes: p₁, p₂, …, pₙ.</span><span class="pf-just">assume ¬P</span></li>
+<li><span class="pf-stmt">Let N = p₁ · p₂ · ⋯ · pₙ + 1.</span><span class="pf-just">construction</span></li>
+<li><span class="pf-stmt">N is greater than 1, so N has at least one prime factor q (every integer &gt; 1 has a prime factor).</span><span class="pf-just">cited theorem — see Panel VII's strong-induction proof of this fact</span></li>
+<li><span class="pf-stmt">q must be one of p₁, …, pₙ, since those are assumed to be all the primes that exist.</span><span class="pf-just">from the assumption in line 1</span></li>
+<li><span class="pf-stmt">But dividing N by any pᵢ leaves remainder 1, since N = pᵢ · (product of the others) + 1.</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">So q does not divide N — contradicting line 3, that q is a prime factor of N.</span><span class="pf-just">R ∧ ¬R</span></li>
+<li><span class="pf-stmt">Therefore the assumption was false: there are infinitely many primes.</span><span class="pf-just">¬(¬P) ≡ P ∎</span></li>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — contradiction is powerful, but not always the clearest choice</span>
+<p>Because assuming \(\neg P\) and hunting for any impossibility at all gives so much freedom, contradiction can prove almost anything a direct or contrapositive proof can — but it does so by showing that denying the claim is untenable, rather than by showing directly why the claim holds. A reader following a contrapositive proof of "n² even → n even" sees the mechanism the whole way through; a reader following the same fact wrapped inside the √2 proof above sees it appear as a lemma with no explanation of why it's true on its own terms. As a rule of thumb: if a direct or contrapositive proof is available and not much longer, it usually makes for a more illuminating proof than contradiction — reserve contradiction for claims, like irrationality results and Euclid's theorem above, that resist the other techniques entirely.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="pf6">
+<h1>Proof by Cases</h1>
+<div class="subtitle">splitting a hypothesis into an exhaustive set of possibilities, and closing every one</div>
+
+<h2>The template, and why it works</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — proof by cases (exhaustive case analysis)</span>
+<p>Suppose the hypothesis of a claim is known to split into an <strong>exhaustive</strong> collection of subcases \(p_1, p_2, \dots, p_n\) — meaning \(p_1 \vee p_2 \vee \cdots \vee p_n\) is guaranteed true, covering every possibility with nothing left out. If the conclusion \(q\) can be proved separately under each \(p_i\), then \(q\) follows overall.</p>
+</div>
+
+<p>The logical form backing this up is \((p_1\to q)\wedge(p_2\to q)\wedge\cdots\wedge(p_n\to q) \to \big[(p_1\vee\cdots\vee p_n)\to q\big]\) — a tautology sometimes named <em>constructive dilemma</em> when \(n=2\). Every one of the \(n\) sub-proofs is, internally, its own miniature direct proof (or contrapositive, or contradiction); "cases" is best thought of as a way of decomposing the hypothesis, not a competitor to the other techniques so much as a wrapper around several of them run side by side.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the cases must actually be exhaustive, and every case must actually be closed</span>
+<p>The two most common failures of a cases proof are (1) splitting into cases that don't cover every possibility — forgetting zero, forgetting negative numbers, forgetting an edge case at the boundary between two cases — and (2) closing most cases convincingly and then waving away one of them with "similarly" when it isn't actually similar. A cases proof is only as strong as its weakest, most-glossed-over case; a reader checking the proof should be able to verify \(p_1\vee\cdots\vee p_n\) is a tautology on its own, independent of trusting the author's intuition that "obviously" every possibility was covered.</p>
+</div>
+
+<h2>Worked example — n(n+1) is always even</h2>
+<p><strong>Claim.</strong> For every integer \(n\), \(n(n+1)\) is even.</p>
+<p>The two cases are forced by the law of the excluded middle applied to parity: every integer is either even or odd, with no third option and no overlap, so "\(n\) is even" \(\vee\) "\(n\) is odd" is guaranteed exhaustive before a single line of algebra is written.</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Let n be an arbitrary integer. Every integer is even or odd (exhaustive, by definition of parity).</span><span class="pf-just">case split</span></li>
+<li><span class="pf-stmt">Case 1: n is even. Then n = 2k for some integer k.</span><span class="pf-just">definition of even</span></li>
+<li><span class="pf-stmt">n(n+1) = 2k(n+1), which is 2 times an integer — even.</span><span class="pf-just">algebra ∎ (case 1)</span></li>
+<li><span class="pf-stmt">Case 2: n is odd. Then n+1 is even, so n+1 = 2k for some integer k.</span><span class="pf-just">definition of odd/even</span></li>
+<li><span class="pf-stmt">n(n+1) = n · 2k, which is 2 times an integer — even.</span><span class="pf-just">algebra ∎ (case 2)</span></li>
+<li><span class="pf-stmt">Both cases give n(n+1) even, and the cases are exhaustive, so n(n+1) is even for every integer n.</span><span class="pf-just">constructive dilemma ∎</span></li>
+</div>
+
+<h2>Worked example — |xy| = |x||y| for all real x, y</h2>
+<p><strong>Claim.</strong> For all real numbers \(x\) and \(y\), \(|xy| = |x||y|\).</p>
+<p>Here the natural case split is on the sign of each factor, since the absolute value's definition itself is a case split (\(|a| = a\) if \(a \ge 0\), \(|a| = -a\) if \(a &lt; 0\)) — four sign combinations, all four exhaustive and non-overlapping.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>The four sign cases for x and y</caption>
+<thead><tr><th>Case</th><th>|xy|</th><th>|x||y|</th><th>Equal?</th></tr></thead>
+<tbody>
+<tr><td class="mono">x ≥ 0, y ≥ 0</td><td class="mono">xy (since xy ≥ 0)</td><td class="mono">x · y</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">x ≥ 0, y &lt; 0</td><td class="mono">−xy (since xy ≤ 0)</td><td class="mono">x · (−y) = −xy</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">x &lt; 0, y ≥ 0</td><td class="mono">−xy (since xy ≤ 0)</td><td class="mono">(−x) · y = −xy</td><td class="tt-t">Yes</td></tr>
+<tr><td class="mono">x &lt; 0, y &lt; 0</td><td class="mono">xy (since xy &gt; 0)</td><td class="mono">(−x)(−y) = xy</td><td class="tt-t">Yes</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>All four rows agree, the four sign combinations exhaust every possible pair \((x,y)\) with nothing left over, so the identity holds for all real \(x\) and \(y\) — a small illustration of how a definition that is itself built from cases (absolute value) tends to force a cases proof on anything built on top of it.</p>
+
+</section>
+
+<!-- ============ PANEL 7 ============ -->
+<section class="panel" id="pf7">
+<h1>Mathematical Induction</h1>
+<div class="subtitle">climbing an infinite ladder one rung at a time, using the structure of the natural numbers themselves</div>
+
+<h2>The principle</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — the principle of mathematical induction</span>
+<p>Let \(P(n)\) be a statement about the integer \(n\), and let \(P\) be claimed for every integer \(n \ge n_0\). If (1) the <strong>base case</strong> \(P(n_0)\) is true, and (2) the <strong>inductive step</strong> — for every integer \(k \ge n_0\), \(P(k) \to P(k+1)\) — is true, then \(P(n)\) is true for every integer \(n \ge n_0\).</p>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the infinite ladder</span>
+<p>Picture an infinite ladder, and the claim "you can reach rung n" for every \(n\). Knowing you can reach rung 1 (the base case) tells you nothing by itself about rung 2, or rung 1,000,000. But knowing, separately, that reaching any rung always lets you reach the next one (the inductive step) turns that single foothold into a guarantee for every rung above it — rung 1 gets you to rung 2, which by the same fact gets you to rung 3, and so on without end. Neither piece alone proves anything about every rung; together, they do, because the inductive step is a single argument, proved once, that applies at every height.</p>
+</div>
+
+<h2>Why it's valid: the well-ordering principle</h2>
+<p>Induction is not an extra assumption bolted onto the natural numbers — it follows from a more basic fact about how \(\mathbb{N}\) is built, called the <strong>well-ordering principle</strong>: every nonempty subset of the natural numbers has a least element. Here is why that fact forces induction to work: suppose, for contradiction, that \(P(n_0)\) holds, the inductive step holds, but \(P(n)\) still fails for some \(n\ge n_0\). Then the set of counterexamples is nonempty, so by well-ordering it has a least element \(m\). Since \(P(n_0)\) holds, \(m \ne n_0\), so \(m &gt; n_0\), meaning \(m-1 \ge n_0\) exists. Because \(m\) is the <em>least</em> counterexample, \(P(m-1)\) must be true — but then the inductive step forces \(P(m)\) to be true too, contradicting \(m\) being a counterexample. No counterexample can exist.</p>
+
+<h2>Worked example — the sum of the first n integers</h2>
+<p><strong>Claim.</strong> For every integer \(n \ge 1\), \(1+2+\cdots+n = \dfrac{n(n+1)}{2}\).</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Base case (n = 1): LHS = 1. RHS = 1(2)/2 = 1. Equal.</span><span class="pf-just">P(1) true</span></li>
+<li><span class="pf-stmt">Inductive hypothesis: assume 1+2+⋯+k = k(k+1)/2 for some arbitrary k ≥ 1.</span><span class="pf-just">assume P(k)</span></li>
+<li><span class="pf-stmt">1+2+⋯+k+(k+1) = k(k+1)/2 + (k+1)</span><span class="pf-just">add (k+1) to both sides of P(k)</span></li>
+<li><span class="pf-stmt">= (k+1)[k/2 + 1] = (k+1)(k+2)/2</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">This is exactly the RHS of P(k+1): (k+1)((k+1)+1)/2.</span><span class="pf-just">P(k+1) confirmed</span></li>
+<li><span class="pf-stmt">By induction, the formula holds for every integer n ≥ 1.</span><span class="pf-just">base case + inductive step ∎</span></li>
+</div>
+
+<h2>Strong induction</h2>
+<p>Ordinary ("weak") induction lets the inductive step use only \(P(k)\) to prove \(P(k+1)\). Some claims need more of the past than just the immediately preceding case — for those, <strong>strong induction</strong> allows the inductive step to assume \(P\) holds for <em>every</em> integer from \(n_0\) up through \(k\), not just \(k\) itself.</p>
+
+<div class="callout definition">
+<span class="callout-label">Definition — strong induction</span>
+<p>If \(P(n_0)\) is true, and for every \(k \ge n_0\), the truth of \(P(n_0), P(n_0+1), \dots, P(k)\) <em>together</em> implies \(P(k+1)\), then \(P(n)\) is true for every integer \(n \ge n_0\). Weak and strong induction are logically equivalent in what they can prove — strong induction is a convenience, not extra power — but some claims are far more natural to write with the extra assumptions available.</p>
+</div>
+
+<h2>Worked example — every integer greater than 1 has a prime factorization</h2>
+<p><strong>Claim.</strong> Every integer \(n \ge 2\) can be written as a product of one or more primes.</p>
+<div class="proof-list">
+<li><span class="pf-stmt">Base case (n = 2): 2 is itself prime, so it is a "product" of the single prime 2.</span><span class="pf-just">P(2) true</span></li>
+<li><span class="pf-stmt">Strong inductive hypothesis: assume every integer k with 2 ≤ k ≤ n has a prime factorization, for some n ≥ 2.</span><span class="pf-just">assume P(2), …, P(n)</span></li>
+<li><span class="pf-stmt">Consider n + 1. Either n + 1 is prime, or it is composite.</span><span class="pf-just">case split, exhaustive</span></li>
+<li><span class="pf-stmt">If n + 1 is prime, it is trivially its own one-term prime factorization.</span><span class="pf-just">case 1 ∎</span></li>
+<li><span class="pf-stmt">If n + 1 is composite, n + 1 = a · b for integers a, b with 2 ≤ a, b ≤ n.</span><span class="pf-just">definition of composite</span></li>
+<li><span class="pf-stmt">By the strong inductive hypothesis, a and b each have prime factorizations, since both are ≤ n.</span><span class="pf-just">applies P(a) and P(b), not just P(n)</span></li>
+<li><span class="pf-stmt">Multiplying those factorizations gives a prime factorization of n + 1.</span><span class="pf-just">case 2 ∎</span></li>
+<li><span class="pf-stmt">By strong induction, every integer n ≥ 2 has a prime factorization.</span><span class="pf-just">base case + strong inductive step ∎</span></li>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — why this one needed strong, not weak, induction</span>
+<p>Weak induction would only have handed the inductive step access to "n has a factorization" — but n + 1 = a · b splits into two smaller factors a and b that are generally <em>not</em> n itself, and could be far smaller than n. Strong induction is exactly what's needed whenever the inductive step has to reach back to some arbitrary earlier case, not necessarily the immediately previous one — a pattern that shows up constantly once recursion or divide-and-conquer structure is involved.</p>
+</div>
+
+<div class="tbl-wrap">
+<table>
+<caption>Weak induction vs. strong induction, side by side</caption>
+<thead><tr><th></th><th>Weak induction</th><th>Strong induction</th></tr></thead>
+<tbody>
+<tr><td>Inductive hypothesis</td><td class="mono">P(k)</td><td class="mono">P(n₀) ∧ P(n₀+1) ∧ ⋯ ∧ P(k)</td></tr>
+<tr><td>Best suited to</td><td>claims built by a single "+1" step</td><td>claims that split into arbitrary smaller pieces</td></tr>
+<tr><td>Logical strength</td><td colspan="2">equivalent — anything provable with one is provable with the other</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+
+<!-- ============ PANEL 8 ============ -->
+<section class="panel" id="pf8">
+<h1>Existence and Uniqueness Proofs</h1>
+<div class="subtitle">proving something is out there, and proving there's only ever one of it</div>
+
+<h2>Two ways to prove existence</h2>
+<p>Claims of the form \(\exists x \in D,\ P(x)\) split, in how they get proved, into two genuinely different strategies.</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>Constructive versus nonconstructive existence proofs</caption>
+<thead><tr><th>Strategy</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><strong>Constructive</strong></td><td>exhibit a specific, explicit witness x, and verify directly that P(x) holds</td></tr>
+<tr><td><strong>Nonconstructive</strong></td><td>argue that a witness must exist — via contradiction, a counting argument, or a case split — without ever pinning down which specific object it is</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Worked example — a constructive existence proof</h2>
+<p><strong>Claim.</strong> There exists an even prime number.</p>
+<p>The number 2 is prime, and 2 is even — the claim is settled the instant the witness is named and checked. Most existence proofs encountered early in a mathematics education are exactly this direct, which is part of why the nonconstructive style below can feel surprising the first time it's seen.</p>
+
+<h2>Worked example — a nonconstructive existence proof</h2>
+<p><strong>Claim.</strong> There exist irrational numbers \(a\) and \(b\) such that \(a^b\) is rational.</p>
+<p>This is one of the most quoted nonconstructive proofs in mathematics, precisely because it proves existence without ever settling which of two candidate pairs is the real witness.</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Consider the number √2^√2. It is either rational or irrational — exhaustive by bivalence.</span><span class="pf-just">case split</span></li>
+<li><span class="pf-stmt">Case 1: √2^√2 is rational. Then take a = √2, b = √2 — both irrational, and a^b = √2^√2 is rational by this case's assumption.</span><span class="pf-just">witness found ∎ (case 1)</span></li>
+<li><span class="pf-stmt">Case 2: √2^√2 is irrational. Then take a = √2^√2, b = √2 — both irrational (a by this case's assumption, b by Panel V).</span><span class="pf-just">candidate witness</span></li>
+<li><span class="pf-stmt">a^b = (√2^√2)^√2 = √2^(√2·√2) = √2² = 2, which is rational.</span><span class="pf-just">algebra: (xʸ)ᶻ = xʸᶻ</span></li>
+<li><span class="pf-stmt">Either way, a witness pair of irrationals a, b with a^b rational exists.</span><span class="pf-just">both cases close the claim ∎</span></li>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight — the proof never says which case is true</span>
+<p>This proof is completely convincing and completely silent about whether √2^√2 itself is rational or irrational — it doesn't need to resolve that question, because either answer hands over a valid witness pair. (It has since been proven, by the Gelfond–Schneider theorem, that √2^√2 is in fact irrational — so case 2 is the one that's real — but that fact plays no role in the proof above, and wasn't needed to make the proof work.) This is the defining feature of a nonconstructive proof: it settles "at least one exists" while leaving "which one" genuinely open.</p>
+</div>
+
+<h2>Worked example — pigeonhole as a nonconstructive existence tool</h2>
+<p><strong>Claim.</strong> Among any 13 people, at least two share the same birth month.</p>
+<p>There are only 12 possible birth months. If each of the 13 people were assigned a distinct month, that would require at least 13 distinct months to exist — but only 12 do. So the assumption that all 13 are distinct is impossible, meaning some two people share a month. Nothing in the argument identifies <em>which</em> two people, or which month — the proof only guarantees a colliding pair exists.</p>
+
+<h2>Uniqueness proofs</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — proving ∃!x P(x)</span>
+<p>To prove \(\exists! x\, P(x)\) ("there exists a unique x such that P(x)"), prove two separate things: <strong>existence</strong> — some x with P(x) exists, by either strategy above — and <strong>uniqueness</strong> — if x₁ and x₂ both satisfy P, then x₁ = x₂. The two parts are typically proved back to back, and neither one alone establishes ∃!.</p>
+</div>
+
+<h2>Worked example — the additive identity is unique</h2>
+<p><strong>Claim.</strong> There is exactly one real number \(e\) such that \(x + e = x\) for every real \(x\).</p>
+<p><strong>Existence:</strong> \(e = 0\) satisfies \(x + 0 = x\) for every real \(x\), by the ordinary arithmetic of the reals.</p>
+<p><strong>Uniqueness:</strong></p>
+<div class="proof-list">
+<li><span class="pf-stmt">Suppose e₁ and e₂ are both additive identities: x + e₁ = x and x + e₂ = x for every real x.</span><span class="pf-just">assume two witnesses</span></li>
+<li><span class="pf-stmt">Apply the e₁ property with x = e₂: e₂ + e₁ = e₂.</span><span class="pf-just">instantiate at x = e₂</span></li>
+<li><span class="pf-stmt">Apply the e₂ property with x = e₁: e₁ + e₂ = e₁.</span><span class="pf-just">instantiate at x = e₁</span></li>
+<li><span class="pf-stmt">e₁ + e₂ = e₂ + e₁ (addition is commutative), so e₁ = e₂.</span><span class="pf-just">combine lines 2–3 ∎</span></li>
+</div>
+<p>Existence and uniqueness together give exactly one additive identity, and only afterward does it earn the name "0" and the definite article — before uniqueness is established, "the additive identity" is not yet a well-formed phrase, since nothing yet rules out there being several.</p>
+
+</section>
+
+<!-- ============ PANEL 9 ============ -->
+<section class="panel" id="pf9">
+<h1>Disproof — Refuting a Claim</h1>
+<div class="subtitle">how a single counterexample can outweigh a thousand confirming cases</div>
+
+<h2>Disproving a universal statement: one counterexample suffices</h2>
+<div class="callout definition">
+<span class="callout-label">Definition — counterexample</span>
+<p>To disprove \(\forall x \in D,\ P(x)\), it suffices to exhibit a single \(x_0 \in D\) for which \(P(x_0)\) is false. This works because \(\neg\big[\forall x\, P(x)\big] \equiv \exists x\, \neg P(x)\) — negating "for all" produces "there exists one that fails," and a single witness to that existential is all that's needed.</p>
+</div>
+
+<p>This is the sharpest asymmetry in the whole subject: proving \(\forall x\, P(x)\) generally requires the full machinery of Panels III–VII, working for every member of the domain at once — but disproving it takes exactly one case. A universal claim is only as strong as its weakest instance, and mathematics is entirely unforgiving about that: a thousand confirming cases and one failing case do not average out to "mostly true."</p>
+
+<h2>Worked example</h2>
+<p><strong>Claim to disprove.</strong> "Every prime number is odd."</p>
+<p>Counterexample: \(2\) is prime, and \(2\) is even. One case, fully sufficient — no further checking of other primes adds anything to the refutation.</p>
+
+<p><strong>Claim to disprove.</strong> "\(n^2 - n + 41\) is prime for every positive integer \(n\)" — the exact claim Panel I opened with.</p>
+<p>Counterexample: at \(n = 41\), \(n^2-n+41 = 41\times41\), which is composite. Forty confirming cases before it, established in Panel I, do not shield the claim from this single failure.</p>
+
+<h2>Disproving other statement shapes</h2>
+<p>A single counterexample only refutes a universal claim — the other statement shapes from Panel II each need their own negation strategy, not just "find one bad case."</p>
+
+<div class="tbl-wrap">
+<table>
+<caption>How to disprove each shape of claim</caption>
+<thead><tr><th>Claim shape</th><th>Negation</th><th>How to disprove it</th></tr></thead>
+<tbody>
+<tr><td class="mono">∀x P(x)</td><td class="mono">∃x ¬P(x)</td><td>exhibit one counterexample</td></tr>
+<tr><td class="mono">∃x P(x)</td><td class="mono">∀x ¬P(x)</td><td>a full proof that <em>no</em> x works — usually direct, contradiction, or exhaustive cases; a single failed attempt proves nothing</td></tr>
+<tr><td class="mono">p → q</td><td class="mono">p ∧ ¬q</td><td>exhibit a case where the hypothesis holds but the conclusion fails</td></tr>
+<tr><td class="mono">p ↔ q</td><td class="mono">¬(p ↔ q)</td><td>exhibit a case where p and q disagree in truth value</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — "no counterexample found yet" is not a disproof of ∃x P(x)</span>
+<p>Disproving "there exists a rational number whose square is 2" is not a matter of trying a handful of fractions and failing — that would only show the search was unsuccessful so far, exactly the inductive-reasoning trap from Panel I. It requires the actual universal claim "for every rational x, x² ≠ 2," proved the way Panel V's √2 proof does it: fully, by contradiction, covering every rational number at once. The asymmetry between disproving ∀ (one counterexample) and disproving ∃ (a full universal proof of the negation) is exactly the mirror image of the asymmetry between proving ∀ (hard) and proving ∃ (sometimes just one witness).</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 10 ============ -->
+<section class="panel" id="pf10">
+<h1>Where Proofs Go Wrong</h1>
+<div class="subtitle">a field guide to the errors that make a false argument look, briefly, like a real one</div>
+
+<h2>Common failure modes</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Recurring ways a proof attempt breaks</caption>
+<thead><tr><th>Failure</th><th>What it looks like</th></tr></thead>
+<tbody>
+<tr><td><strong>Affirming the consequent</strong></td><td>from p → q and q, wrongly concluding p — the converse fallacy from Panel IV, smuggled into an argument's middle</td></tr>
+<tr><td><strong>Circular reasoning</strong></td><td>assuming, partway through, a restatement of the very thing being proved</td></tr>
+<tr><td><strong>Proof by example</strong></td><td>checking a handful of cases and treating that as a proof of a universal claim — Panel I's central warning</td></tr>
+<tr><td><strong>Hidden domain restriction</strong></td><td>an argument that quietly only works for positive numbers, or nonzero values, or n ≥ 2, presented as if it covered every case</td></tr>
+<tr><td><strong>Division by an expression that could be zero</strong></td><td>a step that is valid everywhere except at the one value that breaks the whole argument</td></tr>
+<tr><td><strong>Unjustified step</strong></td><td>a line introduced with "clearly" or "obviously" that is, on inspection, doing real unproven work</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>A broken proof, worth studying line by line — "1 = 2"</h2>
+<p>Take this "proof" seriously enough to find the flawed line before reading the warning underneath it.</p>
+
+<div class="proof-list">
+<li><span class="pf-stmt">Let a = b, for some nonzero real number a.</span><span class="pf-just">assumption</span></li>
+<li><span class="pf-stmt">a² = ab</span><span class="pf-just">multiply both sides by a</span></li>
+<li><span class="pf-stmt">a² − b² = ab − b²</span><span class="pf-just">subtract b² from both sides</span></li>
+<li><span class="pf-stmt">(a − b)(a + b) = b(a − b)</span><span class="pf-just">factor both sides</span></li>
+<li><span class="pf-stmt">a + b = b</span><span class="pf-just">divide both sides by (a − b)</span></li>
+<li><span class="pf-stmt">a + a = a</span><span class="pf-just">substitute b = a, from line 1</span></li>
+<li><span class="pf-stmt">2a = a</span><span class="pf-just">simplify</span></li>
+<li><span class="pf-stmt">2 = 1</span><span class="pf-just">divide both sides by a</span></li>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the flaw is line 5, dividing by zero in disguise</span>
+<p>Line 1 sets \(a=b\), which means \(a-b=0\). Line 5 then divides both sides by \((a-b)\) — dividing by zero, an operation that is simply undefined and licenses no conclusion at all. Every algebraic manipulation before that line is completely valid; the entire "proof" hinges on one silent, illegal step wearing the costume of ordinary algebra. This is the single most common source of fake proofs in circulation, and the fix for catching it is mechanical: whenever a step divides by an expression, check explicitly that the expression cannot be zero under the assumptions in play.</p>
+</div>
+
+<h2>A broken induction, worth studying line by line — "all horses are the same color"</h2>
+<p><strong>False claim.</strong> In any set of \(n\) horses, all the horses are the same color, for every \(n \ge 1\).</p>
+<p><strong>Purported base case (n = 1):</strong> A set of one horse trivially has "all horses the same color," since there's only one to compare.</p>
+<p><strong>Purported inductive step:</strong> assume any \(n\) horses are all one color. Given a set of \(n+1\) horses \(\{h_1,\dots,h_{n+1}\}\), let \(A=\{h_1,\dots,h_n\}\) and \(B=\{h_2,\dots,h_{n+1}\}\) — both sets of \(n\) horses. By the inductive hypothesis, all of \(A\) is one color, and all of \(B\) is one color. Since \(A\) and \(B\) overlap (both contain \(h_2,\dots,h_n\)), the shared horses link the two colors into one — so all \(n+1\) horses are the same color.</p>
+
+<div class="ascii">   n = 3, going to n+1 = 4:                n = 1, going to n+1 = 2:
+   A = {h1 h2 h3}    overlap: {h2 h3}       A = {h1}    overlap:  { }
+   B =    {h2 h3 h4}                        B =    {h2}
+   ─────────────────────────────            ─────────────────────
+   A ∩ B nonempty → colors do link          A ∩ B is EMPTY → nothing links them</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — the inductive step silently needs n ≥ 2, but the base case only established n = 1</span>
+<p>The overlap argument requires \(A\) and \(B\) to share at least one horse, which needs \(n \ge 2\) (so that removing one endpoint from each still leaves a common middle). At exactly the step from \(n=1\) to \(n+1=2\), \(A=\{h_1\}\) and \(B=\{h_2\}\) share nothing, so there is no linking horse and the argument for that specific step is simply false — not glossed over, but false. The inductive step was never actually proved for \(k=1\), which is the one case that mattered, since the base case only certified \(n=1\) on its own, and the chain from Panel VII's ladder metaphor needs every single rung connected, including the first one. The fallacy is a clean illustration of why the inductive step has to be checked at its most extreme edge, not just "in general" for large \(k\).</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 11 ============ -->
+<section class="panel" id="pf11">
+<h1>Which Technique Fits? — An Interactive Matcher</h1>
+<div class="subtitle">eight claims, one guiding question each — decide before you reveal the answer</div>
+
+<p>For each claim below, decide which technique from Panels III–VIII you'd reach for first, and why, before opening the reveal. There is often more than one workable route to a given claim — the goal here is picking the <em>natural</em> first attempt, the one the claim's own phrasing is quietly pointing toward.</p>
+
+<div class="claim-grid">
+
+<div class="claim-card">
+<div class="cc-num">Claim 1</div>
+<div class="cc-claim">For every integer n, if n³ is even, then n is even.</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Contraposition</span>
+<p class="cc-why">The hypothesis "n³ is even" doesn't unpack algebraically the way "n is odd" does. The contrapositive — assume n is odd, show n³ is odd — plugs n = 2k+1 straight into an expansion, the same move Panel IV used for n².</p>
+</div>
+</details>
+</div>
+
+<div class="claim-card">
+<div class="cc-num">Claim 2</div>
+<div class="cc-claim">The sum of any two rational numbers is rational.</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Direct proof</span>
+<p class="cc-why">Write both numbers as a/b and c/d, add them, and the sum (ad+bc)/bd is visibly a ratio of integers with a nonzero denominator — no detour needed. This is the same shape as Panel III's "product of two rationals" example.</p>
+</div>
+</details>
+</div>
+
+<div class="claim-card">
+<div class="cc-num">Claim 3</div>
+<div class="cc-claim">√3 is irrational.</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Contradiction</span>
+<p class="cc-why">There's no p → q shape to flip via contraposition — this is a standalone claim. Assume √3 = a/b in lowest terms, square, and chase a parallel argument to Panel V's √2 proof (with divisibility by 3 in place of divisibility by 2) until gcd(a,b) is forced to be at least 3.</p>
+</div>
+</details>
+</div>
+
+<div class="claim-card">
+<div class="cc-num">Claim 4</div>
+<div class="cc-claim">For every integer n ≥ 1, 1 + 3 + 5 + ⋯ + (2n−1) = n².</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Mathematical induction</span>
+<p class="cc-why">A claim about every natural number built up by an additive pattern — the base case (n=1: 1 = 1²) and the inductive step (add the next odd number, 2k+1, to both sides of P(k)) are the same two-move recipe as Panel VII's sum-of-integers example.</p>
+</div>
+</details>
+</div>
+
+<div class="claim-card">
+<div class="cc-num">Claim 5</div>
+<div class="cc-claim">For every integer n, n² − n is even.</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Direct proof (or cases)</span>
+<p class="cc-why">Factoring first is the cleanest route: n² − n = n(n−1), the product of two consecutive integers, one of which is always even — no case split even required. A cases proof on the parity of n also works and closes just as fast, which makes this a good example of two techniques converging on the same claim.</p>
+</div>
+</details>
+</div>
+
+<div class="claim-card">
+<div class="cc-num">Claim 6</div>
+<div class="cc-claim">There exist irrational numbers a and b such that a<sup>b</sup> is rational.</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Existence proof, nonconstructive (via cases)</span>
+<p class="cc-why">This is Panel VIII's √2^√2 argument: split on whether √2^√2 itself is rational, and produce a valid witness pair in either case, without ever settling which case is the real one.</p>
+</div>
+</details>
+</div>
+
+<div class="claim-card">
+<div class="cc-num">Claim 7</div>
+<div class="cc-claim">Every integer n ≥ 2 is either prime or a product of primes.</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Strong induction</span>
+<p class="cc-why">Composite n splits as a·b with a, b strictly smaller than n but not necessarily equal to n − 1 — the inductive step needs access to every smaller case, which is exactly what strong induction (and not weak induction) provides.</p>
+</div>
+</details>
+</div>
+
+<div class="claim-card">
+<div class="cc-num">Claim 8</div>
+<div class="cc-claim">The polynomial n² − n + 41 produces a prime number for every positive integer n.</div>
+<details><summary>Reveal the recommended technique</summary>
+<div class="cc-answer">
+<span class="cc-technique">Disproof — a single counterexample</span>
+<p class="cc-why">This claim is false, and no proof technique from Panels III–VIII will succeed on it, because it isn't true. It disproves in one line: n = 41 gives 41 × 41, composite — Panel IX's whole point, that one failing case outweighs forty confirming ones.</p>
+</div>
+</details>
+</div>
+
+</div>
+
+</section>
+
+<!-- ============ PANEL 12 ============ -->
+<section class="panel" id="pf12">
+<h1>Worked Gallery and Quick Reference</h1>
+<div class="subtitle">two closing proofs that lean on more than one technique, and a one-page summary of everything above</div>
+
+<h2>Gallery — n &lt; 2ⁿ for every positive integer n</h2>
+<p><strong>Claim.</strong> For every integer \(n \ge 1\), \(n &lt; 2^n\).</p>
+<div class="proof-list">
+<li><span class="pf-stmt">Base case (n = 1): 1 < 2¹ = 2. True.</span><span class="pf-just">P(1) true</span></li>
+<li><span class="pf-stmt">Inductive hypothesis: assume k < 2ᵏ for some arbitrary integer k ≥ 1.</span><span class="pf-just">assume P(k)</span></li>
+<li><span class="pf-stmt">k + 1 ≤ 2ᵏ (since k < 2ᵏ and both sides are integers) + 1 ≤ 2ᵏ + 2ᵏ, using 1 ≤ 2ᵏ.</span><span class="pf-just">algebra, using k ≥ 1 ⟹ 2ᵏ ≥ 2 ≥ 1</span></li>
+<li><span class="pf-stmt">2ᵏ + 2ᵏ = 2 · 2ᵏ = 2^(k+1)</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">So k + 1 < 2^(k+1), which is P(k+1).</span><span class="pf-just">chaining lines 3–4</span></li>
+<li><span class="pf-stmt">By induction, n < 2ⁿ for every integer n ≥ 1.</span><span class="pf-just">base case + inductive step ∎</span></li>
+</div>
+
+<h2>Gallery — the sum of a rational and an irrational number is irrational</h2>
+<p><strong>Claim.</strong> If \(x\) is rational and \(y\) is irrational, then \(x+y\) is irrational.</p>
+<p>Direct proof stalls here for the same reason it stalled for √2 in Panel V: "irrational" is a negative definition (not expressible as a ratio of integers), which gives nothing to build with directly. Contradiction, paired with a direct sub-argument, closes it cleanly.</p>
+<div class="proof-list">
+<li><span class="pf-stmt">Let x be rational and y be irrational. Assume, for contradiction, that x + y is rational.</span><span class="pf-just">assume ¬P</span></li>
+<li><span class="pf-stmt">Then x + y = p/q for integers p, q, q ≠ 0, and x = a/b for integers a, b, b ≠ 0 (x rational).</span><span class="pf-just">definitions of rational</span></li>
+<li><span class="pf-stmt">y = (x + y) − x = p/q − a/b = (pb − aq)/(qb)</span><span class="pf-just">algebra</span></li>
+<li><span class="pf-stmt">pb − aq and qb are integers, with qb ≠ 0 — so y is a ratio of integers.</span><span class="pf-just">closure of ℤ</span></li>
+<li><span class="pf-stmt">So y is rational — contradicting the assumption that y is irrational.</span><span class="pf-just">R ∧ ¬R</span></li>
+<li><span class="pf-stmt">Therefore x + y is irrational.</span><span class="pf-just">¬(¬P) ≡ P ∎</span></li>
+</div>
+
+<h2>How to write a proof that reads well</h2>
+<p>Correctness and readability are not the same property, and a proof that is technically valid but unreadable has failed at half its job — a proof exists to convince a skeptical reader, not just to be logically sound in principle. A few habits, visible in every worked proof above, do most of the work.</p>
+<ul>
+<li>State which technique is being used, up front, if it isn't obvious — "assume, for contradiction, that…" tells the reader what shape to expect before they're three lines deep.</li>
+<li>Justify every step, especially the ones that feel obvious — the "all horses" fallacy in Panel X survived exactly as long as nobody checked its "obvious" overlap step.</li>
+<li>Signpost case splits and induction steps explicitly with labels ("Case 1:", "Base case:", "Inductive step:") so the proof's skeleton is visible without re-deriving it.</li>
+<li>End with a clear marker — "∎" or "QED" — so the reader knows exactly where the argument claims to be finished.</li>
+</ul>
+
+<h2>Master reference table</h2>
+<div class="tbl-wrap">
+<table>
+<caption>Every technique from this essay, side by side</caption>
+<thead><tr><th>Technique</th><th>Proves</th><th>Core move</th><th>Canonical example</th></tr></thead>
+<tbody>
+<tr><td>Direct proof</td><td class="mono">p → q</td><td>assume p, derive q</td><td>sum of two evens is even</td></tr>
+<tr><td>Contraposition</td><td class="mono">p → q</td><td>assume ¬q, derive ¬p</td><td>n² even → n even</td></tr>
+<tr><td>Contradiction</td><td>any P</td><td>assume ¬P, derive an impossibility</td><td>√2 is irrational</td></tr>
+<tr><td>Cases</td><td class="mono">(p₁∨⋯∨pₙ) → q</td><td>prove q under each exhaustive subcase</td><td>n(n+1) is always even</td></tr>
+<tr><td>Induction (weak)</td><td class="mono">∀n≥n₀, P(n)</td><td>base case + [P(k) → P(k+1)]</td><td>1+2+⋯+n = n(n+1)/2</td></tr>
+<tr><td>Induction (strong)</td><td class="mono">∀n≥n₀, P(n)</td><td>base case + [P(n₀)∧⋯∧P(k) → P(k+1)]</td><td>every n ≥ 2 has a prime factorization</td></tr>
+<tr><td>Existence (constructive)</td><td class="mono">∃x P(x)</td><td>exhibit and verify a specific witness</td><td>2 is an even prime</td></tr>
+<tr><td>Existence (nonconstructive)</td><td class="mono">∃x P(x)</td><td>guarantee a witness without naming it</td><td>irrational^irrational = rational</td></tr>
+<tr><td>Uniqueness</td><td class="mono">∃!x P(x)</td><td>existence, then x₁=x₂ from two assumed witnesses</td><td>the additive identity is unique</td></tr>
+<tr><td>Disproof</td><td class="mono">¬∀x P(x)</td><td>exhibit one counterexample</td><td>n² − n + 41 fails at n = 41</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout note">
+<span class="callout-label">Note — where to go next</span>
+<p>Every worked proof in this essay leaned on definitions and prior results from <a href="../../discrete_math/logic/propositional-logic-first-principles.html" style="color:var(--accent);">the propositional-logic essay</a> — the laws of logic, quantifier negation, and the rules of inference this essay's techniques are all built from — and from <a href="../../discrete_math/foundations/discrete-math-foundations.html" style="color:var(--accent);">the discrete-math foundations essay</a>, which covers sets, relations, and functions using the exact same proof techniques developed here. The fastest way to turn this vocabulary into fluency is the one this essay can't do for you: working more proofs, on paper, until picking the right technique on sight stops requiring the checklist in Panel XI.</p>
+</div>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['pf1','pf2','pf3','pf4','pf5','pf6','pf7','pf8','pf9','pf10','pf11','pf12'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+});
+
+// ---------- KaTeX render ----------
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+</script>
+
+</body>
+</html>
