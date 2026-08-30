@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Change of Variables — Paying for a New Coordinate System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#0d0b08; --bg-elevated:#151210; --bg-card:#1a1613;
+  --border:#332c24; --border-soft:#241f1a;
+  --ink:#e8dfd0; --ink-dim:#a89985; --ink-faint:#6e6152;
+  --accent:#c9a35e; --accent-dim:#8a7343;
+  --blue:#6f9bc9; --green:#7fae7f; --red:#c17862; --purple:#a084b0;
+  --serif:'Cormorant Garamond',serif; --mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-elevated:#efe7d6; --bg-card:#fbf7ee;
+  --border:#d8cbab; --border-soft:#e4d9bd;
+  --ink:#2a2318; --ink-dim:#5c503c; --ink-faint:#8a7a5c;
+  --accent:#8a5a2b; --accent-dim:#a97a3f;
+  --blue:#3a5f8a; --green:#3f6f3f; --red:#8a4530; --purple:#5f3f74;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--serif);
+  font-size:19px; line-height:1.7; transition:background .3s,color .3s;
+}
+::selection{ background:var(--accent-dim); color:var(--bg); }
+
+/* ---- Nav ---- */
+nav{
+  position:sticky; top:0; z-index:100; background:rgba(13,11,8,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:2px; padding:0 24px; overflow-x:auto;
+}
+[data-theme="light"] nav{ background:rgba(246,241,230,.92); }
+nav .brand{
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+  padding:16px 20px 16px 0; white-space:nowrap; border-right:1px solid var(--border); margin-right:8px;
+}
+.tab-btn{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--ink-faint);
+  background:none; border:none; padding:16px 14px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{ color:var(--ink-dim); }
+.tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+.theme-toggle{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---- Layout ---- */
+main{ max-width:820px; margin:0 auto; padding:56px 28px 120px; }
+.panel{ display:none; animation:fade .4s ease; }
+.panel.active{ display:block; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+h1{
+  font-family:var(--serif); font-weight:600; font-size:2.6rem; line-height:1.15;
+  color:var(--ink); margin-bottom:6px; letter-spacing:-.01em;
+}
+.subtitle{ font-family:var(--mono); font-size:13px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:40px;}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:1.7rem; color:var(--accent);
+  margin:44px 0 16px; padding-top:8px; border-top:1px solid var(--border-soft);
+}
+h2:first-of-type{ border-top:none; margin-top:0; }
+h3{ font-family:var(--serif); font-weight:600; font-size:1.25rem; color:var(--ink); margin:28px 0 10px; }
+p{ margin-bottom:16px; color:var(--ink-dim); }
+strong{ color:var(--ink); font-weight:600; }
+em{ color:var(--accent); font-style:italic; }
+.katex{ font-size:1.04em; }
+.katex-display{ margin:1.2em 0; overflow-x:auto; overflow-y:hidden; }
+
+/* ---- Callouts ---- */
+.callout{
+  border-left:3px solid var(--accent); background:var(--bg-card); border-radius:0 6px 6px 0;
+  padding:16px 20px; margin:22px 0; font-size:.95em;
+}
+.callout-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:8px; display:block; font-weight:600;
+}
+.callout.definition{ border-color:var(--blue); } .callout.definition .callout-label{ color:var(--blue); }
+.callout.insight{ border-color:var(--accent); } .callout.insight .callout-label{ color:var(--accent); }
+.callout.warning{ border-color:var(--red); } .callout.warning .callout-label{ color:var(--red); }
+.callout.note{ border-color:var(--purple); } .callout.note .callout-label{ color:var(--purple); }
+.callout p:last-child{ margin-bottom:0; }
+
+/* ---- ASCII diagram ---- */
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.5; color:var(--ink-dim);
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px;
+  padding:18px 20px; overflow-x:auto; white-space:pre; margin:20px 0;
+}
+.ascii .hl{ color:var(--accent); }
+.ascii .hl2{ color:var(--blue); }
+
+/* ---- Interactive lab ---- */
+.lab{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; margin:24px 0;
+}
+.lab-canvases{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+.canvas-wrap{ text-align:center; }
+.canvas-wrap .label{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:6px; }
+canvas{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:6px; touch-action:none; cursor:crosshair; }
+.controls{ display:flex; flex-direction:column; gap:14px; }
+.control-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.control-row label{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); min-width:110px; }
+select, input[type=range]{ accent-color:var(--accent); }
+select{
+  font-family:var(--mono); font-size:12px; background:var(--bg-elevated); color:var(--ink);
+  border:1px solid var(--border); border-radius:4px; padding:6px 10px;
+}
+input[type=range]{ flex:1; min-width:120px; }
+.readout{
+  font-family:var(--mono); font-size:12px; color:var(--accent); min-width:60px; text-align:right;
+}
+.matrix-display{
+  font-family:var(--mono); font-size:13px; background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:6px; padding:14px 18px; margin-top:16px; display:flex; gap:32px; flex-wrap:wrap;
+}
+.matrix-display .block .k{ color:var(--ink-faint); font-size:11px; letter-spacing:.05em; }
+.matrix-display .block .v{ color:var(--ink); font-size:14px; margin-top:4px; }
+.legend{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.swatch{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+
+/* ---- reference table ---- */
+.reftable{ width:100%; border-collapse:collapse; margin:20px 0; font-size:.92em; }
+.reftable th, .reftable td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--border-soft); }
+.reftable th{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); text-transform:uppercase; }
+.reftable td:first-child{ color:var(--ink); font-weight:600; white-space:nowrap; }
+.reftable tr:last-child td{ border-bottom:none; }
+
+/* ---- misc ---- */
+.footer-nav{ display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border-soft); }
+.footer-nav button{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:none; border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.footer-nav button:hover{ color:var(--accent); border-color:var(--accent-dim); }
+code{ font-family:var(--mono); background:var(--bg-elevated); padding:1px 6px; border-radius:4px; font-size:.85em; color:var(--accent); }
+@media(max-width:640px){ h1{font-size:2rem;} body{font-size:17px;} main{padding:40px 18px 100px;} .reftable{display:block; overflow-x:auto; white-space:nowrap;} }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="brand">CHANGE OF VARIABLES</div>
+  <button class="tab-btn active" data-tab="t1">I · The One-Variable Warm-Up</button>
+  <button class="tab-btn" data-tab="t2">II · Distorting a Small Patch</button>
+  <button class="tab-btn" data-tab="t3">III · The Theorem</button>
+  <button class="tab-btn" data-tab="t4">IV · Worked Examples</button>
+  <button class="tab-btn" data-tab="t5">V · Interactive Lab</button>
+  <button class="tab-btn" data-tab="t6">VI · Pitfalls &amp; Reference</button>
+  <button class="theme-toggle" id="themeToggle">☾ light</button>
+</nav>
+
+<main>
+
+<!-- ============ PANEL 1 ============ -->
+<section class="panel active" id="t1">
+<h1>Change of Variables</h1>
+<div class="subtitle">what a substitution really costs, once there's more than one variable to substitute</div>
+
+<h2>u-substitution, reread as an exchange rate</h2>
+<p>Every calculus student learns \(u\)-substitution as an algebra trick: spot a composite function, name the inner piece \(u\), replace \(du\) with whatever \(u'(x)\,dx\) turns out to be, and hope the rest of the integrand rewrites cleanly in terms of \(u\). That mechanical description is correct but hides the one idea that actually generalizes. Substitution is really a statement about <em>exchange rates between lengths</em>:</p>
+<div class="katex-display" data-katex="\int_a^b f(x)\,dx = \int_{g^{-1}(a)}^{g^{-1}(b)} f\big(g(u)\big)\,g'(u)\,du, \qquad x=g(u)"></div>
+<p>Read the factor \(g'(u)\) literally: it says a small interval \(du\) sitting in \(u\)-space corresponds to an interval of length \(\approx|g'(u)|\,du\) sitting in \(x\)-space. Substituting a variable doesn't just relabel the axis — it stretches or compresses it, unevenly, by an amount that changes from point to point. \(g'(u)\) is the local exchange rate, and the integral has to be paid in that new currency for the two sides to agree.</p>
+
+<div class="ascii">   u-space                                    x-space  (x = g(u))
+
+   ├──du──┤                                    ├────g'(u)·du────┤
+   u    u+du            <span class="hl">g</span>                g(u)            g(u+du)
+   ───────────────  ────────▶   ─────────────────────────────────
+
+   a short interval near u maps to a LONGER (or shorter) interval near g(u),
+   stretched by the local factor g'(u) — that factor is exactly what dx becomes</div>
+
+<div class="callout note">
+<span class="callout-label">Note — why no absolute value shows up here</span>
+<p>You'll sometimes see \(u\)-substitution written with \(g'(u)\) bare, no absolute value, even though \(g\) might be decreasing. That's not an oversight — it's because a 1D integral already carries a sign convention. If \(g\) is decreasing, \(g^{-1}(a) &gt; g^{-1}(b)\), so the new limits of integration flip order, and that flip exactly cancels the sign that a negative \(g'(u)\) would otherwise introduce. Direction and magnitude are bundled together in a single number, \(g'(u)\), and the bookkeeping works itself out automatically.</p>
+</div>
+
+<h3>The question this essay chases</h3>
+<p>Now ask the same question with two variables. Let \(T(u,v)=(x(u,v),y(u,v))\) send a region \(D'\) in the \(uv\)-plane onto a region \(D\) in the \(xy\)-plane, and try to rewrite \(\iint_D f(x,y)\,dx\,dy\) as an integral over \(D'\). The obvious guess — just replace \(dx\,dy\) with \(du\,dv\) and call it a day — is wrong, and it's wrong for a reason the 1D case never had to confront: an area, unlike a length, has no built-in sign convention to lean on, and a coordinate change can distort a 2D patch in ways a single number like \(g'(u)\) can't begin to describe. A patch can stretch along one direction while compressing along another, get sheared into a parallelogram, or rotated — all at once, all depending on <em>where</em> in \(D'\) it sits. Whatever plays the role of \(g'(u)\) here has to be able to describe all of that. That object is the Jacobian, and finding the right correction factor built from it is exactly what the next two panels do.</p>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>Nothing conceptually new is about to happen — this essay is, start to finish, one generalization of \(dx=g'(u)\,du\). The single number \(g'(u)\) becomes a matrix of partial derivatives (the Jacobian), and "stretch a length by \(|g'(u)|\)" becomes "stretch an area or volume by \(|\det J|\)." Keep that one substitution in mind as the anchor; every formula in Panels II–IV is that same idea, one dimension further up.</p>
+</div>
+
+</section>
+
+<!-- ============ PANEL 2 ============ -->
+<section class="panel" id="t2">
+<h1>Distorting a Small Patch</h1>
+<div class="subtitle">what a coordinate map does to a tiny rectangle, and why its determinant is the exchange rate</div>
+
+<h2>Near a point, T looks linear</h2>
+<p>Let \(T(u,v)=(x(u,v),y(u,v))\) be a smooth map from the \(uv\)-plane to the \(xy\)-plane. Exactly as in single-variable calculus, where \(g(u+du)\approx g(u)+g'(u)\,du\), a differentiable \(T\) admits a first-order approximation near any point \((u,v)\):</p>
+<div class="katex-display" data-katex="T(u+\Delta u,\ v+\Delta v) \approx T(u,v) + J_T(u,v)\begin{bmatrix}\Delta u\\ \Delta v\end{bmatrix}"></div>
+<div class="callout definition">
+<span class="callout-label">Definition — the Jacobian matrix</span>
+<p>\(J_T(u,v)\) is the matrix of partial derivatives</p>
+<div class="katex-display" data-katex="J_T(u,v) = \begin{bmatrix}\dfrac{\partial x}{\partial u} &amp; \dfrac{\partial x}{\partial v}\\[8pt] \dfrac{\partial y}{\partial u} &amp; \dfrac{\partial y}{\partial v}\end{bmatrix}"></div>
+<p>the exact multivariable analogue of \(g'(u)\): the best linear stand-in for \(T\) at that point. (The full derivation of why this matrix is forced to exist and be unique — differentiability, partial derivatives, local linearity in general — lives in the companion Jacobian essay; this essay only needs the finished object.)</p>
+</div>
+
+<h2>A rectangle becomes a parallelogram</h2>
+<p>Apply that linear approximation to a small rectangle \([u,u+\Delta u]\times[v,v+\Delta v]\) sitting in \(D'\). Its four corners get carried, to first order, to \(T(u,v)\) plus a linear combination of the two columns of \(J_T\) — which means the image of the rectangle is, to the same first order, the parallelogram spanned by \(J_T\)'s columns scaled by \(\Delta u\) and \(\Delta v\):</p>
+<div class="ascii">   uv-plane                                xy-plane  (image under T)
+
+   ┌──────────┐                                 ╱▔▔▔▔▔╱
+   │  Δv      │            <span class="hl">T</span>              ╱      ╱
+   │      Δu  │      ────────▶              ╱      ╱
+   └──────────┘                            ╱______╱
+
+   rectangle, area = Δu·Δv         parallelogram spanned by
+                                    (∂x/∂u,∂y/∂u)Δu  and  (∂x/∂v,∂y/∂v)Δv</div>
+<p>The area of a parallelogram spanned by two vectors is the absolute value of the \(2\times2\) determinant they form — a plain fact from linear algebra, independent of anything about \(T\). Plugging in the two scaled columns above gives the local area-scaling law:</p>
+<div class="katex-display" data-katex="\text{Area}\big(T(\text{rectangle})\big) \;\approx\; \left|\det J_T(u,v)\right|\,\Delta u\,\Delta v"></div>
+<p>This is precisely the object standing in for \(g'(u)\). It's used so often that it earns its own notation, the <strong>Jacobian determinant</strong>:</p>
+<div class="katex-display" data-katex="\frac{\partial(x,y)}{\partial(u,v)} \;:=\; \det J_T \;=\; \frac{\partial x}{\partial u}\frac{\partial y}{\partial v} - \frac{\partial x}{\partial v}\frac{\partial y}{\partial u}"></div>
+
+<h3>Sign versus magnitude</h3>
+<p>The determinant carries two pieces of information, and only one of them matters for area. Its <strong>sign</strong> records orientation: a positive sign means \(T\) preserves the counterclockwise sense of a small loop, a negative sign means it reverses it (like a reflection). Its <strong>magnitude</strong> records how much area the patch actually gains or loses. Because area is never negative, the local scaling law above needs the absolute value — <code>|det J_T|</code>, not <code>det J_T</code> — and that single absolute-value sign is the one place a change-of-variables computation most often goes wrong.</p>
+
+<div class="callout warning">
+<span class="callout-label">Warning — where a zero determinant leads</span>
+<p>If \(\det J_T(u,v)=0\) at some point, the parallelogram above degenerates to a line segment or a point — the map is crushing a whole direction flat right there, and it can't be locally invertible at that point. The change-of-variables theorem in the next panel needs \(\det J_T\ne0\) almost everywhere in \(D'\) for exactly this reason: a few isolated zero-area collapses (a single point, a single curve) don't disturb an integral, but a coordinate change that's singular on a whole region of positive area breaks the correspondence the theorem depends on.</p>
+</div>
+
+<h3>Why this is the right generalization of \(g'(u)\)</h3>
+<p>Set \(v\) aside entirely and this collapses back to the 1D picture exactly: a "rectangle" \([u,u+\Delta u]\) of "area" (length) \(\Delta u\) maps to an interval of length \(|g'(u)|\,\Delta u\). The Jacobian determinant is not an analogy to \(g'(u)\) — it's the literal same construction, run through a determinant instead of a bare product, because a determinant is what "how much do these \(n\) spanning vectors' volume scale by" means once there's more than one dimension to track at once.</p>
+
+</section>
+
+<!-- ============ PANEL 3 ============ -->
+<section class="panel" id="t3">
+<h1>The Change of Variables Theorem</h1>
+<div class="subtitle">assembling the local area-scaling law into a statement about the whole integral</div>
+
+<h2>The formula, in two dimensions</h2>
+<p>Let \(T:D'\to D\) be a \(C^1\) map that is injective on \(D'\) (except possibly on a set of area zero), with \(\det J_T\ne0\) except possibly on a set of area zero. Then for any integrable \(f\):</p>
+<div class="callout definition">
+<span class="callout-label">Theorem — change of variables (2D)</span>
+<div class="katex-display" data-katex="\iint_D f(x,y)\,dx\,dy \;=\; \iint_{D'} f\big(x(u,v),\,y(u,v)\big)\, \left|\frac{\partial(x,y)}{\partial(u,v)}\right|\,du\,dv"></div>
+</div>
+
+<h3>Why the Riemann sums have to agree</h3>
+<p>Panel II's local law is the whole proof, once it's summed rather than applied at a single point. Partition \(D'\) into a fine grid of small rectangles, each of area \(\Delta u\,\Delta v\). Panel II says each rectangle's image under \(T\) is, to excellent approximation, a parallelogram of area \(|\det J_T|\,\Delta u\,\Delta v\), evaluated at any sample point in that rectangle. So a Riemann sum built over \(D'\) can be read two ways at once:</p>
+<div class="katex-display" data-katex="\sum_{i,j} f\big(T(u_i,v_j)\big)\,\big|\det J_T(u_i,v_j)\big|\,\Delta u\,\Delta v \;\;\approx\;\; \sum_{i,j} f\big(T(u_i,v_j)\big)\cdot\text{Area}\big(T(\text{cell}_{ij})\big)"></div>
+<p>The left side, as the grid refines, is by definition a Riemann sum converging to \(\iint_{D'}(f\circ T)|\det J_T|\,du\,dv\). The right side is a Riemann sum too — not over neat rectangles, but over the (approximately parallelogram-shaped) tiles that the rectangles get carried to, which tile \(D\) itself as \(T\) ranges over all of \(D'\). Riemann sums converge to the same integral no matter how the domain is tiled, as long as the tiles shrink to zero — so the right side converges to \(\iint_D f(x,y)\,dx\,dy\). Both sides were, all along, limits of the same quantity approached from two different tilings; the theorem is the statement that those two limits agree.</p>
+
+<h2>Three dimensions, and beyond</h2>
+<p>Nothing about the argument above was specific to two dimensions — "parallelogram area from two spanning vectors" becomes "parallelepiped volume from three spanning vectors," and the determinant argument in Panel II goes through unchanged with a \(3\times3\) matrix. For \(T(u,v,w)=(x,y,z)\):</p>
+<div class="katex-display" data-katex="\iiint_D f(x,y,z)\,dV \;=\; \iiint_{D'} f\big(T(u,v,w)\big)\,\big|\det J_T(u,v,w)\big|\,du\,dv\,dw"></div>
+<p>and in general, for \(T:D'\subset\mathbb{R}^n\to D\subset\mathbb{R}^n\):</p>
+<div class="katex-display" data-katex="\int_D f\,dV \;=\; \int_{D'} (f\circ T)\,\big|\det J_T\big|\,dV'"></div>
+<p>Same theorem, same proof sketch, one determinant size larger. The dimension only changes how much algebra it takes to expand \(\det J_T\) — never the shape of the statement itself.</p>
+
+<h2>Two practical corollaries</h2>
+
+<h3>You can differentiate whichever direction is easier</h3>
+<p>Sometimes the inverse map \(T^{-1}:(x,y)\mapsto(u,v)\) is the one handed to you directly (Panel IV's linear example is exactly this case), and computing \(\partial(x,y)/\partial(u,v)\) would mean first solving for \(x,y\) in terms of \(u,v\). That extra step is never necessary, because the two Jacobian determinants are reciprocals of each other:</p>
+<div class="katex-display" data-katex="\frac{\partial(u,v)}{\partial(x,y)} \;=\; \left[\frac{\partial(x,y)}{\partial(u,v)}\right]^{-1}"></div>
+<p>which follows immediately from the chain rule for Jacobians, \(J_{T^{-1}}(T(p))\cdot J_T(p) = I\), and the determinant-of-a-product rule. Compute whichever Jacobian is more convenient, then invert (reciprocate) that one number if you happen to need the other.</p>
+
+<h3>Injectivity failures on a thin set are harmless</h3>
+<p>The theorem's hypotheses only ask for injectivity <em>except on a set of area zero</em> — a deliberately weak requirement, because the standard substitutions all violate strict injectivity somewhere. Polar coordinates collapse the entire segment \(r=0\) to the single point \((0,0)\), and the rays \(\theta=0\) and \(\theta=2\pi\) trace the same points twice. Both failures sit on a set with no area, so they cost the integral nothing. What the theorem does forbid is a substitution that folds a piece of \(D'\) with genuine positive area onto itself more than once — that would double-count a real region of \(D\), and no correction factor fixes double-counting; the fix is to restrict \(D'\) to a piece where \(T\) is honestly injective before integrating.</p>
+
+</section>
+
+<!-- ============ PANEL 4 ============ -->
+<section class="panel" id="t4">
+<h1>Worked Examples</h1>
+<div class="subtitle">six substitutions, each earning its Jacobian determinant from scratch</div>
+
+<h2>The mechanics, as a five-step recipe</h2>
+<p>Every substitution in this panel — and really, every change of variables anyone ever writes down — follows the same five moves. It's worth stating them once, plainly, before working through six examples that all secretly do the same thing underneath different formulas:</p>
+<div class="ascii">   1. CHOOSE the substitution.        Pick new variables (u,v,…) tailored to the
+                                       integrand or the region's boundary — usually
+                                       whichever one is awkward in x,y.
+
+   2. GET the forward map T.          Solve for x,y (or x,y,z,…) in terms of the
+                                       new variables, if you weren't handed T directly.
+
+   3. TRANSFORM the region.           Substitute the forward map into each boundary
+                                       curve of D, one at a time, to get the boundary
+                                       curves of D′ — then read off bounds for the new
+                                       variables the same way you would in Cartesian.
+
+   4. TRANSFORM the integrand.        Rewrite f(x,y) in terms of u,v by substituting
+                                       the forward map into f directly.
+
+   5. COMPUTE |det J_T| and combine.  Differentiate the forward map to get J_T, take
+                                       |det J_T|, and assemble the new integral:
+                                       ∬_D f dA  =  ∬_D′ (f∘T)·|det J_T| du dv</div>
+<p>Steps 1 and 2 are choices — there's no algorithm for picking a good substitution, only experience with which combinations tend to simplify a given integrand or region. Steps 3 through 5 are mechanical, and the six examples below vary almost entirely in how much work step 3 — transforming the region — actually takes: sometimes it's nearly free, sometimes it needs real work of its own.</p>
+
+<h2>1 · A linear substitution</h2>
+<p>Let \(R\) be the square tilted \(45°\) — bounded by \(x+y=0\), \(x+y=2\), \(x-y=0\), \(x-y=2\) — and evaluate \(\iint_R e^{x+y}\,dA\). Cartesian bounds here are awkward (every edge is a diagonal line), so choose (step 1) \(u=x+y,\ v=x-y\), and solve for \(x,y\) to get the forward map (step 2):</p>
+<div class="katex-display" data-katex="x=\frac{u+v}{2}, \qquad y=\frac{u-v}{2} \qquad\implies\qquad J_T=\begin{bmatrix}\tfrac12 &amp; \tfrac12\\[4pt] \tfrac12 &amp; -\tfrac12\end{bmatrix}, \qquad \det J_T = -\tfrac14-\tfrac14=-\tfrac12"></div>
+<p>Step 3, transforming the region, is unusually cheap here because \(u\) and \(v\) were chosen to <em>be</em> the exact combinations that appear in \(R\)'s own boundary equations. Substituting is immediate — each boundary line already reads as a constant-\(u\) or constant-\(v\) line, no algebra required:</p>
+<div class="ascii">   boundary of R (in x,y)         is already, verbatim         boundary of R′ (in u,v)
+
+   x + y = 0              ────────────────────────────▶        u = 0
+   x + y = 2              ────────────────────────────▶        u = 2
+   x − y = 0              ────────────────────────────▶        v = 0
+   x − y = 2              ────────────────────────────▶        v = 2</div>
+<p>Four diagonal lines in the \(xy\)-plane become four axis-aligned lines in the \(uv\)-plane, and the tilted square \(R\) becomes the plain square \(R':\ 0\le u\le2,\ 0\le v\le2\). Step 4, the integrand, is equally direct — \(e^{x+y}=e^u\), since \(u\) was defined to be exactly \(x+y\). Step 5: \(|\partial(x,y)/\partial(u,v)|=\tfrac12\), a constant, since the substitution is linear and linear maps distort every cell by the same fixed factor everywhere. Assembling all five steps, the integral becomes an ordinary product of 1D integrals:</p>
+<div class="katex-display" data-katex="\iint_R e^{x+y}\,dA = \int_0^2\!\!\int_0^2 e^{u}\cdot\left|-\tfrac12\right|\,du\,dv = \tfrac12\left(\int_0^2 e^u\,du\right)\left(\int_0^2 dv\right) = \tfrac12(e^2-1)(2) = e^2-1"></div>
+<p>a computation that would have meant integrating \(e^{x+y}\) over a rotated square in raw \(x,y\) bounds — considerably messier without the substitution.</p>
+
+<h2>2 · The same substitution, on a region that isn't a box</h2>
+<p>Example 1 got lucky: \(R\)'s boundary happened to align exactly with lines of constant \(u\) and constant \(v\), so step 3 cost nothing. That won't always happen, and it's worth seeing what step 3 looks like when it doesn't. Keep the identical substitution — \(u=x+y,\ v=x-y\), same forward map, same \(|\det J_T|=\tfrac12\) — but change the region to the triangle \(T\) with vertices \((0,0),(1,0),(0,1)\), bounded by \(x=0\), \(y=0\), \(x+y=1\), and evaluate \(\iint_T xy\,dA\).</p>
+<p>This time each boundary curve needs an actual substitution step, not just a relabeling — plug the forward map's \(x=(u+v)/2,\ y=(u-v)/2\) into each equation in turn and simplify:</p>
+<div class="ascii">   boundary of T (in x,y)      substitute x=(u+v)/2, y=(u−v)/2       boundary of T′ (in u,v)
+
+   x = 0            ──▶        (u+v)/2 = 0                 ──▶      v = −u
+   y = 0            ──▶        (u−v)/2 = 0                 ──▶      v =  u
+   x + y = 1        ──▶        u = 1   (immediate: u is x+y)──▶      u =  1</div>
+<p>Three straight lines went in, three straight lines came out — a substitution always sends a boundary curve to another single, unbroken curve, never to a scattered mess of points, precisely because \(T\) is continuous and one-to-one. Plotting \(v=u\), \(v=-u\), and \(u=1\) gives a triangle \(T'\) with vertices \((0,0),(1,1),(1,-1)\) — the same three corners as the original triangle, just relocated. Reading bounds off that picture works exactly like reading bounds for a Type-I Cartesian region: sweep \(u\) across its range, and at each \(u\) let \(v\) run between the two slanted edges:</p>
+<div class="katex-display" data-katex="T': \qquad 0\le u\le1, \qquad -u\le v\le u"></div>
+<p>Step 4, the integrand, again substitutes directly: \(xy = \dfrac{u+v}{2}\cdot\dfrac{u-v}{2} = \dfrac{u^2-v^2}{4}\). With the Jacobian already in hand from Example 1, the full integral assembles as:</p>
+<div class="katex-display" data-katex="\iint_T xy\,dA = \int_0^1\!\!\int_{-u}^{u} \frac{u^2-v^2}{4}\cdot\frac12\,dv\,du = \frac18\int_0^1\Big[u^2v-\tfrac{v^3}{3}\Big]_{-u}^{u}\,du = \frac18\int_0^1 \tfrac{4}{3}u^3\,du = \frac{1}{24}"></div>
+<div class="callout note">
+<span class="callout-label">Note — checking against Cartesian</span>
+<p>Evaluating the same integral directly, with no substitution at all — \(\int_0^1\!\int_0^{1-x} xy\,dy\,dx\) — also gives \(\tfrac{1}{24}\). The substitution isn't actually needed here (the triangle is perfectly tractable in \(x,y\)); it's used specifically to show the bounds-finding mechanic on a region that doesn't collapse to a rectangle, against an answer you can independently confirm.</p>
+</div>
+<div class="callout insight">
+<span class="callout-label">Insight — the general procedure this demonstrates</span>
+<p>Finding the new region is always the same routine, however complicated the boundary: take each piece of the old boundary, substitute the forward map's formulas into that curve's equation, and simplify. Whatever curve comes out is the corresponding piece of the new boundary. The only thing that changes from problem to problem is how much algebra that simplification takes — trivial when, as in Example 1, the substitution was chosen to match the boundary exactly; real but routine otherwise, as here.</p>
+</div>
+
+<h2>3 · Polar coordinates and the Gaussian integral</h2>
+<p>For \(x=r\cos\theta,\ y=r\sin\theta\):</p>
+<div class="katex-display" data-katex="J_T(r,\theta)=\begin{bmatrix}\cos\theta &amp; -r\sin\theta\\ \sin\theta &amp; r\cos\theta\end{bmatrix} \implies \det J_T = r\cos^2\theta+r\sin^2\theta = r"></div>
+<p>the famous stray \(r\) that turns \(dx\,dy\) into \(r\,dr\,d\theta\). Step 3 of the recipe — transforming the region — costs nothing here: the region is all of \(\mathbb{R}^2\), which becomes \(r\in[0,\infty),\ \theta\in[0,2\pi)\) directly, the same free ride any disk \(x^2+y^2\le R^2\) gets by turning into the rectangle \(r\in[0,R],\ \theta\in[0,2\pi)\). It earns its keep on an integral that has <em>no</em> elementary antiderivative in Cartesian form: \(\int_{-\infty}^\infty e^{-x^2}\,dx\). Squaring it turns a single hard 1D integral into an easy 2D one, precisely because the 2D version can be attacked with polar coordinates:</p>
+<div class="katex-display" data-katex="\left(\int_{-\infty}^\infty e^{-x^2}dx\right)^2 = \iint_{\mathbb{R}^2} e^{-(x^2+y^2)}\,dx\,dy = \int_0^{2\pi}\!\!\int_0^\infty e^{-r^2}\,r\,dr\,d\theta"></div>
+<p>The inner integral now has a clean antiderivative in \(r\) — \(\tfrac{d}{dr}\big(-\tfrac12 e^{-r^2}\big) = re^{-r^2}\) — precisely because of the extra factor of \(r\) the Jacobian supplied:</p>
+<div class="katex-display" data-katex="\int_0^\infty e^{-r^2}r\,dr = \left[-\tfrac12 e^{-r^2}\right]_0^\infty = \tfrac12 \implies \left(\int_{-\infty}^\infty e^{-x^2}dx\right)^2 = 2\pi\cdot\tfrac12=\pi \implies \int_{-\infty}^\infty e^{-x^2}\,dx=\sqrt\pi"></div>
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>This is the change-of-variables formula doing something \(u\)-substitution in one variable structurally cannot: the polar Jacobian's \(r\) is exactly the missing piece that converts an integral with no elementary antiderivative into one that has an obvious one. The trick isn't cleverness about \(e^{-x^2}\) specifically — it's that going to two dimensions and back gave the change-of-variables formula a place to contribute a factor that wasn't available before.</p>
+</div>
+
+<h2>4 · Elliptical coordinates</h2>
+<p>Stretch polar coordinates independently along each axis: \(x=ar\cos\theta,\ y=br\sin\theta\). The Jacobian picks up both stretch factors as an overall constant multiple of the polar result:</p>
+<div class="katex-display" data-katex="\det J_T = ab\,r"></div>
+<p>The region \(x^2/a^2+y^2/b^2\le1\) — an ellipse — is exactly \(r\le1,\ \theta\in[0,2\pi)\) in these coordinates, so its area falls out immediately:</p>
+<div class="katex-display" data-katex="\text{Area} = \int_0^{2\pi}\!\!\int_0^1 ab\,r\,dr\,d\theta = ab\cdot2\pi\cdot\tfrac12 = \pi ab"></div>
+<p>which reduces to the familiar \(\pi r^2\) exactly when \(a=b=r\) — the circle is the special case of the ellipse where the two independent stretches happen to coincide.</p>
+
+<h2>5 · Cylindrical coordinates</h2>
+<p>Add an untouched \(z\)-axis to polar coordinates: \(T(r,\theta,z)=(r\cos\theta,\,r\sin\theta,\,z)\). The third row and column of \(J_T\) are just \((0,0,1)\), so expanding the \(3\times3\) determinant along that row collapses immediately back to the 2D polar case:</p>
+<div class="katex-display" data-katex="J_T = \begin{bmatrix}\cos\theta &amp; -r\sin\theta &amp; 0\\ \sin\theta &amp; r\cos\theta &amp; 0\\ 0 &amp; 0 &amp; 1\end{bmatrix} \implies \det J_T = 1\cdot(r\cos^2\theta+r\sin^2\theta) = r"></div>
+<p>Cylindrical coordinates cost exactly what polar coordinates cost — unsurprising, since stacking a plain \(z\)-axis on top of a 2D transformation never distorts volume beyond whatever the 2D part was already distorting area.</p>
+
+<h2>6 · Spherical coordinates</h2>
+<p>Let \(T(\rho,\varphi,\theta)=(\rho\sin\varphi\cos\theta,\ \rho\sin\varphi\sin\theta,\ \rho\cos\varphi)\) — radius, colatitude (from the positive \(z\)-axis), and longitude. Differentiating all three outputs with respect to all three inputs:</p>
+<div class="katex-display" data-katex="J_T = \begin{bmatrix}\sin\varphi\cos\theta &amp; \rho\cos\varphi\cos\theta &amp; -\rho\sin\varphi\sin\theta\\ \sin\varphi\sin\theta &amp; \rho\cos\varphi\sin\theta &amp; \rho\sin\varphi\cos\theta\\ \cos\varphi &amp; -\rho\sin\varphi &amp; 0\end{bmatrix}"></div>
+<p>Expanding along the bottom row — its zero entry removes one of the three cofactors outright — and applying \(\sin^2+\cos^2=1\) twice collapses everything to one clean term:</p>
+<div class="katex-display" data-katex="\det J_T = \rho^2\sin\varphi\cos^2\varphi + \rho^2\sin^3\varphi = \rho^2\sin\varphi\big(\cos^2\varphi+\sin^2\varphi\big) = \rho^2\sin\varphi"></div>
+
+<h3>The same factor, seen without a determinant</h3>
+<p>The algebra is honest but opaque; the geometry makes it obvious. A small box \([\rho,\rho+d\rho]\times[\varphi,\varphi+d\varphi]\times[\theta,\theta+d\theta]\) has three edges that are, to excellent local approximation, mutually perpendicular once mapped into \((x,y,z)\)-space — so their lengths simply multiply, base times height times depth, to give the box's volume:</p>
+<div class="ascii">   radial edge:      length dρ            (straight out from the origin)
+   colatitude edge:   length ρ dφ           (arc along a great circle of radius ρ)
+   longitude edge:    length ρ sinφ dθ      (arc along a circle of latitude, whose
+                                              radius from the z-axis is ρ sinφ)
+
+           ╭──────────╮
+          ╱ ρsinφ·dθ  ╱│
+         ╱──────────╱  │ ρ·dφ
+         │          │  ╱
+         │          │ ╱  dρ
+         ╰──────────╯
+
+     volume  ≈  dρ · (ρ dφ) · (ρ sinφ dθ)  =  ρ² sinφ · dρ dφ dθ</div>
+<p>Two of the three edge lengths depend on position, because a fixed angular step sweeps out more physical distance far from the axis of rotation than close to it — the identical phenomenon as the lone \(r\) in polar coordinates, appearing here twice: once for distance from the origin (\(\rho\)) and once for distance from the polar axis (\(\rho\sin\varphi\)).</p>
+
+<h3>Payoff: the volume of a ball, without a single geometric formula assumed</h3>
+<p>Integrate the volume element over \(\rho\in[0,R],\ \varphi\in[0,\pi],\ \theta\in[0,2\pi)\) — the full range needed to sweep out a solid ball of radius \(R\):</p>
+<div class="katex-display" data-katex="V = \int_0^{2\pi}\!\!\int_0^\pi\!\!\int_0^R \rho^2\sin\varphi\,d\rho\,d\varphi\,d\theta = 2\pi\cdot\Big[-\cos\varphi\Big]_0^\pi\cdot\frac{R^3}{3} = 2\pi\cdot2\cdot\frac{R^3}{3} = \frac{4}{3}\pi R^3"></div>
+<p>the standard formula, arrived at with no input beyond the coordinate transformation itself and the change-of-variables theorem from Panel III.</p>
+
+</section>
+
+<!-- ============ PANEL 5 ============ -->
+<section class="panel" id="t5">
+<h1>Interactive Lab</h1>
+<div class="subtitle">drag a cell, shrink it, and watch the |det J| correction factor get verified numerically</div>
+
+<p>Drag the point <strong>P</strong> in the left canvas to relocate a small cell in \((u,v)\)-space. The right canvas shows the true, curved image of that cell under the chosen transform \(T\) (in <span style="color:var(--red)">rust</span>) alongside the flat parallelogram the Jacobian alone predicts (in <span style="color:var(--blue)">blue</span>). Below the canvases, two areas are computed independently — the <em>actual</em> area of the curved image (via the shoelace formula, applied to the true boundary) and the <em>predicted</em> area \(|\det J_T(P)|\cdot(2h)^2\) — so you can watch the ratio between them converge to exactly \(1\) as the cell shrinks. That convergence is Panel III's theorem, made numeric rather than asserted.</p>
+
+<div class="lab">
+  <div class="lab-canvases">
+    <div class="canvas-wrap">
+      <div class="label">uv-PLANE — drag P</div>
+      <canvas id="domainCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="label">xy-PLANE — image under T</div>
+      <canvas id="imageCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Transform T(u,v)</label>
+      <select id="mapSelect">
+        <option value="linear">(1.3u + 0.4v,  0.3u + 0.9v)  — linear</option>
+        <option value="polar">(u·cos v, u·sin v)  — polar-like</option>
+        <option value="elliptical">(1.6u·cos v, 0.6u·sin v)  — elliptical</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label>Cell half-width h</label>
+      <input type="range" id="sizeSlider" min="3" max="90" value="55">
+      <span class="readout" id="sizeReadout">0.55</span>
+    </div>
+  </div>
+
+  <div class="matrix-display">
+    <div class="block">
+      <div class="k">POINT P</div>
+      <div class="v" id="pointReadout">(1.00, 1.00)</div>
+    </div>
+    <div class="block">
+      <div class="k">|det J(P)|</div>
+      <div class="v" id="detReadout">—</div>
+    </div>
+    <div class="block">
+      <div class="k">ACTUAL AREA (shoelace)</div>
+      <div class="v" id="actualReadout">—</div>
+    </div>
+    <div class="block">
+      <div class="k">PREDICTED AREA |det J|·(2h)²</div>
+      <div class="v" id="predictedReadout">—</div>
+    </div>
+    <div class="block">
+      <div class="k">RATIO actual / predicted</div>
+      <div class="v" id="ratioReadout">—</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--ink-faint)"></span> full grid image (global, curved)</span>
+    <span><span class="swatch" style="background:var(--red)"></span> actual curved image of the cell</span>
+    <span><span class="swatch" style="background:var(--blue)"></span> Jacobian-predicted parallelogram</span>
+  </div>
+</div>
+
+<div class="callout insight">
+<span class="callout-label">Insight</span>
+<p>At a large cell size the ratio sits well away from \(1\) — the flat parallelogram is a rough sketch of a genuinely curved region. Drag the slider down and the ratio snaps toward \(1.000\), regardless of which transform is selected or where \(P\) sits (away from a singular point). That's precisely the claim Panel III's Riemann-sum argument made in the abstract: shrink the cells enough, and summing the Jacobian-predicted areas gives the same answer as summing the true ones.</p>
+</div>
+
+<p>Try each transform against Panel IV's worked examples: <code>linear</code> keeps <code>|det J|</code> pinned at the same constant everywhere — the ratio converges just as fast near the edge of the canvas as near the center, because a linear map distorts every cell identically. <code>polar</code> makes the predicted parallelogram shrink toward a sliver as \(P\) approaches \(u=0\) — the visual signature of \(\det J=r\to0\), the same collapse that lets the change-of-variables theorem stay valid across the origin without penalty. <code>elliptical</code> looks like a stretched version of <code>polar</code> for exactly the reason Panel IV gives: it <em>is</em> polar, composed with a fixed axis-stretch.</p>
+
+</section>
+
+<!-- ============ PANEL 6 ============ -->
+<section class="panel" id="t6">
+<h1>Pitfalls &amp; Quick Reference</h1>
+<div class="subtitle">the mistakes this formula invites, and a table to skip re-deriving the standard cases</div>
+
+<h2>Three ways this goes wrong in practice</h2>
+
+<div class="callout warning">
+<span class="callout-label">Warning — dropping the absolute value</span>
+<p>\(\det J_T\) can be negative — it happens exactly when \(T\) reverses orientation — but a negative area is meaningless, so the theorem always uses \(|\det J_T|\), never the signed determinant on its own. Plugging in a formula that came out negative, without taking its magnitude, silently flips the sign of the whole integral. Panel II's linear substitution example above had \(\det J_T=-\tfrac12\) for exactly this reason; the working integral used \(\tfrac12\), not \(-\tfrac12\).</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — differentiating the wrong direction</span>
+<p>Given \(u=x+y,\ v=x-y\) (the inverse map, \(T^{-1}\)), it's tempting to differentiate exactly that and plug the result straight into \(dx\,dy = |\partial(x,y)/\partial(u,v)|\,du\,dv\). That's differentiating \(T^{-1}\), which gives \(\partial(u,v)/\partial(x,y)\) — the <em>reciprocal</em> of what the formula needs. Either solve for \(x,y\) first and differentiate the forward map, or differentiate whichever direction is convenient and take the reciprocal, per Panel III's corollary — but don't skip that reciprocal step.</p>
+</div>
+
+<div class="callout warning">
+<span class="callout-label">Warning — double-counting from a non-injective substitution</span>
+<p>A substitution that's many-to-one on a set of positive area — not just a single point or curve — will make the formula overcount \(D\). This doesn't happen with polar, cylindrical, or spherical coordinates used over their standard ranges (\(\theta\in[0,2\pi)\), \(\varphi\in[0,\pi]\)); it happens when a range gets extended sloppily, e.g. letting \(\theta\) run over \([0,4\pi)\) "to be safe," which sweeps every point of \(D\) twice and doubles the answer.</p>
+</div>
+
+<h2>Quick reference: standard Jacobian determinants</h2>
+<table class="reftable">
+  <tr><th>Coordinates</th><th>Map T</th><th>|det J<sub>T</sub>|</th></tr>
+  <tr><td>General linear</td><td>(au+bv, cu+dv)</td><td>|ad − bc|</td></tr>
+  <tr><td>Polar</td><td>(r cos θ, r sin θ)</td><td>r</td></tr>
+  <tr><td>Elliptical</td><td>(ar cos θ, br sin θ)</td><td>abr</td></tr>
+  <tr><td>Cylindrical</td><td>(r cos θ, r sin θ, z)</td><td>r</td></tr>
+  <tr><td>Spherical</td><td>(ρ sinφ cosθ, ρ sinφ sinθ, ρ cosφ)</td><td>ρ² sin φ</td></tr>
+</table>
+
+<h2>One line to carry away</h2>
+<p>Every substitution formula on this page is the same sentence, resized: replacing one set of coordinates with another changes how much space a fixed-size coordinate cell represents, and the Jacobian determinant is exactly the exchange rate that keeps the integral honest through that change — nothing more mysterious than \(dx=g'(u)\,du\), taught to track a parallelogram's or a parallelepiped's volume instead of a single interval's length.</p>
+
+</section>
+
+<div class="footer-nav">
+  <button id="prevBtn">← previous</button>
+  <button id="nextBtn">next →</button>
+</div>
+
+</main>
+
+<script>
+// ---------- Tabs ----------
+const tabs = ['t1','t2','t3','t4','t5','t6'];
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(id){
+  tabs.forEach((t,i)=>{
+    document.getElementById(t).classList.toggle('active', t===id);
+    tabBtns[i].classList.toggle('active', t===id);
+    if(t===id) currentTab = i;
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabBtns.forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+document.getElementById('prevBtn').addEventListener('click', ()=> showTab(tabs[Math.max(0,currentTab-1)]));
+document.getElementById('nextBtn').addEventListener('click', ()=> showTab(tabs[Math.min(tabs.length-1,currentTab+1)]));
+
+// ---------- Theme ----------
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeBtn.textContent = isDark ? '☀ dark' : '☾ light';
+  renderLab();
+});
+
+// ---------- KaTeX render ----------
+document.querySelectorAll('[data-katex]').forEach(el=>{
+  katex.render(el.getAttribute('data-katex'), el, {displayMode:true, throwOnError:false});
+});
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ],
+  throwOnError: false
+});
+
+// ============ INTERACTIVE LAB ============
+const domainCv = document.getElementById('domainCanvas');
+const imageCv = document.getElementById('imageCanvas');
+const dctx = domainCv.getContext('2d');
+const ictx = imageCv.getContext('2d');
+const mapSelect = document.getElementById('mapSelect');
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeReadout = document.getElementById('sizeReadout');
+const pointReadout = document.getElementById('pointReadout');
+const detReadout = document.getElementById('detReadout');
+const actualReadout = document.getElementById('actualReadout');
+const predictedReadout = document.getElementById('predictedReadout');
+const ratioReadout = document.getElementById('ratioReadout');
+
+let P = {u:1, v:1};
+let dragging = false;
+
+const maps = {
+  linear: {
+    F: (u,v)=>[1.3*u+0.4*v, 0.3*u+0.9*v],
+    J: ()=>[[1.3,0.4],[0.3,0.9]],
+    maxAbs: 4
+  },
+  polar: {
+    F: (u,v)=>[u*Math.cos(v), u*Math.sin(v)],
+    J: (u,v)=>[[Math.cos(v), -u*Math.sin(v)],[Math.sin(v), u*Math.cos(v)]],
+    maxAbs: 2.5
+  },
+  elliptical: {
+    F: (u,v)=>[1.6*u*Math.cos(v), 0.6*u*Math.sin(v)],
+    J: (u,v)=>[[1.6*Math.cos(v), -1.6*u*Math.sin(v)],[0.6*Math.sin(v), 0.6*u*Math.cos(v)]],
+    maxAbs: 3
+  }
+};
+
+const DOMAIN_RANGE = 2.2; // world coords span [-2.2, 2.2]
+function worldToScreenDomain(x,y){
+  const s = 300 / (2*DOMAIN_RANGE);
+  return [150 + x*s, 150 - y*s];
+}
+function screenToWorldDomain(px,py){
+  const s = 300 / (2*DOMAIN_RANGE);
+  return [(px-150)/s, (150-py)/s];
+}
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function drawDomain(){
+  dctx.clearRect(0,0,300,300);
+  dctx.fillStyle = cssVar('--bg-elevated');
+  dctx.fillRect(0,0,300,300);
+
+  dctx.strokeStyle = cssVar('--border');
+  dctx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.5){
+    let [x1,y1] = worldToScreenDomain(g,-2.2);
+    let [x2,y2] = worldToScreenDomain(g,2.2);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+    [x1,y1] = worldToScreenDomain(-2.2,g);
+    [x2,y2] = worldToScreenDomain(2.2,g);
+    dctx.beginPath(); dctx.moveTo(x1,y1); dctx.lineTo(x2,y2); dctx.stroke();
+  }
+  dctx.strokeStyle = cssVar('--ink-faint');
+  dctx.lineWidth = 1.2;
+  let [ax1,ay1] = worldToScreenDomain(-2.2,0), [ax2,ay2] = worldToScreenDomain(2.2,0);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+  [ax1,ay1] = worldToScreenDomain(0,-2.2); [ax2,ay2] = worldToScreenDomain(0,2.2);
+  dctx.beginPath(); dctx.moveTo(ax1,ay1); dctx.lineTo(ax2,ay2); dctx.stroke();
+
+  const h = sizeSlider.value/100;
+  const corners = [[P.u-h,P.v-h],[P.u+h,P.v-h],[P.u+h,P.v+h],[P.u-h,P.v+h]];
+  dctx.strokeStyle = cssVar('--blue');
+  dctx.lineWidth = 1.5;
+  dctx.beginPath();
+  corners.forEach(([x,y],i)=>{
+    const [sx,sy] = worldToScreenDomain(x,y);
+    i===0 ? dctx.moveTo(sx,sy) : dctx.lineTo(sx,sy);
+  });
+  dctx.closePath(); dctx.stroke();
+
+  const [px,py] = worldToScreenDomain(P.u,P.v);
+  dctx.fillStyle = cssVar('--accent');
+  dctx.beginPath(); dctx.arc(px,py,5,0,7); dctx.fill();
+}
+
+// shoelace formula for polygon area from an ordered list of (x,y) points
+function shoelaceArea(pts){
+  let s = 0;
+  for(let i=0;i<pts.length;i++){
+    const [x1,y1] = pts[i];
+    const [x2,y2] = pts[(i+1)%pts.length];
+    s += x1*y2 - x2*y1;
+  }
+  return Math.abs(s)/2;
+}
+
+let lastActual = 0, lastPredicted = 0;
+
+function drawImage(){
+  ictx.clearRect(0,0,300,300);
+  ictx.fillStyle = cssVar('--bg-elevated');
+  ictx.fillRect(0,0,300,300);
+
+  const map = maps[mapSelect.value];
+  const scale = 300/(2*map.maxAbs);
+  const w2s = (x,y)=>[150+x*scale, 150-y*scale];
+
+  ictx.strokeStyle = cssVar('--ink-faint');
+  ictx.globalAlpha = 0.35;
+  ictx.lineWidth = 1;
+  for(let g=-2; g<=2; g+=0.4){
+    ictx.beginPath();
+    for(let t=-2.2;t<=2.2;t+=0.05){
+      const [x,y]=map.F(g,t); const [sx,sy]=w2s(x,y);
+      t===-2.2 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+    ictx.beginPath();
+    for(let t=-2.2;t<=2.2;t+=0.05){
+      const [x,y]=map.F(t,g); const [sx,sy]=w2s(x,y);
+      t===-2.2 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+    }
+    ictx.stroke();
+  }
+  ictx.globalAlpha = 1;
+
+  const h = sizeSlider.value/100;
+  const Fp = map.F(P.u,P.v);
+  const J = map.J(P.u,P.v);
+
+  // actual curved boundary of the small cell, in WORLD xy coords (for shoelace)
+  const N = 40;
+  const worldPath = [];
+  for(let i=0;i<=N;i++) worldPath.push([P.u-h+2*h*i/N, P.v-h]);
+  for(let i=0;i<=N;i++) worldPath.push([P.u+h, P.v-h+2*h*i/N]);
+  for(let i=0;i<=N;i++) worldPath.push([P.u+h-2*h*i/N, P.v+h]);
+  for(let i=0;i<=N;i++) worldPath.push([P.u-h, P.v+h-2*h*i/N]);
+  const xyPath = worldPath.map(([u,v])=>map.F(u,v));
+
+  ictx.strokeStyle = cssVar('--red');
+  ictx.lineWidth = 2;
+  ictx.beginPath();
+  xyPath.forEach(([x,y],i)=>{
+    const [sx,sy]=w2s(x,y);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+
+  // Jacobian-predicted parallelogram
+  ictx.strokeStyle = cssVar('--blue');
+  ictx.lineWidth = 2;
+  ictx.setLineDash([5,3]);
+  const localCorners = [[-h,-h],[h,-h],[h,h],[-h,h]];
+  ictx.beginPath();
+  localCorners.forEach(([du,dv],i)=>{
+    const ox = J[0][0]*du + J[0][1]*dv;
+    const oy = J[1][0]*du + J[1][1]*dv;
+    const [sx,sy] = w2s(Fp[0]+ox, Fp[1]+oy);
+    i===0 ? ictx.moveTo(sx,sy) : ictx.lineTo(sx,sy);
+  });
+  ictx.closePath(); ictx.stroke();
+  ictx.setLineDash([]);
+
+  const [fpx,fpy] = w2s(Fp[0],Fp[1]);
+  ictx.fillStyle = cssVar('--accent');
+  ictx.beginPath(); ictx.arc(fpx,fpy,5,0,7); ictx.fill();
+
+  // numeric verification
+  const det = Math.abs(J[0][0]*J[1][1] - J[0][1]*J[1][0]);
+  lastActual = shoelaceArea(xyPath);
+  lastPredicted = det * (2*h) * (2*h);
+}
+
+function updateReadouts(){
+  const map = maps[mapSelect.value];
+  const J = map.J(P.u,P.v);
+  const det = Math.abs(J[0][0]*J[1][1] - J[0][1]*J[1][0]);
+  pointReadout.textContent = `(${P.u.toFixed(2)}, ${P.v.toFixed(2)})`;
+  detReadout.textContent = det.toFixed(4);
+  actualReadout.textContent = lastActual.toFixed(5);
+  predictedReadout.textContent = lastPredicted.toFixed(5);
+  const ratio = lastPredicted > 1e-9 ? (lastActual/lastPredicted) : NaN;
+  ratioReadout.textContent = isFinite(ratio) ? ratio.toFixed(4) : '—';
+  sizeReadout.textContent = (sizeSlider.value/100).toFixed(2);
+}
+
+function renderLab(){
+  drawDomain();
+  drawImage();
+  updateReadouts();
+}
+
+function domainEventToWorld(e){
+  const rect = domainCv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const px = (clientX-rect.left) * (300/rect.width);
+  const py = (clientY-rect.top) * (300/rect.height);
+  return screenToWorldDomain(px,py);
+}
+domainCv.addEventListener('mousedown', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.6){ dragging = true; }
+});
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+});
+window.addEventListener('mouseup', ()=> dragging=false);
+domainCv.addEventListener('touchstart', e=>{
+  const [u,v] = domainEventToWorld(e);
+  if(Math.hypot(u-P.u,v-P.v) < 0.8){ dragging = true; }
+}, {passive:true});
+domainCv.addEventListener('touchmove', e=>{
+  if(!dragging) return;
+  const [u,v] = domainEventToWorld(e);
+  P.u = Math.max(-2,Math.min(2,u));
+  P.v = Math.max(-2,Math.min(2,v));
+  renderLab();
+}, {passive:true});
+window.addEventListener('touchend', ()=> dragging=false);
+
+mapSelect.addEventListener('change', renderLab);
+sizeSlider.addEventListener('input', renderLab);
+
+renderLab();
+</script>
+
+</body>
+</html>
